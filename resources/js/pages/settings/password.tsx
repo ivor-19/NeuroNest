@@ -1,4 +1,4 @@
-import InputError from '@/components/input-error';
+import InputError from '@/components/built-in-shadcn/input-error';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { SharedData, type BreadcrumbItem } from '@/types';
@@ -6,7 +6,7 @@ import { Transition } from '@headlessui/react';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler, useRef } from 'react';
 
-import HeadingSmall from '@/components/heading-small';
+import HeadingSmall from '@/components/built-in-shadcn/heading-small';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

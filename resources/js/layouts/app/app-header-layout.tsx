@@ -1,6 +1,6 @@
-import { AppContent } from '@/components/app-content';
+import { AppContent } from '@/components/built-in-shadcn/app-content';
 import { AppHeader } from '@/components/header/app-header';
-import { AppShell } from '@/components/app-shell';
+import { AppShell } from '@/components/built-in-shadcn/app-shell';
 import { SharedData, type BreadcrumbItem } from '@/types';
 import type { PropsWithChildren } from 'react';
 import { usePage } from '@inertiajs/react';

@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { BookOpen, Play, Clock, Star, CheckCircle, Lock, ArrowLeft, FileText, Video, Award } from "lucide-react"
 import HeaderLayout from "@/layouts/header-layout"
+import { Head } from "@inertiajs/react"
 
 export default function Modules() {
   const [enrolledCourse, setEnrolledCourse] = useState(true) // Set to true to show modules
@@ -144,6 +145,7 @@ export default function Modules() {
 
   return (
     <HeaderLayout>
+      <Head title={'Module ()'} />
       <div className="min-h-screen mt-20">
         {/* Header */}
 

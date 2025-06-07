@@ -1,7 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
 
-import AppearanceTabs from '@/components/appearance-tabs';
-import HeadingSmall from '@/components/heading-small';
+import AppearanceTabs from '@/components/built-in-shadcn/appearance-tabs';
+import HeadingSmall from '@/components/built-in-shadcn/heading-small';
 import { SharedData, type BreadcrumbItem } from '@/types';
 
 import AppLayout from '@/layouts/app-layout';

@@ -1,7 +1,7 @@
-import { AppContent } from '@/components/app-content';
-import { AppShell } from '@/components/app-shell';
+import { AppContent } from '@/components/built-in-shadcn/app-content';
+import { AppShell } from '@/components/built-in-shadcn/app-shell';
 import { AppSidebar } from '@/components/sidebar/app-sidebar';
-import { AppSidebarHeader } from '@/components/app-sidebar-header';
+import { AppSidebarHeader } from '@/components/built-in-shadcn/app-sidebar-header';
 import { SharedData, type BreadcrumbItem } from '@/types';
 import { type PropsWithChildren } from 'react';
 import { StudentSidebar } from '@/components/sidebar/student-sidebar';

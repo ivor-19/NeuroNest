@@ -61,4 +61,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+  // In User.php model
+    public function studentSubjects()
+    {
+        return $this->belongsToMany(Subject::class, 'student_subjects', 'student_id', 'subject_id');
+    }
 }

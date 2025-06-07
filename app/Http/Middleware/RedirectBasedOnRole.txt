@@ -1,4 +1,4 @@
-<?php
+<!-- <?php
 
 namespace App\Http\Middleware;
 
@@ -37,4 +37,4 @@ class RedirectBasedOnRole
         
         return $next($request);
     }
-}
+} -->

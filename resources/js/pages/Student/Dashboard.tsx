@@ -1,11 +1,11 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { BookOpen, Users, Award, Clock, Play, User, Settings, LogOut, Plus } from "lucide-react"
 import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
-import { router } from "@inertiajs/react"
+import { Head, router } from "@inertiajs/react"
 import HeaderLayout from "@/layouts/header-layout"
 import { BreadcrumbItem } from "@/types"
 
@@ -16,165 +16,112 @@ interface User {
     role?: string;
 }
 
-interface StudentDashboardProps {
-    user: User;
+interface Subject {
+    id: number;
+    code: string;
+    title: string;
+    description: string;
+    isActive: boolean;
 }
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/student/dashboard',
-    },
-];
+interface StudentDashboardProps {
+    user: User;
+    subjects: Subject[];
+}
 
-export default function Dashboard({ user }: StudentDashboardProps) {
-
-  const studentCourses = [
-    {
-      id: 1,
-      title: "React Fundamentals",
-      instructor: "Sarah Johnson",
-      progress: 75,
-      totalLessons: 12,
-      completedLessons: 9,
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 2,
-      title: "JavaScript Advanced",
-      instructor: "Mike Chen",
-      progress: 45,
-      totalLessons: 15,
-      completedLessons: 7,
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 3,
-      title: "UI/UX Design Principles",
-      instructor: "Emma Davis",
-      progress: 20,
-      totalLessons: 10,
-      completedLessons: 2,
-      image: "/placeholder.svg?height=200&width=300",
-    },
-  ]
-
-  const instructorCourses = [
-    {
-      id: 1,
-      title: "React Fundamentals",
-      students: 234,
-      lessons: 12,
-      rating: 4.8,
-      status: "Published",
-    },
-    {
-      id: 2,
-      title: "Advanced JavaScript",
-      students: 156,
-      lessons: 15,
-      rating: 4.9,
-      status: "Published",
-    },
-    {
-      id: 3,
-      title: "Node.js Backend Development",
-      students: 89,
-      lessons: 8,
-      rating: 4.7,
-      status: "Draft",
-    },
-  ]
+export default function Dashboard({ user, subjects }: StudentDashboardProps) {
+    const [studentSubjects, setStudentSubjects] = useState<Subject[]>(subjects);
 
   return (
-    <HeaderLayout breadcrumbs={breadcrumbs}>
+    <HeaderLayout>
+        <Head title={'Dashboard'} />
         <div className="min-h-screen mt-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    {/* Student Dashboard */}
-                    <div className="mb-8">
-                    <h1 className="text-3xl font-bold ">Welcome back, {user.name}</h1>
-                    <p className="text-gray-600 mt-2">Continue your learning journey</p>
-                    </div>
+                {/* Student Dashboard */}
+                <div className="mb-8">
+                <h1 className="text-3xl font-bold ">Welcome back, {user.name}</h1>
+                <p className="text-gray-600 mt-2">Continue your learning journey</p>
+                </div>
 
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <Card>
-                        <CardContent className="p-6">
-                        <div className="flex items-center">
-                            <BookOpen className="h-8 w-8 text-blue-600" />
-                            <div className="ml-4">
-                            <p className="text-sm font-medium text-gray-600">Enrolled Courses</p>
-                            <p className="text-2xl font-bold ">3</p>
-                            </div>
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <Card>
+                    <CardContent className="p-6">
+                    <div className="flex items-center">
+                        <BookOpen className="h-8 w-8 text-blue-600" />
+                        <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">Enrolled Courses</p>
+                        <p className="text-2xl font-bold ">3</p>
                         </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="p-6">
-                        <div className="flex items-center">
-                            <Clock className="h-8 w-8 text-green-600" />
-                            <div className="ml-4">
-                            <p className="text-sm font-medium text-gray-600">Hours Learned</p>
-                            <p className="text-2xl font-bold">47</p>
-                            </div>
-                        </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="p-6">
-                        <div className="flex items-center">
-                            <Award className="h-8 w-8 text-purple-600" />
-                            <div className="ml-4">
-                            <p className="text-sm font-medium text-gray-600">Certificates</p>
-                            <p className="text-2xl font-bold ">2</p>
-                            </div>
-                        </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="p-6">
-                        <div className="flex items-center">
-                            <Users className="h-8 w-8 text-orange-600" />
-                            <div className="ml-4">
-                            <p className="text-sm font-medium text-gray-600">Avg. Progress</p>
-                            <p className="text-2xl font-bold text-gray-900">47%</p>
-                            </div>
-                        </div>
-                        </CardContent>
-                    </Card>
                     </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="p-6">
+                    <div className="flex items-center">
+                        <Clock className="h-8 w-8 text-green-600" />
+                        <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">Hours Learned</p>
+                        <p className="text-2xl font-bold">47</p>
+                        </div>
+                    </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="p-6">
+                    <div className="flex items-center">
+                        <Award className="h-8 w-8 text-purple-600" />
+                        <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">Certificates</p>
+                        <p className="text-2xl font-bold ">2</p>
+                        </div>
+                    </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="p-6">
+                    <div className="flex items-center">
+                        <Users className="h-8 w-8 text-orange-600" />
+                        <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">Avg. Progress</p>
+                        <p className="text-2xl font-bold text-gray-900">47%</p>
+                        </div>
+                    </div>
+                    </CardContent>
+                </Card>
+                </div>
 
-                    {/* My Courses */}
-                    <div>
-                        <h2 className="text-2xl font-bold  mb-6">My Subjects</h2>
+                {/* My Courses */}
+                <div>
+                    <h2 className="text-2xl font-bold mb-6">My Subjects</h2>
+
+                    {studentSubjects.length === 0 ? (
+                        <div className="text-center text-gray-500 py-10 border rounded-md">
+                        <p className="text-lg">You are not enrolled in any subjects yet.</p>
+                        <p className="text-sm mt-2">Please contact your administrator or check back later.</p>
+                        </div>
+                    ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {studentCourses.map((course) => (
-                            <Card key={course.id} onClick={() => router.visit(route('student.modules'))} className="group hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden">
-                                <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                                    <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                                </div>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">{course.title}</CardTitle>
-                                    <CardDescription>by {course.instructor}</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                <div className="space-y-4">
-                                    <div>
-                                    <div className="flex justify-between text-sm text-gray-600 mb-2">
-                                        <span>Progress</span>
-                                        <span>
-                                        {course.completedLessons}/{course.totalLessons} lessons
-                                        </span>
-                                    </div>
-                                    <Progress value={course.progress} className="h-2" />
-                                    </div>
-                                
-                                </div>
-                                </CardContent>
+                        {studentSubjects.map((subject) => (
+                            <Card
+                            key={subject.id}
+                            onClick={() => router.visit(route('student.modules'))}
+                            className="group hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden"
+                            >
+                            <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                                <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+                            </div>
+                            <CardHeader>
+                                <CardTitle className="text-lg">{subject.title}</CardTitle>
+                                <CardDescription>{subject.description}</CardDescription>
+                            </CardHeader>
+                            <CardContent></CardContent>
                             </Card>
-                            ))}
+                        ))}
                         </div>
-                    </div>
+                    )}
+                </div>
+
             </div>
         </div>
     </HeaderLayout>
