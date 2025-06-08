@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('code');
             $table->string('title');
             $table->text('description');
+            $table->string('year_level');
+            $table->string('semester');
             $table->boolean('isActive')->default(true);
             $table->timestamps();
         });

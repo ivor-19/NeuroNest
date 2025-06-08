@@ -8,19 +8,19 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('section_subjects', function (Blueprint $table) {
+        Schema::create('course_subjects', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('section_id')->constrained('sections')->onDelete('cascade');
+            $table->foreignId('course_id')->constrained('courses')->onDelete('cascade');
             $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
             $table->timestamps();
             
             // Prevent duplicate subject assignments
-            $table->unique(['section_id', 'subject_id']);
+            $table->unique(['course_id', 'subject_id']);
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('section_subjects');
+        Schema::dropIfExists('course_subjects');
     }
 };

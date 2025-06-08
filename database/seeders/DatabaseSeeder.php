@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Subject;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Hash;
@@ -37,5 +38,23 @@ class DatabaseSeeder extends Seeder
                 'role' => 'teacher'
             ]
         );
+
+        Subject::updateOrCreate([
+            'code' => 'MATH201',
+            'title' => 'Advanced Mathematics',
+            'description' => 'A course on advanced mathematics topics.',
+            'year_level' => '1',
+            'semester' => '1st',
+            'isActive' => true,
+        ]);
+
+        Subject::updateOrCreate([
+            'code' => 'CS101',
+            'title' => 'Introduction to Computer Science',
+            'description' => 'An introductory course to computer science concepts.',
+            'year_level' => '1',
+            'semester' => '1st',
+            'isActive' => true,
+        ]);
     }
 }

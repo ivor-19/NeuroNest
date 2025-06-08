@@ -16,16 +16,16 @@ class Subject extends Model
         return $this->hasMany(Module::class);
     }
 
-    public function sections()
+    public function courses()
     {
-        return $this->belongsToMany(Section::class, 'section_subjects', 'subject_id', 'section_id');
+        return $this->belongsToMany(Course::class, 'course_subjects', 'subject_id', 'course_id');
     }
 
     public function getStudentsAttribute()
     {
         return User::join('student_sections', 'users.id', '=', 'student_sections.student_id')
-            ->join('section_subjects', 'student_sections.section_id', '=', 'section_subjects.section_id')
-            ->where('section_subjects.subject_id', $this->id)
+            ->join('course_subjects', 'course_subjects.section_id', '=', 'course_subjects.section_id')
+            ->where('course_subjects.subject_id', $this->id)
             ->select('users.*')
             ->get();
     }

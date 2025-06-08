@@ -15,8 +15,8 @@ class StudentSection extends Model
         return $this->belongsTo(User::class, 'student_id', 'id');
     }
 
-    public function section()
+    public function course()
     {
-        return $this->belongsTo(Section::class, 'section_id', 'id');
+        return $this->belongsTo(Course::class, 'course_id', 'id');
     }
 }
