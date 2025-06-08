@@ -28,5 +28,14 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('12345678'), // default password
             ]
         );
+
+        User::updateOrCreate(
+            ['email' => 'teacher@example.com'], // search
+            [
+                'name' => 'teacher',
+                'password' => Hash::make('12345678'), // default password
+                'role' => 'teacher'
+            ]
+        );
     }
 }

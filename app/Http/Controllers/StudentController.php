@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\StudentSubjects;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -12,19 +11,22 @@ class StudentController extends Controller
     {
         $user = auth()->user();
         
-        // Load user with subjects relationship
-        $user->load('studentSubjects');
-        
         return Inertia::render('Student/Dashboard', [
             'user' => $user,
-            'subjects' => $user->studentSubjects,
+            'subjects' => $user->subjects, // This will automatically use your getSubjectsAttribute()
         ]);
     }
 
     public function modules()
     {
+        $user = auth()->user();
+        
+        // If you want subjects with their modules for the modules page
+        $subjects = $user->subjects->load('modules');
+        
         return Inertia::render('Student/Modules', [
-            'user' => auth()->user(),
+            'user' => $user,
+            'subjects' => $subjects,
         ]);
     }
 }

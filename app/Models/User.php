@@ -62,9 +62,20 @@ class User extends Authenticatable
         ];
     }
 
-  // In User.php model
-    public function studentSubjects()
+    //Relationships for sections
+    public function sections()
     {
-        return $this->belongsToMany(Subject::class, 'student_subjects', 'student_id', 'subject_id');
+        return $this->belongsToMany(Section::class, 'student_sections', 'student_id', 'section_id');
     }
+
+    //Method to get all subjects from all sections the student is on
+    public function getSubjectsAttribute()
+    {
+        return Subject::whereHas('sections', function($query) {
+            $query->whereHas('students', function($subQuery) {
+                $subQuery->where('users.id', $this->id);
+            });
+        })->get();
+    }
+
 }
