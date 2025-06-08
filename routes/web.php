@@ -15,7 +15,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Student routes - protected by role:student middleware
     Route::middleware(['role:student'])->prefix('student')->group(function () {
         Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('student.dashboard');
-        Route::get('/modules/{subject_id}', [StudentController::class, 'modules'])->name('student.modules');
+        Route::get('/subject/{subject_id}/modules', [StudentController::class, 'modules'])->name('student.modules');
         // Add more student routes here
     });
     

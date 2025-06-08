@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Subject;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -17,16 +18,16 @@ class StudentController extends Controller
         ]);
     }
 
-    public function modules()
+    public function modules($subject_id)
     {
         $user = auth()->user();
         
-        // If you want subjects with their modules for the modules page
-        $subjects = $user->subjects->load('modules');
-        
+       // Find subject and load its modules
+        $subject = Subject::with('modules')->findOrFail($subject_id);
+
         return Inertia::render('Student/Modules', [
-            'user' => $user,
-            'subjects' => $subjects,
+            'subject' => $subject,
+            'modules' => $subject->modules,
         ]);
     }
 }

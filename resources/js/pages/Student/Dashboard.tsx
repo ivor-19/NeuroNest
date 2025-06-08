@@ -108,7 +108,7 @@ export default function Dashboard({ user, subjects }: StudentDashboardProps) {
 										{studentSubjects.map((subject) => (
 											<Card
 												key={subject.id}
-												onClick={() => router.visit(route('student.modules', { subject: subject.id }))}
+												onClick={() => router.visit(route('student.modules', { subject_id: subject.id }))}
 												className="group hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden"
 											>
 												<div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
