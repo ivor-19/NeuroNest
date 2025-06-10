@@ -8,15 +8,21 @@ class StudentSection extends Model
 {
     use HasFactory;
     
-    protected $fillable = ['student_id', 'section_id'];
+    protected $fillable = [
+        'student_id', 
+        'course_id', 
+        'year_level', 
+        'section', 
+        'academic_year'
+    ];
 
     public function student()
     {
-        return $this->belongsTo(User::class, 'student_id', 'id');
+        return $this->belongsTo(User::class, 'student_id');
     }
 
     public function course()
     {
-        return $this->belongsTo(Course::class, 'course_id', 'id');
+        return $this->belongsTo(Course::class);
     }
 }

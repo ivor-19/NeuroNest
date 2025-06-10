@@ -28,6 +28,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Admin routes - protected by role:admin middleware
     Route::middleware(['role:admin'])->prefix('admin')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+        Route::get('/manageUsers', [AdminController::class, 'manageUsers'])->name('admin.manageUsers');
+        Route::post('/addUser', [AdminController::class, 'store'])->name('admin.addUser');
+        Route::get('/manageStudents', [AdminController::class, 'manageStudents'])->name('admin.manageStudents');
         // Add more admin routes here
     });
 });

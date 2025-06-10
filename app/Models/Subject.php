@@ -11,6 +11,7 @@ class Subject extends Model
 
     protected $fillable = ['code', 'title', 'description', 'isActive'];
 
+    //eto yung tinatawag sa controller/ example: subjects->modules
     public function modules()
     {
         return $this->hasMany(Module::class);

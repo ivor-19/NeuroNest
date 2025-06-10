@@ -10,7 +10,7 @@ class CourseSubject extends Model
     
     protected $fillable = ['course_id', 'subject_id'];
 
-    public function section()
+    public function course()
     {
         return $this->belongsTo(Course::class, 'course_id', 'id');
     }

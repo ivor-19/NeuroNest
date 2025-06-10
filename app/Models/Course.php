@@ -9,10 +9,9 @@ class Course extends Model
     use HasFactory;
     
     protected $fillable = [
+        'code', 
         'name', 
-        'year_level', 
-        'semester', 
-        'school_year', 
+        'description', 
         'isActive'
     ];
 
@@ -22,9 +21,4 @@ class Course extends Model
         return $this->belongsToMany(User::class, 'student_sections', 'course_id', 'student_id');
     }
 
-    // Section has many subjects
-    public function subjects()
-    {
-        return $this->belongsToMany(Subject::class, 'section_subjects', 'section_id', 'subject_id');
-    }
 }

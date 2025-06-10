@@ -71,16 +71,22 @@ class User extends Authenticatable
     //Method to get all subjects from all courses the student is on
     public function getSubjectsAttribute()
     {
+        if (!$this->studentSection) {
+            return collect();
+        }
+    
         return Subject::whereHas('courses', function($query) {
-            $query->whereHas('students', function($subQuery) {
-                $subQuery->where('users.id', $this->id);
-            });
-        })->get();
+                $query->whereHas('students', function($subQuery) {
+                    $subQuery->where('users.id', $this->id);
+                });
+            })
+            ->where('year_level', $this->studentSection->year_level)
+            ->get();
     }
 
     public function studentSection()
     {
-        return $this->hasOne(StudentSection::class);
+        return $this->hasOne(StudentSection::class, 'student_id');
     }
 
 }
