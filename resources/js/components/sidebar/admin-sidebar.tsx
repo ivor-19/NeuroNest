@@ -4,7 +4,7 @@ import { NavUser } from '@/components/built-in-shadcn/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { FileText, GraduationCap, LayoutDashboard, User, UserCog, Users } from 'lucide-react';
+import { BookOpen, FileText, GraduationCap, LayoutDashboard, User, UserCog, Users } from 'lucide-react';
 import AppLogo from '../built-in-shadcn/app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -15,17 +15,22 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Users',
-        href: '/admin/manageUsers',
+        href: '/admin/manage-users',
         icon: UserCog,
     },
     {
+        title: 'Manage Courses',
+        href: '/admin/manage-courses',
+        icon: BookOpen,
+    },
+    {
         title: 'Manage Students',
-        href: '/admin/manageStudents',
+        href: '/admin/manage-students',
         icon: Users,
     },
     {
         title: 'Manage Teachers',
-        href: '/admin/manageTeachers',
+        href: '/admin/manage-teachers',
         icon: GraduationCap,
     },
     {

@@ -13,12 +13,25 @@ return new class extends Migration
             $table->string('name'); // Computer Science
             $table->text('description')->nullable(); 
             $table->boolean('isActive')->default(true);
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent();
+        });
+
+        Schema::create('course_subjects', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('course_id')->constrained('courses')->onDelete('cascade');
+            $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent();
+            
+            // Prevent duplicate subject assignments
+            $table->unique(['course_id', 'subject_id']);
         });
     }
 
     public function down()
     {
         Schema::dropIfExists('courses');
+        Schema::dropIfExists('course_subjects');
     }
 };

@@ -30,11 +30,11 @@ class AuthenticatedSessionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'email' => 'required|string|email',
+            'account_id' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        if (Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
+        if (Auth::attempt($request->only('account_id', 'password'), $request->boolean('remember'))) {
             $request->session()->regenerate();
             
             // Redirect based on user role
@@ -52,8 +52,8 @@ class AuthenticatedSessionController extends Controller
         }
 
         return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
+            'account_id' => 'The provided credentials do not match our records.',
+        ])->onlyInput('account_id');
     }
 
     /**

@@ -7,6 +7,21 @@ import { Input } from "@/components/ui/input"
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
+import { useEffect } from "react"
+
+type StudentProps = {
+  students: {
+    id: number;
+    student_id: number;
+    student_name: string;
+    student_email: string;
+    course_id: number;
+    course_code: string;
+    year_level: number;
+    section: string;
+    academic_year: string;
+  }[];
+}
 
 const sampleStudents = [
   {
@@ -57,79 +72,89 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function ManageStudents() {
-    return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-          <Head title="ManageStudents" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl overflow-x-auto p-8 bg-[var(--bg-main)]">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold tracking-tight">Students Management</h1>
-                  <p className="text-muted-foreground">Manage student accounts, enrollments, and academic records.</p>
-                </div>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Student
-                </Button>
-              </div>
 
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>All Students</CardTitle>
-                    <div className="flex items-center gap-2">
-                      <div className="relative">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="Search students..." className="pl-8 w-64" />
-                      </div>
-                    </div>
+
+export default function ManageStudents({ students } : StudentProps) {
+  useEffect(() => {
+    console.log(students)
+  },[])
+
+  return (
+    <AppLayout breadcrumbs={breadcrumbs}>
+      <Head title="Manage Students" />
+        <div className="flex h-full flex-1 flex-col gap-4 rounded-xl overflow-x-auto p-8 bg-[var(--bg-main)]">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Students Management</h1>
+              <p className="text-muted-foreground">Manage student accounts, enrollments, and academic records.</p>
+            </div>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Student
+            </Button>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>All Students</CardTitle>
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Search students..." className="pl-8 w-64" />
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {sampleStudents.map((student) => (
-                      <div key={student.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center gap-4">
-                          <Avatar>
-                            <AvatarImage src="/placeholder.svg?height=40&width=40" alt={student.name} />
-                        
-                          </Avatar>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium">{student.name}</p>
-                              <Badge variant="outline">{student.studentId}</Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground flex items-center gap-1">
-                              {student.emailVerified ? (
-                                <MailCheck className="h-3 w-3 text-green-500" />
-                              ) : (
-                                <Mail className="h-3 w-3 text-gray-400" />
-                              )}
-                              {student.email}
-                            </p>
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-                              <span>{student.program}</span>
-                              <span>Year {student.yearLevel}</span>
-                              <span>Section {student.section}</span>
-                              <span>GPA: {student.gpa}</span>
-                            </div>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {students.length > 0 ? (
+                  students.map((student) => (
+                    <div
+                      key={student.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div className="flex items-center gap-4">
+                        <Avatar>
+                          <AvatarImage src="" alt={student.student_name} />
+                        </Avatar>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium">{student.student_name}</p>
+                            <Badge variant="outline">{student.student_id}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground flex items-center gap-1">
+                            <MailCheck className="h-3 w-3 text-green-500" />
+                            {student.student_email}
+                          </p>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
+                            <span>{student.course_code}</span>
+                            <span>Year {student.year_level}</span>
+                            <span>Section {student.section}</span>
+                            {/* <span>GPA: {student.gpa}</span> */}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={student.status === "active" ? "default" : "secondary"}>{student.status}</Badge>
-                          <Button variant="outline" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
                       </div>
-                    ))}
+                      <div className="flex items-center gap-2">
+                        {/* <Badge variant={student.status === "active" ? "default" : "secondary"}>{student.status}</Badge> */}
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No student data available. 
                   </div>
-                </CardContent>
-              </Card>
-          </div>
-        </AppLayout>
-    );
+                )}
+              </div>
+            </CardContent>
+          </Card>
+      </div>
+    </AppLayout>
+  );
 }

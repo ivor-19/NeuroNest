@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
 
 type LoginForm = {
-    email: string;
+    account_id: string;
     password: string;
     remember: boolean;
 };
@@ -23,7 +23,7 @@ interface LoginProps {
 
 export default function Login({ status, canResetPassword }: LoginProps) {
     const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
-        email: '',
+        account_id: '',
         password: '',
         remember: false,
     });
@@ -36,25 +36,24 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     };
 
     return (
-        <AuthLayout title="Log in to your account" description="Enter your email and password below to log in">
+        <AuthLayout title="Log in to your account" description="Enter your account ID and password below to log in">
             <Head title="Log in" />
 
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
+                        <Label htmlFor="email">ID</Label>
                         <Input
-                            id="email"
-                            type="email"
+                            id="account_id"
                             required
                             autoFocus
                             tabIndex={1}
-                            autoComplete="email"
-                            value={data.email}
-                            onChange={(e) => setData('email', e.target.value)}
-                            placeholder="email@example.com"
+                            autoComplete="account_id"
+                            value={data.account_id}
+                            onChange={(e) => setData('account_id', e.target.value)}
+                            placeholder="MA#########"
                         />
-                        <InputError message={errors.email} />
+                        <InputError message={errors.account_id} />
                     </div>
 
                     <div className="grid gap-2">

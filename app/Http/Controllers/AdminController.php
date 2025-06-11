@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Models\StudentProfile;
+use App\Models\StudentProfiles;
 use App\Models\Subject;
 use App\Models\User;
 use Hash;
@@ -44,13 +46,15 @@ class AdminController extends Controller
     public function store(Request $request){
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'account_id' => 'required|string|max:255',
+            'email' => 'string|lowercase|email|max:255|unique:'.User::class,
             'role' => 'required|string|in:student,teacher,admin',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user = User::create([
             'name' => $request->name,
+            'account_id' => $request->account_id,
             'email' => $request->email,
             'role' => $request->role,
             'password' => Hash::make($request->password),
@@ -63,6 +67,99 @@ class AdminController extends Controller
 
     // FOR STUDENTS
     public function manageStudents() {
-        return Inertia::render('Admin/ManageStudents', []);
+        $allStudents = StudentProfile::with(['student', 'course'])->get();
+        
+        return Inertia::render('Admin/ManageStudents', [
+            'students' => $allStudents->map(function($student) {
+                return [
+                    'id' => $student->id,
+                    'student_id' => $student->student->account_id,
+                    'student_name' => $student->student->name,
+                    'student_email' => $student->student->email,
+                    'course_id' => $student->course_id,
+                    'course_code' => $student->course->code, 
+                    'year_level' => $student->year_level,
+                    'section' => $student->section,
+                    'academic_year' => $student->academic_year,
+                ];
+            }),
+        ]);
+    }
+
+    // FOR COuRSEs
+    public function manageCourses() {
+        // Get all courses with their related subjects
+        $allCourses = Course::with(['subjects' => function($query) {
+            $query->orderBy('year_level', 'asc')
+                  ->orderBy('semester', 'asc');
+        }])->get();
+    
+        // Get ALL subjects (we'll filter on frontend based on selected course)
+        $allSubjects = Subject::orderBy('year_level', 'asc')
+            ->orderBy('semester', 'asc')
+            ->get();
+        
+        // Transform the data to match your frontend structure
+        $coursesWithSubjects = $allCourses->map(function($course) {
+            return [
+                'id' => $course->id,
+                'name' => $course->name,
+                'code' => $course->code,
+                'description' => $course->description,
+                'isActive' => $course->isActive,
+                'subjects' => $course->subjects->map(function($subject) {
+                    return [
+                        'id' => $subject->id,
+                        'code' => $subject->code,
+                        'title' => $subject->title,
+                        'yearLevel' => $subject->year_level,
+                        'semester' => $subject->semester,
+                    ];
+                })
+            ];
+        });
+    
+        // Transform all subjects data
+        $allSubjectsFormatted = $allSubjects->map(function($subject) {
+            return [
+                'id' => $subject->id,
+                'code' => $subject->code,
+                'title' => $subject->title,
+                'yearLevel' => $subject->year_level,
+                'semester' => $subject->semester,
+            ];
+        });
+    
+        return Inertia::render('Admin/ManageCourses', [
+            'courses' => $coursesWithSubjects,
+            'allSubjects' => $allSubjectsFormatted
+        ]);
+    }
+
+    public function addCourse(Request $request) {
+        $request->validate([
+            'code' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+          
+           ]);
+    
+        Course::create($request->all());
+        return redirect()->back();
+    }
+
+    public function assignSubjectsToCourse(Request $request) {
+        $request->validate([
+            'course_id' => 'required|integer|exists:courses,id',
+            'toAdd' => 'required|array',
+            'toAdd.*' => 'integer|exists:subjects,id',
+        ]);
+    
+        $course = Course::findOrFail($request->course_id);
+        
+        // Only attach new subjects (don't detach any for now)
+        $course->subjects()->syncWithoutDetaching($request->toAdd);
+    
+        return redirect()->back();
     }
 }

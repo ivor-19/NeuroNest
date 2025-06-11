@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'student@example.com'], // search
             [
                 'name' => 'student',
+                'account_id' => 'MA21011504',
                 'password' => Hash::make('12345678'), // default password
             ]
         );
@@ -34,8 +35,19 @@ class DatabaseSeeder extends Seeder
             ['email' => 'teacher@example.com'], // search
             [
                 'name' => 'teacher',
+                'account_id' => 'TA12345678',
                 'password' => Hash::make('12345678'), // default password
                 'role' => 'teacher'
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'admin@example.com'], // search
+            [
+                'name' => 'admin',
+                'account_id' => 'ADMIN123',
+                'password' => Hash::make('12345678'), // default password
+                'role' => 'admin'
             ]
         );
 

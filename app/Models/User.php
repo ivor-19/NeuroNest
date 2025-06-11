@@ -19,6 +19,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'account_id',
         'email',
         'password',
         'role',
@@ -65,7 +66,7 @@ class User extends Authenticatable
     //Relationships for sections
     public function courses()
     {
-        return $this->belongsToMany(Course::class, 'student_sections', 'student_id', 'course_id');
+        return $this->belongsToMany(Course::class, 'student_profiles', 'student_id', 'course_id');
     }
 
     //Method to get all subjects from all courses the student is on
@@ -86,7 +87,7 @@ class User extends Authenticatable
 
     public function studentSection()
     {
-        return $this->hasOne(StudentSection::class, 'student_id');
+        return $this->hasOne(StudentProfile::class, 'student_id');
     }
 
 }

@@ -21,6 +21,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function ManageUsers() {
   const { data, setData, post, processing, errors, reset } = useForm({
     name: "",
+    account_id: "",
     email: "",
     role: "",
     password: "",
@@ -49,7 +50,7 @@ export default function ManageUsers() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Full Name</Label>
                       <Input
@@ -72,6 +73,17 @@ export default function ManageUsers() {
                         required
                       />
                       {errors.email && <span className="text-red-500 text-sm">{errors.email}</span>}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="account_id">Account ID</Label>
+                      <Input
+                        id="account_id"
+                        value={data.account_id}
+                        onChange={(e) => setData('account_id', e.target.value)}
+                        placeholder="Enter account id"
+                        required
+                      />
+                      {errors.account_id && <span className="text-red-500 text-sm">{errors.account_id}</span>}
                     </div>
                   </div>
 

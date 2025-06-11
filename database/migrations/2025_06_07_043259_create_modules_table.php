@@ -17,9 +17,9 @@ return new class extends Migration
             $table->foreignId('creator_id')->constrained('users')->onDelete('cascade');
             $table->string('title');
             $table->text('description');
-            $table->boolean('completed')->default(false);
             $table->boolean('isActive')->default(true);
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent();
         });
     }
 

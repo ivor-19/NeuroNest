@@ -19,7 +19,8 @@ return new class extends Migration
             $table->string('year_level');
             $table->string('semester');
             $table->boolean('isActive')->default(true);
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent();
         });
     }
 

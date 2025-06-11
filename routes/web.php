@@ -28,10 +28,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Admin routes - protected by role:admin middleware
     Route::middleware(['role:admin'])->prefix('admin')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-        Route::get('/manageUsers', [AdminController::class, 'manageUsers'])->name('admin.manageUsers');
-        Route::post('/addUser', [AdminController::class, 'store'])->name('admin.addUser');
-        Route::get('/manageStudents', [AdminController::class, 'manageStudents'])->name('admin.manageStudents');
-        // Add more admin routes here
+        Route::get('/manage-users', [AdminController::class, 'manageUsers'])->name('admin.manageUsers');
+        Route::get('/manage-students', [AdminController::class, 'manageStudents'])->name('admin.manageStudents');
+        Route::get('/manage-courses', [AdminController::class, 'manageCourses'])->name('admin.manageCourses');
+
+        Route::post('/add-user', [AdminController::class, 'store'])->name('admin.addUser');
+        Route::post('/add-course', [AdminController::class, 'addCourse'])->name('admin.addCourse');
+        Route::post('/assign-subjects', [AdminController::class, 'assignSubjectsToCourse'])->name('admin.assignSubjects');
     });
 });
 

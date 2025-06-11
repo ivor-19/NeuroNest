@@ -24,7 +24,7 @@ class Subject extends Model
 
     public function getStudentsAttribute()
     {
-        return User::join('student_sections', 'users.id', '=', 'student_sections.student_id')
+        return User::join('student_profiles', 'users.id', '=', 'student_profiles.student_id')
             ->join('course_subjects', 'course_subjects.section_id', '=', 'course_subjects.section_id')
             ->where('course_subjects.subject_id', $this->id)
             ->select('users.*')
