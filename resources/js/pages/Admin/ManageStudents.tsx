@@ -128,7 +128,7 @@ export default function ManageStudents({ users, students, courses } : ManageStud
         reset();
       },
       onError: (errors) => {
-        console.log(errors)
+        console.error('Error occured', errors)
       }
     })
    

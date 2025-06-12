@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Plus, Edit, Trash2, Search, Minus, Save, X } from "lucide-react"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 type CourseProps = {
   courses: {
@@ -20,6 +21,7 @@ type CourseProps = {
     description: string,
     isActive: number,
     subjects?: {
+      pivotId: number, // Add this - the course_subjects table ID
       id: number,
       code: string,
       title: string,
@@ -46,11 +48,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function ManageCourses({ courses, allSubjects } : CourseProps) {
   const [activeTab, setActiveTab] = useState("view-courses")
   const [selectedCourse, setSelectedCourse] = useState<number | null>(null)
+  const [subjectToRemove, setSubjectToRemove] = useState<number | null>(null)
+  const [deleteCourseOpen, setDeleteCourseOpen] = useState(false)
+  const [removeSubjectOpen, setRemoveSubjectOpen] = useState(false)
   
   // State for managing curriculum changes
   const [curriculumChanges, setCurriculumChanges] = useState<{
     toAdd: number[],
-    toRemove: number[]
+    toRemove: number[] // These will be pivot IDs, not subject IDs
   }>({ toAdd: [], toRemove: [] })
   const [hasChanges, setHasChanges] = useState(false)
 
@@ -60,40 +65,36 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
     description: '',
   })
 
-  // Get current subjects for the selected course
   const getCurrentCourseSubjects = () => {
     if (!selectedCourse) return [];
     
     const course = courses.find(c => c.id === selectedCourse);
     const originalSubjects = course?.subjects || [];
     
-    // Apply pending changes
-    let modifiedSubjects = [...originalSubjects];
-    
-    // Remove subjects that are marked for removal
-    modifiedSubjects = modifiedSubjects.filter(subject => 
-      !curriculumChanges.toRemove.includes(subject.id)
+    // Filter out subjects marked for removal (by pivot ID)
+    let modifiedSubjects = originalSubjects.filter(subject => 
+      !curriculumChanges.toRemove.includes(subject.pivotId)
     );
     
-    // Add subjects that are marked for addition
+    // Add new subjects (these won't have pivot IDs yet)
     const subjectsToAdd = allSubjects.filter(subject => 
       curriculumChanges.toAdd.includes(subject.id)
-    );
-    modifiedSubjects = [...modifiedSubjects, ...subjectsToAdd];
+    ).map(subject => ({
+      ...subject,
+      pivotId: 0 // Temporary value for new subjects
+    }));
     
+    modifiedSubjects = [...modifiedSubjects, ...subjectsToAdd];
     return modifiedSubjects;
   };
 
-  // Get available subjects for the selected course (subjects not in this course)
   const getAvailableSubjects = () => {
     if (!selectedCourse) return [];
-    
     const course = courses.find(c => c.id === selectedCourse);
     if (!course) return allSubjects;
     
     const originalSubjectIds = course.subjects?.map(s => s.id) || [];
     
-    // Filter out subjects that are already in course or marked for addition
     return allSubjects.filter(subject => 
       !originalSubjectIds.includes(subject.id) && 
       !curriculumChanges.toAdd.includes(subject.id) &&
@@ -101,7 +102,6 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
     );
   };
 
-  // Add subject to curriculum (move from available to current)
   const addSubjectToCurriculum = (subjectId: number) => {
     setCurriculumChanges(prev => ({
       ...prev,
@@ -110,66 +110,50 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
     setHasChanges(true);
   };
 
-  // Remove subject from curriculum (move from current to available)
-  const removeSubjectFromCurriculum = (subjectId: number) => {
-    const course = courses.find(c => c.id === selectedCourse);
-    const isOriginalSubject = course?.subjects?.some(s => s.id === subjectId);
-    
-    if (isOriginalSubject) {
-      // If it's an original subject, mark for removal
-      setCurriculumChanges(prev => ({
-        ...prev,
-        toRemove: [...prev.toRemove, subjectId]
-      }));
-    } else {
-      // If it's a newly added subject, remove from toAdd list
-      setCurriculumChanges(prev => ({
-        ...prev,
-        toAdd: prev.toAdd.filter(id => id !== subjectId)
-      }));
-    }
-    setHasChanges(true);
+  const [selectedSubject, setSelectedSubject] = useState(0);
+  const confirmRemoveSubject = async () => {
+    router.delete(route('admin.removeSubject', selectedSubject), {
+      onSuccess: () => {
+        setSelectedSubject(0)
+        setRemoveSubjectOpen(false);
+      },
+      onError: (errors) => {
+        console.error('Error occured', errors)
+        setRemoveSubjectOpen(false);
+      }
+    })
+    console.log(selectedSubject)
   };
 
-  // Save curriculum changes (only additions for now)
   const saveCurriculumChanges = () => {
-    if (!selectedCourse || curriculumChanges.toAdd.length === 0) {
-      console.log('No course selected or no subjects to add');
+    if (!selectedCourse || (curriculumChanges.toAdd.length === 0 && curriculumChanges.toRemove.length === 0)) {
+      console.log('No course selected or no changes to save');
       return;
     }
-
+  
     const payload = {
       course_id: selectedCourse,
-      toAdd: curriculumChanges.toAdd,
+      toAdd: curriculumChanges.toAdd,     // Subject IDs to add
+      toRemove: curriculumChanges.toRemove // Pivot IDs to remove
     };
-
-    console.log('Saving changes:', payload);
-
-    // Using router.post instead of form
+  
     router.post(route('admin.assignSubjects'), payload, {
       onSuccess: () => {
-        // Reset changes state
         setCurriculumChanges({ toAdd: [], toRemove: [] });
         setHasChanges(false);
-        
-        console.log('Subjects added successfully!');
+        console.log('Curriculum updated successfully!');
       },
       onError: (errors) => {
         console.error('Error saving curriculum changes:', errors);
-        console.log('Current selectedCourse:', selectedCourse);
-        console.log('Current toAdd:', curriculumChanges.toAdd);
-        console.log('Available courses:', courses.map(c => ({ id: c.id, name: c.name })));
       }
     });
   };
 
-  // Cancel curriculum changes
   const cancelCurriculumChanges = () => {
     setCurriculumChanges({ toAdd: [], toRemove: [] });
     setHasChanges(false);
   };
 
-  // Reset changes when course selection changes
   const handleCourseChange = (courseId: string) => {
     if (hasChanges) {
       if (confirm('You have unsaved changes. Do you want to discard them?')) {
@@ -184,14 +168,27 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
  
   const handleAddCourse = async (e: React.FormEvent) => {
     e.preventDefault()
-
     post(route('admin.addCourse'), {
       onSuccess: () => {
         reset();
-        
+      },
+      onError: (errors) => {
+        console.error('Error occured', errors)
       }
     })
-   
+  }
+
+  const [selectedCourseId, setSelectedCourseId] = useState(0)
+  const handleDeleteCourse = async () =>{
+    router.delete(route('admin.deleteCourse', selectedCourseId), {
+      onSuccess: () => {
+        setSelectedCourseId(0);
+        setDeleteCourseOpen(false);
+      },
+      onError: (errors) => {
+        console.error('Error occured', errors)
+      }
+    })
   }
 
   return (
@@ -250,7 +247,7 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
                             <Button variant="outline" size="sm">
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" onClick={() => {setDeleteCourseOpen(true), setSelectedCourseId(course.id)}}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
@@ -443,36 +440,37 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
                         <CardContent>
                           <div className="space-y-4">
                             {getCurrentCourseSubjects().length > 0 ? (
-                              getCurrentCourseSubjects().map((subject) => {
-                                const isNewlyAdded = curriculumChanges.toAdd.includes(subject.id);
-                                const isMarkedForRemoval = curriculumChanges.toRemove.includes(subject.id);
-                                
-                                return (
-                                  <div 
-                                    key={subject.id} 
-                                    className={`flex items-center justify-between p-3 border rounded ${
-                                      isNewlyAdded ? 'border-green-200 bg-green-100' : 
-                                      isMarkedForRemoval ? 'border-red-300 bg-red-50 opacity-50' : ''
-                                    }`}
-                                  >
-                                    <div>
-                                      <p className="font-medium text-sm text-zinc-900">{subject.title}</p>
-                                      <p className="text-xs text-muted-foreground">
-                                        {subject.code} • Year {subject.yearLevel} • Semester {subject.semester}
-                                        {isNewlyAdded && <span className="text-green-600 ml-2">(New)</span>}
-                                        {isMarkedForRemoval && <span className="text-red-600 ml-2">(To be removed)</span>}
-                                      </p>
-                                    </div>
-                                    <Button 
-                                      size="sm" 
-                                      variant="outline"
-                                      onClick={() => removeSubjectFromCurriculum(subject.id)}
-                                    >
-                                      <Minus className="h-4 w-4" />
-                                    </Button>
+                             getCurrentCourseSubjects().map((subject) => {
+                              const isNewlyAdded = curriculumChanges.toAdd.includes(subject.id);
+                              const isMarkedForRemoval = curriculumChanges.toRemove.includes(subject.pivotId);
+                              
+                              return (
+                                <div 
+                                  key={`${subject.id}-${subject.pivotId}`} // Better key for React
+                                  className={`flex items-center justify-between p-3 border rounded ${
+                                    isNewlyAdded ? 'border-green-200 bg-green-100' : 
+                                    isMarkedForRemoval ? 'border-red-300 bg-red-50 opacity-50' : ''
+                                  }`}
+                                >
+                                  <div>
+                                    <p className="font-medium text-sm text-zinc-900">{subject.title}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {subject.code} • Year {subject.yearLevel} • Semester {subject.semester}
+                                      {isNewlyAdded && <span className="text-green-600 ml-2">(New)</span>}
+                                      {isMarkedForRemoval && <span className="text-red-600 ml-2">(To be removed)</span>}
+                                    </p>
                                   </div>
-                                );
-                              })
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => {setRemoveSubjectOpen(true), setSelectedSubject(subject.pivotId)}}
+                                    disabled={isMarkedForRemoval}
+                                  >
+                                    <Minus className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              );
+                            })
                             ) : (
                               <p className="text-sm text-muted-foreground">
                                 No subjects assigned to this course yet.
@@ -488,7 +486,44 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
             </TabsContent>
           </Tabs>
         </div>
-    </div>
-   </AppLayout>
+        <AlertDialog open={removeSubjectOpen} onOpenChange={setRemoveSubjectOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove subject from curriculum?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will remove the subject from this course's curriculum. 
+                {subjectToRemove && (
+                  <>
+                    <br />
+                    <span className="font-medium">
+                      Subject: {allSubjects.find(s => s.id === subjectToRemove)?.title}
+                    </span>
+                  </>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmRemoveSubject}>Remove</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={deleteCourseOpen} onOpenChange={setDeleteCourseOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure you want to delete this course?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will affect other data. Delete it anyway? 
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteCourse}>Remove</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </AppLayout>
   )
 }

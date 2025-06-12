@@ -3,7 +3,7 @@
 import type React from "react"
 
 import type { BreadcrumbItem } from "@/types"
-import { Head, useForm } from "@inertiajs/react"
+import { Head, router, useForm } from "@inertiajs/react"
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import {
   Plus,
   Edit,
@@ -112,8 +113,8 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
         setShowAddForm(false)
         console.log("Success: ", subjectData)
       },
-      onError: (error) => {
-        console.log(error)
+      onError: (errors) => {
+        console.error('Error occured', errors)
       },
     })
   }
@@ -126,8 +127,8 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
         setShowAddForm(false)
         console.log("Success: ", moduleData)
       },
-      onError: (error) => {
-        console.log(error)
+      onError: (errors) => {
+        console.error('Error occured', errors)
       },
     })
   }
@@ -153,10 +154,40 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
   const publishedModules = allModules.filter((m) => m.status === "published").length
   const activeSubjects = subjects.filter((s) => s.isActive).length
 
+
+  const [removeModuleOpen, setRemoveModuleOpen] = useState(false)
+  const [deleteSubjectOpen, setDeleteSubjectOpen] = useState(false)
+
+  const [subjectId, setSubjectId] = useState(0)
+  const handleDeleteSubject = async () => {
+    router.delete(route('admin.deleteSubject', subjectId), {
+      onSuccess: () => {
+        setDeleteSubjectOpen(false)
+      },
+      onError: (errors) => {
+        console.error('Error occured', errors)
+        setDeleteSubjectOpen(false)
+      }
+    })
+  }
+
+  const [moduleId, setModuleId] = useState(0)
+  const confirmRemoveModule = async () => {
+    router.delete(route('admin.deleteModule', moduleId), {
+      onSuccess: () => {
+        setRemoveModuleOpen(false)
+      },
+      onError: (errors) => {
+        console.error('Error occured', errors)
+        setRemoveModuleOpen(false)
+      }
+    })
+  }
+
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Subject Management" />
-      <div className="flex h-full flex-1 flex-col gap-6 rounded-xl overflow-x-auto p-8">
+      <div className="flex h-full flex-1 flex-col gap-6 rounded-xl overflow-x-auto p-8 bg-[var(--bg-main)]">
         {/* Header Section */}
         <div className="flex flex-col space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Subject Management</h1>
@@ -201,402 +232,438 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
         </div>
 
         {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search subjects and modules..."
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+        <Card>
+          <CardContent className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search subjects and modules..."
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="modules" className="flex items-center gap-2" onClick={() => setShowAddForm(false)}>
-              <Layers className="h-4 w-4" />
-              Modules
-            </TabsTrigger>
-            <TabsTrigger value="subjects" className="flex items-center gap-2" onClick={() => setShowAddForm(false)}>
-              <BookOpen className="h-4 w-4" />
-              Subjects
-            </TabsTrigger>
-          </TabsList>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-2">
+              <TabsList className="grid w-full grid-cols-2 bg-[var(--bg-main-2)]">
+                <TabsTrigger value="modules" className="flex items-center gap-2" onClick={() => setShowAddForm(false)}>
+                  <Layers className="h-4 w-4" />
+                  Modules
+                </TabsTrigger>
+                <TabsTrigger value="subjects" className="flex items-center gap-2" onClick={() => setShowAddForm(false)}>
+                  <BookOpen className="h-4 w-4" />
+                  Subjects
+                </TabsTrigger>
+              </TabsList>
 
-          {/* MODULES TAB */}
-          <TabsContent value="modules" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Layers className="h-5 w-5" />
-                      Learning Modules
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">Manage and organize your course modules</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-                      <SelectTrigger className="min-w-48">
-                        <Filter className="h-4 w-4 mr-2" />
-                        <SelectValue placeholder="Filter by subject" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Subjects</SelectItem>
-                        {subjects.map((subject) => (
-                          <SelectItem key={subject.code} value={subject.code}>
-                            {subject.code} - {subject.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button onClick={() => setShowAddForm(!showAddForm)}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Module
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-6">
-                {/* Add Module Form */}
-                {showAddForm && (
-                  <>
-                    <div className="space-y-4 p-6 border rounded-lg bg-muted/50">
+              {/* MODULES TAB */}
+              <TabsContent value="modules" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <Layers className="h-5 w-5" />
+                          Learning Modules
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1">Manage and organize your course modules</p>
+                      </div>
                       <div className="flex items-center gap-2">
-                        <Plus className="h-4 w-4" />
-                        <h3 className="font-semibold">Add New Module</h3>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="module-title">Module Title</Label>
-                          <Input
-                            id="module-title"
-                            value={moduleData.title}
-                            onChange={(e) => setModuleData("title", e.target.value)}
-                            placeholder="Enter module title"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="module-subject">Subject</Label>
-                          <Select
-                            value={moduleData.subject_id}
-                            onValueChange={(value) => setModuleData("subject_id", value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select subject" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {subjects.map((subject) => (
-                                <SelectItem key={subject.id} value={String(subject.id)}>
-                                  {subject.code} - {subject.title}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2 md:col-span-2">
-                          <Label htmlFor="module-description">Description</Label>
-                          <Textarea
-                            id="module-description"
-                            value={moduleData.description}
-                            onChange={(e) => setModuleData("description", e.target.value)}
-                            placeholder="Describe the module content and objectives"
-                            rows={3}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="module-order">Module Order</Label>
-                          <Input
-                            id="module-order"
-                            type="number"
-                            value={moduleData.order}
-                            onChange={(e) => setModuleData("order", e.target.value)}
-                            placeholder="1, 2, 3..."
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="module-status">Status</Label>
-                          <Select value={moduleData.status} onValueChange={(value) => setModuleData("status", value)}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="published">Published</SelectItem>
-                              <SelectItem value="draft">Draft</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2 md:col-span-2">
-                          <Label htmlFor="module-file">PDF File</Label>
-                          <Input id="module-file" type="file" accept=".pdf" />
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button onClick={handleAddModule} disabled={moduleProcessing}>
-                          {moduleProcessing ? "Creating..." : "Create Module"}
-                        </Button>
-                        <Button variant="outline" onClick={() => setShowAddForm(false)}>
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                    <Separator />
-                  </>
-                )}
-
-                {/* Modules List */}
-                <div className="space-y-4">
-                  {filteredModules.length > 0 ? (
-                    filteredModules.map((module) => {
-                      const subject = subjects.find((s) => s.id === module.subject_id)
-                      return (
-                        <div key={module.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
-                          <div className="flex items-start justify-between">
-                            <div className="space-y-2 flex-1">
-                              <div className="flex items-center gap-2">
-                                <h3 className="font-semibold">{module.title}</h3>
-                                {subject && <Badge variant="outline">{subject.code}</Badge>}
-                                <Badge variant="secondary">Module {module.order}</Badge>
-                                <Badge variant={module.status === "published" ? "default" : "secondary"}>
-                                  {module.status}
-                                </Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground">{module.description}</p>
-                              {subject && (
-                                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                  <span className="flex items-center gap-1">
-                                    <GraduationCap className="h-3 w-3" />
-                                    Year {subject.year_level}
-                                  </span>
-                                  <span className="flex items-center gap-1">
-                                    <Calendar className="h-3 w-3" />
-                                    Semester {subject.semester}
-                                  </span>
-                                  <span className="flex items-center gap-1">
-                                    <BookOpen className="h-3 w-3" />
-                                    {subject.title}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Button variant="ghost" size="sm">
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })
-                  ) : (
-                    <div className="text-center py-12">
-                      <Layers className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">No modules found</h3>
-                      <p className="text-muted-foreground mb-4">
-                        {searchQuery
-                          ? "Try adjusting your search terms"
-                          : "Create your first learning module to get started"}
-                      </p>
-                      {!searchQuery && (
-                        <Button onClick={() => setShowAddForm(true)}>
+                        <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+                          <SelectTrigger className="min-w-48">
+                            <Filter className="h-4 w-4 mr-2" />
+                            <SelectValue placeholder="Filter by subject" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Subjects</SelectItem>
+                            {subjects.map((subject) => (
+                              <SelectItem key={subject.code} value={subject.code}>
+                                {subject.code} - {subject.title}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button onClick={() => setShowAddForm(!showAddForm)}>
                           <Plus className="h-4 w-4 mr-2" />
                           Add Module
                         </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="space-y-6">
+                    {/* Add Module Form */}
+                    {showAddForm && (
+                      <>
+                        <div className="space-y-4 p-6 border rounded-lg bg-muted/50">
+                          <div className="flex items-center gap-2">
+                            <Plus className="h-4 w-4" />
+                            <h3 className="font-semibold">Add New Module</h3>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="module-title">Module Title</Label>
+                              <Input
+                                id="module-title"
+                                value={moduleData.title}
+                                onChange={(e) => setModuleData("title", e.target.value)}
+                                placeholder="Enter module title"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="module-subject">Subject</Label>
+                              <Select
+                                value={moduleData.subject_id}
+                                onValueChange={(value) => setModuleData("subject_id", value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select subject" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {subjects.map((subject) => (
+                                    <SelectItem key={subject.id} value={String(subject.id)}>
+                                      {subject.code} - {subject.title}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
+                              <Label htmlFor="module-description">Description</Label>
+                              <Textarea
+                                id="module-description"
+                                value={moduleData.description}
+                                onChange={(e) => setModuleData("description", e.target.value)}
+                                placeholder="Describe the module content and objectives"
+                                rows={3}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="module-order">Module Order</Label>
+                              <Input
+                                id="module-order"
+                                type="number"
+                                value={moduleData.order}
+                                onChange={(e) => setModuleData("order", e.target.value)}
+                                placeholder="1, 2, 3..."
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="module-status">Status</Label>
+                              <Select value={moduleData.status} onValueChange={(value) => setModuleData("status", value)}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="published">Published</SelectItem>
+                                  <SelectItem value="draft">Draft</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
+                              <Label htmlFor="module-file">PDF File</Label>
+                              <Input id="module-file" type="file" accept=".pdf" />
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button onClick={handleAddModule} disabled={moduleProcessing}>
+                              {moduleProcessing ? "Creating..." : "Create Module"}
+                            </Button>
+                            <Button variant="outline" onClick={() => setShowAddForm(false)}>
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                        <Separator />
+                      </>
+                    )}
+
+                    {/* Modules List */}
+                    <div className="space-y-4">
+                      {filteredModules.length > 0 ? (
+                        filteredModules.map((module) => {
+                          const subject = subjects.find((s) => s.id === module.subject_id)
+                          return (
+                            <div key={module.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                              <div className="flex items-start justify-between">
+                                <div className="space-y-2 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <h3 className="font-semibold">{module.title}</h3>
+                                    {subject && <Badge variant="outline">{subject.code}</Badge>}
+                                    <Badge variant="secondary">Module {module.order}</Badge>
+                                    <Badge variant={module.status === "published" ? "default" : "secondary"}>
+                                      {module.status}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">{module.description}</p>
+                                  {subject && (
+                                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                      <span className="flex items-center gap-1">
+                                        <GraduationCap className="h-3 w-3" />
+                                        Year {subject.year_level}
+                                      </span>
+                                      <span className="flex items-center gap-1">
+                                        <Calendar className="h-3 w-3" />
+                                        Semester {subject.semester}
+                                      </span>
+                                      <span className="flex items-center gap-1">
+                                        <BookOpen className="h-3 w-3" />
+                                        {subject.title}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Button variant="ghost" size="sm">
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" onClick={() => {setRemoveModuleOpen(true), setModuleId(module.id)}}>
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })
+                      ) : (
+                        <div className="text-center py-12">
+                          <Layers className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                          <h3 className="text-lg font-semibold mb-2">No modules found</h3>
+                          <p className="text-muted-foreground mb-4">
+                            {searchQuery
+                              ? "Try adjusting your search terms"
+                              : "Create your first learning module to get started"}
+                          </p>
+                          {!searchQuery && (
+                            <Button onClick={() => setShowAddForm(true)}>
+                              <Plus className="h-4 w-4 mr-2" />
+                              Add Module
+                            </Button>
+                          )}
+                        </div>
                       )}
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-          {/* SUBJECTS TAB */}
-          <TabsContent value="subjects" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <BookOpen className="h-5 w-5" />
-                      Academic Subjects
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">Organize your curriculum and course structure</p>
-                  </div>
-                  <Button onClick={() => setShowAddForm(!showAddForm)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Subject
-                  </Button>
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-6">
-                {/* Add Subject Form */}
-                {showAddForm && (
-                  <>
-                    <div className="space-y-4 p-6 border rounded-lg bg-muted/50">
-                      <div className="flex items-center gap-2">
-                        <Plus className="h-4 w-4" />
-                        <h3 className="font-semibold">Add New Subject</h3>
+              {/* SUBJECTS TAB */}
+              <TabsContent value="subjects" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <BookOpen className="h-5 w-5" />
+                          Academic Subjects
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1">Organize your curriculum and course structure</p>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="subject-code">Subject Code</Label>
-                          <Input
-                            id="subject-code"
-                            value={subjectData.code}
-                            onChange={(e) => setSubjectData("code", e.target.value)}
-                            placeholder="e.g. CS101, MATH201"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="subject-title">Subject Title</Label>
-                          <Input
-                            id="subject-title"
-                            value={subjectData.title}
-                            onChange={(e) => setSubjectData("title", e.target.value)}
-                            placeholder="Enter subject title"
-                          />
-                        </div>
-                        <div className="space-y-2 md:col-span-2">
-                          <Label htmlFor="subject-description">Description</Label>
-                          <Textarea
-                            id="subject-description"
-                            value={subjectData.description}
-                            onChange={(e) => setSubjectData("description", e.target.value)}
-                            placeholder="Describe the subject objectives and content"
-                            rows={3}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="subject-year">Year Level</Label>
-                          <Select
-                            value={subjectData.year_level}
-                            onValueChange={(value) => setSubjectData("year_level", value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select year" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="1">1st Year</SelectItem>
-                              <SelectItem value="2">2nd Year</SelectItem>
-                              <SelectItem value="3">3rd Year</SelectItem>
-                              <SelectItem value="4">4th Year</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="subject-semester">Semester</Label>
-                          <Select
-                            value={subjectData.semester}
-                            onValueChange={(value) => setSubjectData("semester", value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select semester" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="1">1st Semester</SelectItem>
-                              <SelectItem value="2">2nd Semester</SelectItem>
-                              <SelectItem value="3">Summer</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2 md:col-span-2">
-                          <Label htmlFor="subject-status">Status</Label>
-                          <Select
-                            value={subjectData.isActive}
-                            onValueChange={(value) => setSubjectData("isActive", value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="1">Active</SelectItem>
-                              <SelectItem value="0">Inactive</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button onClick={handleAddSubject} disabled={subjectProcessing}>
-                          {subjectProcessing ? "Creating..." : "Create Subject"}
-                        </Button>
-                        <Button variant="outline" onClick={() => setShowAddForm(false)}>
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                    <Separator />
-                  </>
-                )}
-
-                {/* Subjects List */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {filteredSubjects.map((subject) => (
-                    <Card key={subject.id} className="hover:bg-muted/50 transition-colors">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="space-y-1">
-                            <h3 className="font-semibold">{subject.title}</h3>
-                            <p className="text-sm text-muted-foreground">{subject.code}</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="sm">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-
-                        <p className="text-sm text-muted-foreground mb-4">{subject.description}</p>
-
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline">Year {subject.year_level}</Badge>
-                            <Badge variant="outline">Sem {subject.semester}</Badge>
-                            <Badge variant={subject.isActive ? "default" : "secondary"}>
-                              {subject.isActive ? "Active" : "Inactive"}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <BookOpen className="h-4 w-4" />
-                            {(subject.modules || []).length} modules
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-
-                {filteredSubjects.length === 0 && (
-                  <div className="text-center py-12">
-                    <BookOpen className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No subjects found</h3>
-                    <p className="text-muted-foreground mb-4">
-                      {searchQuery
-                        ? "Try adjusting your search terms"
-                        : "Create your first subject to start building your curriculum"}
-                    </p>
-                    {!searchQuery && (
-                      <Button onClick={() => setShowAddForm(true)}>
+                      <Button onClick={() => setShowAddForm(!showAddForm)}>
                         <Plus className="h-4 w-4 mr-2" />
                         Add Subject
                       </Button>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="space-y-6">
+                    {/* Add Subject Form */}
+                    {showAddForm && (
+                      <>
+                        <div className="space-y-4 p-6 border rounded-lg bg-muted/50">
+                          <div className="flex items-center gap-2">
+                            <Plus className="h-4 w-4" />
+                            <h3 className="font-semibold">Add New Subject</h3>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="subject-code">Subject Code</Label>
+                              <Input
+                                id="subject-code"
+                                value={subjectData.code}
+                                onChange={(e) => setSubjectData("code", e.target.value)}
+                                placeholder="e.g. CS101, MATH201"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="subject-title">Subject Title</Label>
+                              <Input
+                                id="subject-title"
+                                value={subjectData.title}
+                                onChange={(e) => setSubjectData("title", e.target.value)}
+                                placeholder="Enter subject title"
+                              />
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
+                              <Label htmlFor="subject-description">Description</Label>
+                              <Textarea
+                                id="subject-description"
+                                value={subjectData.description}
+                                onChange={(e) => setSubjectData("description", e.target.value)}
+                                placeholder="Describe the subject objectives and content"
+                                rows={3}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="subject-year">Year Level</Label>
+                              <Select
+                                value={subjectData.year_level}
+                                onValueChange={(value) => setSubjectData("year_level", value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select year" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="1">1st Year</SelectItem>
+                                  <SelectItem value="2">2nd Year</SelectItem>
+                                  <SelectItem value="3">3rd Year</SelectItem>
+                                  <SelectItem value="4">4th Year</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="subject-semester">Semester</Label>
+                              <Select
+                                value={subjectData.semester}
+                                onValueChange={(value) => setSubjectData("semester", value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select semester" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="1">1st Semester</SelectItem>
+                                  <SelectItem value="2">2nd Semester</SelectItem>
+                                  <SelectItem value="3">Summer</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
+                              <Label htmlFor="subject-status">Status</Label>
+                              <Select
+                                value={subjectData.isActive}
+                                onValueChange={(value) => setSubjectData("isActive", value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="1">Active</SelectItem>
+                                  <SelectItem value="0">Inactive</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button onClick={handleAddSubject} disabled={subjectProcessing}>
+                              {subjectProcessing ? "Creating..." : "Create Subject"}
+                            </Button>
+                            <Button variant="outline" onClick={() => setShowAddForm(false)}>
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                        <Separator />
+                      </>
                     )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+
+                    {/* Subjects List */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {filteredSubjects.map((subject) => (
+                        <Card key={subject.id} className="hover:bg-muted/50 transition-colors">
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="space-y-1">
+                                <h3 className="font-semibold">{subject.title}</h3>
+                                <p className="text-sm text-muted-foreground">{subject.code}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button variant="ghost" size="sm">
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={() => {setDeleteSubjectOpen(true), setSubjectId(subject.id)}}>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            <p className="text-sm text-muted-foreground mb-4">{subject.description}</p>
+
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline">Year {subject.year_level}</Badge>
+                                <Badge variant="outline">Sem {subject.semester}</Badge>
+                                <Badge variant={subject.isActive ? "default" : "secondary"}>
+                                  {subject.isActive ? "Active" : "Inactive"}
+                                </Badge>
+                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                  <BookOpen className="h-4 w-4" />
+                                  {(subject.modules || []).length} modules
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer">
+                                View all
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+
+                    {filteredSubjects.length === 0 && (
+                      <div className="text-center py-12">
+                        <BookOpen className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                        <h3 className="text-lg font-semibold mb-2">No subjects found</h3>
+                        <p className="text-muted-foreground mb-4">
+                          {searchQuery
+                            ? "Try adjusting your search terms"
+                            : "Create your first subject to start building your curriculum"}
+                        </p>
+                        {!searchQuery && (
+                          <Button onClick={() => setShowAddForm(true)}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Subject
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+        <AlertDialog open={removeModuleOpen} onOpenChange={setRemoveModuleOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove module from subject?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will remove the module from a subject. 
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmRemoveModule}>Remove</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={deleteSubjectOpen} onOpenChange={setDeleteSubjectOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure you want to delete this subject?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will affect other data. Delete it anyway? 
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteSubject}>Remove</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AppLayout>
   )

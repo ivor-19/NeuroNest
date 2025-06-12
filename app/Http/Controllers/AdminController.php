@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Models\CourseSubject;
 use App\Models\Module;
 use App\Models\StudentProfile;
 use App\Models\StudentProfiles;
@@ -105,55 +106,60 @@ class AdminController extends Controller
            ]);
     
         StudentProfile::create($request->all());
-        return redirect()->back();
+        return redirect()->back()->with('success',`Successfully assigned a student to a section`);
     }
 
     // FOR COuRSEs
     public function manageCourses() {
-        // Get all courses with their related subjects
-        $allCourses = Course::with(['subjects' => function($query) {
+        // Get all courses
+        $courses = Course::all();
+        
+        // Get course-subject relationships with related data
+        $courseSubjects = CourseSubject::with(['course', 'subject' => function($query) {
             $query->orderBy('year_level', 'asc')
                   ->orderBy('semester', 'asc');
         }])->get();
-    
-        // Get ALL subjects (we'll filter on frontend based on selected course)
-        $allSubjects = Subject::orderBy('year_level', 'asc')
-            ->orderBy('semester', 'asc')
-            ->get();
         
-        $coursesWithSubjects = $allCourses->map(function($course) {
+        // Group by course and include pivot ID
+        $coursesWithSubjects = $courses->map(function($course) use ($courseSubjects) {
+            $subjects = $courseSubjects->where('course_id', $course->id)->map(function($courseSubject) {
+                return [
+                    'pivotId' => $courseSubject->id, // This is the course_subjects table ID
+                    'id' => $courseSubject->subject->id,
+                    'code' => $courseSubject->subject->code,
+                    'title' => $courseSubject->subject->title,
+                    'yearLevel' => $courseSubject->subject->year_level,
+                    'semester' => $courseSubject->subject->semester,
+                ];
+            })->values(); // Reset array keys
+            
             return [
                 'id' => $course->id,
                 'name' => $course->name,
                 'code' => $course->code,
                 'description' => $course->description,
                 'isActive' => $course->isActive,
-                'subjects' => $course->subjects->map(function($subject) {
-                    return [
-                        'id' => $subject->id,
-                        'code' => $subject->code,
-                        'title' => $subject->title,
-                        'yearLevel' => $subject->year_level,
-                        'semester' => $subject->semester,
-                    ];
-                })
+                'subjects' => $subjects
             ];
         });
-    
-        // Transform all subjects data
-        $allSubjectsFormatted = $allSubjects->map(function($subject) {
-            return [
-                'id' => $subject->id,
-                'code' => $subject->code,
-                'title' => $subject->title,
-                'yearLevel' => $subject->year_level,
-                'semester' => $subject->semester,
-            ];
-        });
+        
+        // Get all subjects for assignment
+        $allSubjects = Subject::orderBy('year_level', 'asc')
+            ->orderBy('semester', 'asc')
+            ->get()
+            ->map(function($subject) {
+                return [
+                    'id' => $subject->id,
+                    'code' => $subject->code,
+                    'title' => $subject->title,
+                    'yearLevel' => $subject->year_level,
+                    'semester' => $subject->semester,
+                ];
+            });
     
         return Inertia::render('Admin/ManageCourses', [
             'courses' => $coursesWithSubjects,
-            'allSubjects' => $allSubjectsFormatted
+            'allSubjects' => $allSubjects
         ]);
     }
 
@@ -166,7 +172,15 @@ class AdminController extends Controller
            ]);
     
         Course::create($request->all());
-        return redirect()->back();
+        return redirect()->back()->with('success',`Successfully added a course`);
+    }
+
+    public function deleteCourse($id)
+    {
+        $course = Course::findOrFail($id);
+        $course->delete();
+
+        return redirect()->back()->with('success',`Deleted a course`);
     }
 
     public function assignSubjectsToCourse(Request $request) {
@@ -181,7 +195,15 @@ class AdminController extends Controller
         // Only attach new subjects (don't detach any for now)
         $course->subjects()->syncWithoutDetaching($request->toAdd);
     
-        return redirect()->back();
+        return redirect()->back()->with('success',`Successfully assign a subject to a course`);
+    }
+
+    public function removeSubjectFromACourse($id)
+    {
+        $subject = CourseSubject::findOrFail($id);
+        $subject->delete();
+
+        return redirect()->back()->with('success',`Remove a subject from a course`);
     }
 
     //FOR SUBJECTS
@@ -217,8 +239,6 @@ class AdminController extends Controller
         ]);
     }
 
-
-
     public function addSubject(Request $request){
         $request->validate([
             'code' => 'required|string|max:255',
@@ -232,7 +252,14 @@ class AdminController extends Controller
            ]);
     
         Subject::create($request->all());
-        return redirect()->back();
+        return redirect()->back()->with('success',`Successfully added a subject`);
+    }
+
+    public function deleteSubject($id){
+        $subject = Subject::findOrFail($id);  
+        $subject->delete();
+
+        return redirect()->back()->with('success','Deleted a subject');
     }
 
     public function addModule(Request $request){
@@ -248,6 +275,13 @@ class AdminController extends Controller
            ]);
     
         Module::create($request->all());
-        return redirect()->back();
+        return redirect()->back()->with('success',`Successfully added a module`);
+    }
+
+    public function deleteModule($id){
+        $module = Module::findOrFail($id);  
+        $module->delete();
+
+        return redirect()->back()->with('success','Deleted a module');
     }
 }

@@ -39,6 +39,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/assign-subjects', [AdminController::class, 'assignSubjectsToCourse'])->name('admin.assignSubjects');
         Route::post('/add-subject', [AdminController::class, 'addSubject'])->name('admin.addSubject');
         Route::post('/add-module', [AdminController::class, 'addModule'])->name('admin.addModule');
+
+        Route::delete('/delete-course/{id}', [AdminController::class, 'deleteCourse'])->name('admin.deleteCourse');
+        Route::delete('/remove-subject/{id}', [AdminController::class, 'removeSubjectFromACourse'])->name('admin.removeSubject');
+        Route::delete('/delete-subject/{id}', [AdminController::class, 'deleteSubject'])->name('admin.deleteSubject');
+        Route::delete('/delete-module/{id}', [AdminController::class, 'deleteModule'])->name('admin.deleteModule');
     });
 });
 

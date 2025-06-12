@@ -33,7 +33,7 @@ export default function ManageUsers() {
     post(route('admin.addUser'), {
       onSuccess: () => {
         reset()
-        // Optionally add a success message here
+      
       }
     })
   }
