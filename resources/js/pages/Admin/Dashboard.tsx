@@ -75,7 +75,7 @@ export default function Dashboard({ authUser, users, roleCounts, subjectsCount, 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
           <Head title="Dashboard" />
-          <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-8 overflow-x-auto bg-[var(--bg-main)]">
+          <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-8 overflow-x-auto ">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -187,10 +187,10 @@ export default function Dashboard({ authUser, users, roleCounts, subjectsCount, 
                           >
                           <action.icon className="h-4 w-4" />
                          </div>
-                         <div className="text-left">
-                           <p className="font-medium text-sm">{action.title}</p>
-                           <p className="text-xs text-muted-foreground">{action.description}</p>
-                         </div>
+                         <div className="text-left w-full break-words">
+                          <p className="font-medium text-sm break-words">{action.title}</p>
+                          <p className="text-xs text-muted-foreground break-words">{action.description}</p>
+                        </div>
                        </div>
                      </Button>
                     ))}

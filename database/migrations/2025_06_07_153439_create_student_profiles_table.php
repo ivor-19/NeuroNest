@@ -19,8 +19,7 @@ return new class extends Migration
             
             // Prevent duplicate enrollments
             $table->unique(
-                ['student_id', 'course_id', 'year_level', 'academic_year'],
-                'student_course_year_unique'
+                ['student_id']
             );
         });
     }

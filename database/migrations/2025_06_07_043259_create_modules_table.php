@@ -17,9 +17,15 @@ return new class extends Migration
             $table->foreignId('creator_id')->constrained('users')->onDelete('cascade');
             $table->string('title');
             $table->text('description');
-            $table->boolean('isActive')->default(true);
+            $table->enum('status', ['published', 'draft'])->default('draft');
+            $table->integer('order'); 
+            $table->json('materials')->nullable(); // Store multiple materials in a flexible format
+            $table->string('pdf')->nullable(); // Optional standalone PDF
             $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
+            $table->timestamp(column: 'updated_at')->useCurrent();
+
+            // Add unique constraint on subject_id and order combination. Means each subject can only have one module with order 1 and so on...
+            $table->unique(['subject_id', 'order'], 'unique_subject_module_order');
         });
     }
 

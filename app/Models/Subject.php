@@ -9,7 +9,7 @@ class Subject extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['code', 'title', 'description', 'isActive'];
+    protected $fillable = ['code', 'title', 'description', 'year_level', 'semester', 'isActive'];
 
     //eto yung tinatawag sa controller/ example: subjects->modules
     public function modules()

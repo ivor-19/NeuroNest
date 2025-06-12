@@ -9,7 +9,7 @@ class Module extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['subject_id', 'creator_id', 'title', 'description', 'isActive'];
+    protected $fillable = ['subject_id', 'creator_id', 'title', 'description', 'order', 'status', 'materials', 'pdf'];
 
     public function subject()
     {

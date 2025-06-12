@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Models\Module;
 use App\Models\StudentProfile;
 use App\Models\StudentProfiles;
 use App\Models\Subject;
@@ -67,23 +68,44 @@ class AdminController extends Controller
 
     // FOR STUDENTS
     public function manageStudents() {
+        $allUserStudent = User::where('role', 'student'::class)->get();
+        
         $allStudents = StudentProfile::with(['student', 'course'])->get();
+        $studentWithTheirCourses = $allStudents->map(function($student) {
+            return [
+                'id' => $student->id,
+                'student_id' => $student->student->account_id,
+                'student_name' => $student->student->name,
+                'student_email' => $student->student->email,
+                'course_id' => $student->course_id,
+                'course_code' => $student->course->code, 
+                'year_level' => $student->year_level,
+                'section' => $student->section,
+                'academic_year' => $student->academic_year,
+            ];
+        });
+
+        $allCourses = Course::all();
         
         return Inertia::render('Admin/ManageStudents', [
-            'students' => $allStudents->map(function($student) {
-                return [
-                    'id' => $student->id,
-                    'student_id' => $student->student->account_id,
-                    'student_name' => $student->student->name,
-                    'student_email' => $student->student->email,
-                    'course_id' => $student->course_id,
-                    'course_code' => $student->course->code, 
-                    'year_level' => $student->year_level,
-                    'section' => $student->section,
-                    'academic_year' => $student->academic_year,
-                ];
-            }),
+            'users' => $allUserStudent,
+            'students' => $studentWithTheirCourses,
+            'courses' => $allCourses
         ]);
+    }
+
+    public function assignStudentToSection(Request $request) {
+        $request->validate([
+            'student_id' => 'required|integer|exists:users,id',
+            'course_id' => 'required|integer|exists:courses,id',
+            'year_level' => 'required|integer',
+            'section' => 'required|string|max:255',
+            'academic_year' => 'required|string|max:255',
+          
+           ]);
+    
+        StudentProfile::create($request->all());
+        return redirect()->back();
     }
 
     // FOR COuRSEs
@@ -99,7 +121,6 @@ class AdminController extends Controller
             ->orderBy('semester', 'asc')
             ->get();
         
-        // Transform the data to match your frontend structure
         $coursesWithSubjects = $allCourses->map(function($course) {
             return [
                 'id' => $course->id,
@@ -160,6 +181,73 @@ class AdminController extends Controller
         // Only attach new subjects (don't detach any for now)
         $course->subjects()->syncWithoutDetaching($request->toAdd);
     
+        return redirect()->back();
+    }
+
+    //FOR SUBJECTS
+    public function manageSubjects() {
+        $allSubjects = Subject::with(['modules'])->get();
+
+        $subjectsWithModules = $allSubjects->map(function($subject) {
+            return [
+                'id' => $subject->id,
+                'code' => $subject->code,
+                'title' => $subject->title,
+                'year_level' => $subject->year_level,
+                'semester' => $subject->semester,
+                'description' => $subject->description,
+                'isActive' => $subject->isActive,
+                'modules' => $subject->modules->map(function($module) {
+                    return [
+                        'id' => $module->id,
+                        'subject_id' => $module->subject_id,
+                        'title' => $module->title,
+                        'description' => $module->description,
+                        'status' => $module->status,
+                        'order' => $module->order,
+                        'materials' => $module->materials,
+                        'pdf' => $module->pdf,
+                    ];
+                })
+            ];
+        });
+
+        return Inertia::render('Admin/ManageSubjects', [
+            'subjects' => $subjectsWithModules,
+        ]);
+    }
+
+
+
+    public function addSubject(Request $request){
+        $request->validate([
+            'code' => 'required|string|max:255',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+            'year_level' => 'required|string',
+            'semester' => 'required|string|max:255',
+            'isActive' => 'required|string',
+
+          
+           ]);
+    
+        Subject::create($request->all());
+        return redirect()->back();
+    }
+
+    public function addModule(Request $request){
+        $request->validate([
+            'subject_id' => 'required|integer|exists:subjects,id',
+            'creator_id' => 'required|integer|exists:users,id',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+            'status' => 'required|string',
+            'order' => 'required|integer',
+
+          
+           ]);
+    
+        Module::create($request->all());
         return redirect()->back();
     }
 }

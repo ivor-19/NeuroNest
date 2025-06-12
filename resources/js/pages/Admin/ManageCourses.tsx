@@ -46,7 +46,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function ManageCourses({ courses, allSubjects } : CourseProps) {
   const [activeTab, setActiveTab] = useState("view-courses")
   const [selectedCourse, setSelectedCourse] = useState<number | null>(null)
-  const [newCourse, setNewCourse] = React.useState<CourseProps | null>(null)
   
   // State for managing curriculum changes
   const [curriculumChanges, setCurriculumChanges] = useState<{
@@ -59,12 +58,6 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
     code: '',
     name: '',
     description: '',
-  })
-
-  // Form for curriculum changes
-  const curriculumForm = useForm({
-    course_id: 0,
-    toAdd: [] as number[],
   })
 
   // Get current subjects for the selected course
@@ -204,7 +197,7 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Manage Students" />
-        <div className="flex h-full flex-1 flex-col gap-4 rounded-xl overflow-x-auto p-8 bg-[var(--bg-main)]">
+        <div className="flex h-full flex-1 flex-col gap-4 rounded-xl overflow-x-auto p-8">
         <div className="space-y-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Courses & Curriculum</h1>
@@ -264,7 +257,7 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
                         </div>
 
                         <div className="border-t pt-3">
-                          <h4 className="font-medium mb-2">Curriculum ({course.subjects?.length || 0} subjects)</h4>
+                          <h4 className="text-sm font-semibold mb-2">Curriculum ({course.subjects?.length || 0} subjects)</h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                             {course.subjects?.slice(0, 4).map((subject) => (
                               <div key={subject.code} className="flex items-center justify-between p-2 bg-secondary rounded">

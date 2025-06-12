@@ -31,10 +31,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/manage-users', [AdminController::class, 'manageUsers'])->name('admin.manageUsers');
         Route::get('/manage-students', [AdminController::class, 'manageStudents'])->name('admin.manageStudents');
         Route::get('/manage-courses', [AdminController::class, 'manageCourses'])->name('admin.manageCourses');
+        Route::get('/manage-subjects', [AdminController::class, 'manageSubjects'])->name('admin.manageSubjects');
 
         Route::post('/add-user', [AdminController::class, 'store'])->name('admin.addUser');
+        Route::post('/assign-student', [AdminController::class, 'assignStudentToSection'])->name('admin.assignStudent');
         Route::post('/add-course', [AdminController::class, 'addCourse'])->name('admin.addCourse');
         Route::post('/assign-subjects', [AdminController::class, 'assignSubjectsToCourse'])->name('admin.assignSubjects');
+        Route::post('/add-subject', [AdminController::class, 'addSubject'])->name('admin.addSubject');
+        Route::post('/add-module', [AdminController::class, 'addModule'])->name('admin.addModule');
     });
 });
 
