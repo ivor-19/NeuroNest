@@ -328,11 +328,17 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
                       />
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
                       <Button onClick={handleAddCourse}>Add Course</Button>
                       <Button variant="outline" onClick={() => setActiveTab("view-courses")}>
                         Cancel
                       </Button>
+                      {errors.code && (
+                          <p className="text-sm font-medium text-destructive">{errors.code}</p>
+                        )}
+                      {(errors.code || errors.name) && (
+                          <p className="text-sm font-medium text-destructive">Complete all fields</p>
+                        )}
                     </div>
                   </div>
                 </CardContent>

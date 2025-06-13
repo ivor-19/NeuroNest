@@ -250,7 +250,16 @@ export default function ManageStudents({ users, students, courses } : ManageStud
                     </SelectContent>
                   </Select>
                 </div>
-
+                {errors.student_id && (
+                  <p className="text-sm font-medium text-destructive">
+                    {errors.student_id.includes('already') 
+                      ? 'This student is already assigned to a section'
+                      : errors.student_id.includes('required')
+                      ? 'Please select a student'
+                      : errors.student_id
+                    }
+                  </p>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="course">Course Program</Label>
                   <Select
@@ -269,7 +278,9 @@ export default function ManageStudents({ users, students, courses } : ManageStud
                     </SelectContent>
                   </Select>
                 </div>
-
+                {errors.course_id && (
+                  <p className="text-sm font-medium text-destructive">Please select a course</p>
+                )}
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="yearLevel">Year Level</Label>
@@ -287,6 +298,9 @@ export default function ManageStudents({ users, students, courses } : ManageStud
                         <SelectItem value="4">4th Year</SelectItem>
                       </SelectContent>
                     </Select>
+                    {errors.year_level && (
+                      <p className="text-sm font-medium text-destructive">{errors.year_level}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -305,6 +319,9 @@ export default function ManageStudents({ users, students, courses } : ManageStud
                         <SelectItem value="D">Section D</SelectItem>
                       </SelectContent>
                     </Select>
+                    {errors.section && (
+                      <p className="text-sm font-medium text-destructive">{errors.section}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -322,6 +339,9 @@ export default function ManageStudents({ users, students, courses } : ManageStud
                         <SelectItem value="2026">2026</SelectItem>
                       </SelectContent>
                     </Select>
+                    {errors.academic_year && (
+                      <p className="text-sm font-medium text-destructive">{errors.academic_year}</p>
+                    )}
                   </div>
                 </div>
 

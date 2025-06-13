@@ -10,6 +10,10 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
+Route::get('/contactus', function () {
+    return Inertia::render('contactus');
+})->name('contactus');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     
     // Student routes - protected by role:student middleware

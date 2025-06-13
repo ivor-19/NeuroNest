@@ -556,13 +556,20 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                               </Select>
                             </div>
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 items-center">
                             <Button onClick={handleAddSubject} disabled={subjectProcessing}>
                               {subjectProcessing ? "Creating..." : "Create Subject"}
                             </Button>
                             <Button variant="outline" onClick={() => setShowAddForm(false)}>
                               Cancel
                             </Button>
+                            {subjectErrors.code && (
+                              <p className="text-sm font-medium text-destructive">{subjectErrors.code}</p>
+                            )}
+                            {(subjectErrors.code || subjectErrors.title || subjectErrors.year_level || subjectErrors.semester || subjectErrors.isActive) && (
+                              <p className="text-sm font-medium text-destructive">Complete all fields</p>
+                            )}
+                          
                           </div>
                         </div>
                         <Separator />

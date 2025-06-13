@@ -97,7 +97,7 @@ class AdminController extends Controller
 
     public function assignStudentToSection(Request $request) {
         $request->validate([
-            'student_id' => 'required|integer|exists:users,id',
+            'student_id' => 'required|integer|exists:users,id|unique:student_profiles,student_id',
             'course_id' => 'required|integer|exists:courses,id',
             'year_level' => 'required|integer',
             'section' => 'required|string|max:255',
@@ -165,9 +165,9 @@ class AdminController extends Controller
 
     public function addCourse(Request $request) {
         $request->validate([
-            'code' => 'required|string|max:255',
+            'code' => 'required|string|max:255|unique:courses,code',
             'name' => 'required|string|max:255',
-            'description' => 'required|string|max:255',
+            'description' => 'nullable|string|max:255',
           
            ]);
     
@@ -241,9 +241,9 @@ class AdminController extends Controller
 
     public function addSubject(Request $request){
         $request->validate([
-            'code' => 'required|string|max:255',
+            'code' => 'required|string|max:255|unique:subjects,code',
             'title' => 'required|string|max:255',
-            'description' => 'required|string|max:255',
+            'description' => 'nullable|string|max:255',
             'year_level' => 'required|string',
             'semester' => 'required|string|max:255',
             'isActive' => 'required|string',
