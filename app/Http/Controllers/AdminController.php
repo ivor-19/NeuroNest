@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ClassInstructor;
 use App\Models\Course;
 use App\Models\CourseSubject;
 use App\Models\Module;
@@ -40,7 +41,7 @@ class AdminController extends Controller
         ]);
     }
 
-    //FOR USERS
+//************************************************FOR USERS**************************************************
     public function manageUsers() {
         return Inertia::render('Admin/ManageUsers', []);
     }
@@ -67,7 +68,9 @@ class AdminController extends Controller
         return redirect()->route('admin.manageUsers')->with('success', 'User added successfully!');
     }
 
-    // FOR STUDENTS
+
+
+//******************************************FOR STUDENTS*************************************************
     public function manageStudents() {
         $allUserStudent = User::where('role', 'student'::class)->get();
         
@@ -117,9 +120,11 @@ class AdminController extends Controller
         return redirect()->back()->with('success',`Successfully assigned a student to a section`);
     }
 
-    // FOR COuRSEs
+
+
+
+ //********************************************************FOR COURSES****************************************************
     public function manageCourses() {
-        // Get all courses
         $courses = Course::all();
         
         // Get course-subject relationships with related data
@@ -214,7 +219,9 @@ class AdminController extends Controller
         return redirect()->back()->with('success',`Remove a subject from a course`);
     }
 
-    //FOR SUBJECTS
+
+
+//*********************************************FOR SUBJECTS************************************************
     public function manageSubjects() {
         $allSubjects = Subject::with(['modules'])->get();
 
@@ -293,7 +300,10 @@ class AdminController extends Controller
         return redirect()->back()->with('success','Deleted a module');
     }
 
-    //FOR INSTRUCTORS
+
+
+
+//*******************************************FOR INSTRUCTORS*****************************************************
     public function manageInstructors() {
         $allInstructorUser = User::where('role', 'instructor')
             ->with(['classInstructor.course', 'classInstructor.subject'])
@@ -348,4 +358,20 @@ class AdminController extends Controller
             'courseSubjects' => $courseSubjectsGrouped,
         ]);
     }
+
+    public function assignInstructor(Request $request)
+    {
+        $request->validate([
+            'instructor_id' => 'required|exists:users,id',
+            'course_id' => 'required|exists:courses,id',
+            'subject_id' => 'required|exists:subjects,id',
+            'year_level' => 'required|string',
+            'section' => 'required|string',
+
+        ]);
+    
+        ClassInstructor::create($request->all());
+        return redirect()->back()->with('success',`Successfully assigned`);
+    }
+
 }

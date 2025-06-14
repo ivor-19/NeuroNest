@@ -39,11 +39,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/manage-instructors', [AdminController::class, 'manageInstructors'])->name('admin.manageInstructors');
 
         Route::post('/add-user', [AdminController::class, 'store'])->name('admin.addUser');
-        Route::post('/assign-student', [AdminController::class, 'assignStudentToSection'])->name('admin.assignStudent');
         Route::post('/add-course', [AdminController::class, 'addCourse'])->name('admin.addCourse');
-        Route::post('/assign-subjects', [AdminController::class, 'assignSubjectsToCourse'])->name('admin.assignSubjects');
         Route::post('/add-subject', [AdminController::class, 'addSubject'])->name('admin.addSubject');
         Route::post('/add-module', [AdminController::class, 'addModule'])->name('admin.addModule');
+
+        Route::post('/assign-student', [AdminController::class, 'assignStudentToSection'])->name('admin.assignStudent');
+        Route::post('/assign-subjects', [AdminController::class, 'assignSubjectsToCourse'])->name('admin.assignSubjects');
+        Route::post('/assign-instructor', [AdminController::class, 'assignInstructor'])->name('admin.assignInstructor');
 
         Route::delete('/delete-course/{id}', [AdminController::class, 'deleteCourse'])->name('admin.deleteCourse');
         Route::delete('/remove-subject/{id}', [AdminController::class, 'removeSubjectFromACourse'])->name('admin.removeSubject');

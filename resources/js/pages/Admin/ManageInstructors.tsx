@@ -59,13 +59,13 @@ type InstructorProps = {
 
 export default function ManageInstructors({ instructors, courseSubjects  } : InstructorProps) {
   const [activeTab, setActiveTab] = useState("view-instructors")
-  const [assignmentForm, setAssignmentForm] = useState({
-    instructorId: '',
-    courseId: '',
-    subjectId: '',
-    yearLevel: '',
+  const { data, setData, post, processing, errors, reset} = useForm({
+    instructor_id: '',
+    course_id: '',
+    subject_id: '',
+    year_level: '',
     section: ''
-  });
+  })
 
   useEffect(() => {
     console.log(instructors)
@@ -80,9 +80,16 @@ export default function ManageInstructors({ instructors, courseSubjects  } : Ins
   }
 
   const handleAssignInstructor = () => {
-    console.log("Assigning instructor:", assignmentForm)
-   
-    setActiveTab("assign-instructor")
+    console.log("Assigning instructor:", data)
+    post(route('admin.assignInstructor'), {
+      onSuccess: () => {
+        reset()
+      },
+      onError: (errors) => {
+        console.error(errors)
+      }
+    })
+    
   }
 
   const [selectedCourse, setSelectedCourse] = useState<string>('');
@@ -104,19 +111,19 @@ export default function ManageInstructors({ instructors, courseSubjects  } : Ins
   const handleCourseChange = (courseId: string) => {
     setSelectedCourse(courseId);
     setSelectedSubject(''); // Reset subject when course changes
-    setAssignmentForm(prev => ({
-      ...prev,
-      courseId: courseId,
-      subjectId: '' // Clear subject when course changes
-    }));
+    setData({
+      ...data,
+      course_id: courseId,  // Update form data
+      subject_id: ''        // Clear subject when course changes
+    });
   };
-
+  
   const handleSubjectChange = (subjectId: string) => {
     setSelectedSubject(subjectId);
-    setAssignmentForm(prev => ({
-      ...prev,
-      subjectId: subjectId
-    }));
+    setData({
+      ...data,
+      subject_id: subjectId
+    });
   };
 
 
@@ -221,8 +228,8 @@ export default function ManageInstructors({ instructors, courseSubjects  } : Ins
                 <div className="space-y-2">
                   <Label htmlFor="instructor">Select Instructor</Label>
                   <Select
-                    value={assignmentForm.instructorId}
-                    onValueChange={(value) => setAssignmentForm({ ...assignmentForm, instructorId: value })}
+                    value={data.instructor_id}
+                    onValueChange={(value) => setData("instructor_id", value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Choose an instructor" />
@@ -240,7 +247,7 @@ export default function ManageInstructors({ instructors, courseSubjects  } : Ins
                 <div className="space-y-2">
                   <Label htmlFor="course">Course Program</Label>
                   <Select
-                    value={selectedCourse}
+                    value={data.course_id}
                     onValueChange={handleCourseChange}
                   >
                     <SelectTrigger>
@@ -259,7 +266,7 @@ export default function ManageInstructors({ instructors, courseSubjects  } : Ins
                 <div className="space-y-2">
                   <Label htmlFor="subject">Subject</Label>
                   <Select
-                    value={selectedSubject}
+                    value={data.subject_id}
                     onValueChange={handleSubjectChange}
                     disabled={!selectedCourse}
                   >
@@ -280,8 +287,8 @@ export default function ManageInstructors({ instructors, courseSubjects  } : Ins
                   <div className="space-y-2">
                     <Label htmlFor="yearLevel">Year Level</Label>
                     <Select
-                      value={assignmentForm.yearLevel}
-                      onValueChange={(value) => setAssignmentForm({ ...assignmentForm, yearLevel: value })}
+                      value={data.year_level}
+                      onValueChange={(value) => setData("year_level", value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Year" />
@@ -298,8 +305,8 @@ export default function ManageInstructors({ instructors, courseSubjects  } : Ins
                   <div className="space-y-2">
                     <Label htmlFor="section">Section</Label>
                     <Select
-                      value={assignmentForm.section}
-                      onValueChange={(value) => setAssignmentForm({ ...assignmentForm, section: value })}
+                      value={data.section}
+                      onValueChange={(value) => setData("section", value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Section" />

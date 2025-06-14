@@ -110,4 +110,18 @@ class User extends Authenticatable
                 return $subject;
             });
     }
+
+    public function getClassInstructorForSubject($subjectId)
+    {
+        // Check if student has profile
+        if (!$this->studentSection) {
+            return null;
+        }
+
+        return ClassInstructor::where('course_id', $this->studentSection->course_id)
+            ->where('year_level', $this->studentSection->year_level)
+            ->where('section', $this->studentSection->section)
+            ->where('subject_id', $subjectId)
+            ->first();
+    }
 }

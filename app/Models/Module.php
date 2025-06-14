@@ -21,5 +21,25 @@ class Module extends Model
         return $this->belongsTo(User::class, 'creator_id', 'id');
     }
 
+    public function moduleAccess()
+    {
+        return $this->hasMany(ModuleAccess::class);
+    }
+
+   // Auto-create access records when new module is created
+   protected static function booted()
+   {
+       static::created(function ($module) {
+           $classInstructors = ClassInstructor::where('subject_id', $module->subject_id)->get();
+           
+           foreach ($classInstructors as $classInstructor) {
+               ModuleAccess::create([
+                   'module_id' => $module->id,
+                   'class_instructor_id' => $classInstructor->id,
+                   'is_available' => true
+               ]);
+           }
+       });
+   }
 }
 

@@ -31,4 +31,25 @@ class ClassInstructor extends Model
     {
         return $this->belongsTo(Subject::class, 'subject_id', 'id');
     }
+
+    public function moduleAccess()
+    {
+        return $this->hasMany(ModuleAccess::class);
+    }
+
+    // Auto-create module access when class instructor is created
+    protected static function booted()
+    {
+        static::created(function ($classInstructor) {
+            $modules = Module::where('subject_id', $classInstructor->subject_id)->get();
+            
+            foreach ($modules as $module) {
+                ModuleAccess::create([
+                    'module_id' => $module->id,
+                    'class_instructor_id' => $classInstructor->id,
+                    'is_available' => true
+                ]);
+            }
+        });
+    }
 }
