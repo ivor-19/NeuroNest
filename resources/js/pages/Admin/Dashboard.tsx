@@ -23,7 +23,7 @@ type DashboardProps = {
   }[];
   roleCounts: {
     student: number;
-    teacher: number;
+    instructor: number;
     admin: number;
   }
   subjectsCount: number;
@@ -102,11 +102,11 @@ export default function Dashboard({ authUser, users, roleCounts, subjectsCount, 
                 </CardContent>
               </Card> <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Teachers</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Instructors</CardTitle>
                   <GraduationCap className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{roleCounts.teacher}</div>
+                  <div className="text-2xl font-bold">{roleCounts.instructor}</div>
                   <p className="text-xs text-muted-foreground">
                     <span className="text-green-600">1</span> from last month
                   </p>

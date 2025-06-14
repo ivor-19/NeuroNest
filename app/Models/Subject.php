@@ -31,4 +31,8 @@ class Subject extends Model
             ->get();
     }
 
+    public function classInstructors()
+    {
+        return $this->hasMany(ClassInstructor::class, 'subject_id');
+    }
 }

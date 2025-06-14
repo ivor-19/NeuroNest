@@ -6,7 +6,6 @@ import { SharedData, type BreadcrumbItem } from '@/types';
 import { type PropsWithChildren } from 'react';
 import { StudentSidebar } from '@/components/sidebar/student-sidebar';
 import { usePage } from '@inertiajs/react';
-import { TeacherSidebar } from '@/components/sidebar/teacher-sidebar';
 import { AdminSidebar } from '@/components/sidebar/admin-sidebar';
 
 export default function AppSidebarLayout({ children, breadcrumbs = [] }: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {

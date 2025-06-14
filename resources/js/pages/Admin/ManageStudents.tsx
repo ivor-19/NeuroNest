@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Edit, Trash2, Search, UserCheck } from "lucide-react"
+import { Edit, Trash2, Search, UserCheck, UserIcon, User } from "lucide-react"
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
@@ -22,9 +22,12 @@ type UserProps = {
 
 type StudentProps = {
   id: number;
-  student_id: number;
+  student_id: string;
   student_name: string;
   student_email: string;
+  contact_number: string;
+  student_status: string;
+  student_remarks: string;
   course_id: number;
   course_code: string;
   year_level: number;
@@ -113,13 +116,14 @@ export default function ManageStudents({ users, students, courses } : ManageStud
   },[])
 
   const [activeTab, setActiveTab] = useState("view-students")
-   const { data, setData, post, processing, errors, reset} = useForm({
-      student_id: '',
-      course_id: '',
-      year_level: '',
-      section: '',
-      academic_year: '',
-    })
+  const [searchTerm, setSearchTerm] = useState("")
+  const { data, setData, post, processing, errors, reset} = useForm({
+    student_id: '',
+    course_id: '',
+    year_level: '',
+    section: '',
+    academic_year: '',
+  })
 
   const handleAssignSection = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -134,18 +138,28 @@ export default function ManageStudents({ users, students, courses } : ManageStud
    
   }
 
-  // const getInitials = (name: string) => {
-  //   return name
-  //     .split(" ")
-  //     .map((n) => n[0])
-  //     .join("")
-  //     .toUpperCase()
-  // }
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+  }
 
   // const getStudentsBySection = (course: string, year: number, section: string) => {
   //   return students.filter((s) => s.course === course && s.yearLevel === year && s.section === section)
   // }
-
+  const filteredStudents = students.filter(student => {
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      student.student_name.toLowerCase().includes(searchLower) ||
+      student.student_id.toLowerCase().includes(searchLower) 
+      // student.student_email.toLowerCase().includes(searchLower) ||
+      // (student.contact_number && student.contact_number.includes(searchTerm)) ||
+      // student.course_code.toLowerCase().includes(searchLower)
+    );
+  });
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
@@ -174,7 +188,12 @@ export default function ManageStudents({ users, students, courses } : ManageStud
                 <div className="flex items-center gap-2">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search students..." className="pl-8 w-64" />
+                    <Input 
+                      placeholder="Search students..." 
+                      className="pl-8 w-64" 
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                   </div>
                   <Button onClick={() => setActiveTab("assign-sections")}>
                     <UserCheck className="h-4 w-4 mr-2" />
@@ -185,38 +204,57 @@ export default function ManageStudents({ users, students, courses } : ManageStud
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {students.map((student) => (
-                  <div key={student.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <Avatar>
-                        <AvatarImage src="" alt={student.student_name} />
-                        {/* <AvatarFallback>{getInitials(student.name)}</AvatarFallback> */}
-                      </Avatar>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">{student.student_name}</p>
-                          <Badge variant="outline">{student.student_id}</Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{student.student_email}</p>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-                          <span>{student.course_code}</span>
-                          <span>Year {student.year_level}</span>
-                          <span>Section {student.section}</span>
-                          <span>AY {student.academic_year}</span>
+                {filteredStudents.length > 0 ? (
+                  filteredStudents.map((student) => (
+                    <div key={student.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src="" alt={student.student_name} />
+                          <AvatarFallback>{getInitials(student.student_name)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium">{student.student_name}</p>
+                            <Badge variant="outline">{student.student_id}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {student.student_email} 
+                            {student.contact_number && <span> • {student.contact_number}</span>}
+                          </p>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
+                            <span>{student.course_code}</span>
+                            {student.section ? (
+                              <>
+                                <span>Year {student.year_level}</span>
+                                <span>Section {student.section}</span>
+                                <span>AY {student.academic_year}</span>
+                              </>
+                            ) : (
+                              <span>Not assigned to a section</span>
+                            )}
+                          </div>
                         </div>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={student.student_status === "active" ? "default" : "secondary"}>
+                          {student.student_status}
+                        </Badge>
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {/* <Badge variant={student.status === "active" ? "default" : "secondary"}>{student.status}</Badge> */}
-                      <Button variant="outline" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">
+                      {searchTerm ? "No students match your search" : "No students found"}
+                    </p>
                   </div>
-                ))}
+                )}
               </div>
             </CardContent>
           </Card>

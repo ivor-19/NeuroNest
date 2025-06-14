@@ -114,6 +114,7 @@
 
     --bg-main: #fcfcfc;
     --bg-main-2: #f4f4f4;
+    --zinc: #f4f4f5;
 }
 
 .dark {
@@ -152,6 +153,7 @@
 
     --bg-main: #131313;
     --bg-main-2: #000000;
+    --zinc: #18181b;
 }
 
 @layer base {

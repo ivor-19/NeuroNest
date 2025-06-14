@@ -20,6 +20,8 @@ interface Subject {
 	title: string;
 	description: string;
 	isActive: boolean;
+	instructor_name?: string;  // Added instructor info
+	instructor_email?: string; // Added instructor email
 }
 
 interface StudentDashboardProps {
@@ -125,7 +127,16 @@ export default function Dashboard({ user, subjects }: StudentDashboardProps) {
 														</Badge>
 													</div>
 													<CardTitle className="text-lg">{subject.title}</CardTitle>
-													<CardDescription>{subject.description}</CardDescription>
+													<CardDescription className="space-y-1">
+														<div>{subject.description}</div>
+														{/* Instructor Info */}
+														{subject.instructor_name && (
+															<div className="flex items-center text-sm text-muted-foreground mt-2">
+																<User className="h-3 w-3 mr-1" />
+																<span>Instructor: {subject.instructor_name}</span>
+															</div>
+														)}
+													</CardDescription>
 												</CardHeader>
 												<CardContent>
 													<Button variant="ghost" size="sm" className="w-full">

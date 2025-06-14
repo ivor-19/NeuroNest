@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\StudentController;
-use App\Http\Controllers\TeacherController;
+use App\Http\Controllers\InstructorController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -23,10 +23,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Add more student routes here
     });
     
-    // Teacher routes - protected by role:teacher middleware
-    Route::middleware(['role:teacher'])->prefix('teacher')->group(function () {
-        Route::get('/dashboard', [TeacherController::class, 'dashboard'])->name('teacher.dashboard');
-        // Add more teacher routes here
+    // instructor routes - protected by role:instructor middleware
+    Route::middleware(['role:instructor'])->prefix('instructor')->group(function () {
+        Route::get('/dashboard', [InstructorController::class, 'dashboard'])->name('instructor.dashboard');
+        // Add more instructor routes here
     });
     
     // Admin routes - protected by role:admin middleware
@@ -36,6 +36,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/manage-students', [AdminController::class, 'manageStudents'])->name('admin.manageStudents');
         Route::get('/manage-courses', [AdminController::class, 'manageCourses'])->name('admin.manageCourses');
         Route::get('/manage-subjects', [AdminController::class, 'manageSubjects'])->name('admin.manageSubjects');
+        Route::get('/manage-instructors', [AdminController::class, 'manageInstructors'])->name('admin.manageInstructors');
 
         Route::post('/add-user', [AdminController::class, 'store'])->name('admin.addUser');
         Route::post('/assign-student', [AdminController::class, 'assignStudentToSection'])->name('admin.assignStudent');

@@ -27,7 +27,7 @@ class AdminController extends Controller
         // Count users by role
         $roleCounts = [
             'student' => User::where('role', 'student')->count(),
-            'teacher' => User::where('role', 'teacher')->count(),
+            'instructor' => User::where('role', 'instructor')->count(),
             'admin' => User::where('role', 'admin')->count(),
         ];
         
@@ -50,7 +50,7 @@ class AdminController extends Controller
             'name' => 'required|string|max:255',
             'account_id' => 'required|string|max:255',
             'email' => 'string|lowercase|email|max:255|unique:'.User::class,
-            'role' => 'required|string|in:student,teacher,admin',
+            'role' => 'required|string|in:student,instructor,admin',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -71,18 +71,26 @@ class AdminController extends Controller
     public function manageStudents() {
         $allUserStudent = User::where('role', 'student'::class)->get();
         
-        $allStudents = StudentProfile::with(['student', 'course'])->get();
-        $studentWithTheirCourses = $allStudents->map(function($student) {
+        $students = User::where('role', 'student')
+        ->with(['studentSection.course']) // using the correct relationship name
+        ->get()
+        ->map(function ($user) {
+            $studentProfile = $user->studentSection; // using the correct relationship name
+            
             return [
-                'id' => $student->id,
-                'student_id' => $student->student->account_id,
-                'student_name' => $student->student->name,
-                'student_email' => $student->student->email,
-                'course_id' => $student->course_id,
-                'course_code' => $student->course->code, 
-                'year_level' => $student->year_level,
-                'section' => $student->section,
-                'academic_year' => $student->academic_year,
+                'user_id' => $user->id,
+                'student_id' => $user->account_id,
+                'student_name' => $user->name,
+                'student_email' => $user->email,
+                'contact_number' => $user->contact_number,
+                'student_status' => $user->status,
+                'student_remarks' => $user->remarks,
+                'profile_id' => $studentProfile ? $studentProfile->id : null,
+                'course_id' => $studentProfile ? $studentProfile->course_id : null,
+                'course_code' => $studentProfile && $studentProfile->course ? $studentProfile->course->code : null,
+                'year_level' => $studentProfile ? $studentProfile->year_level : null,
+                'section' => $studentProfile ? $studentProfile->section : null,
+                'academic_year' => $studentProfile ? $studentProfile->academic_year : null,
             ];
         });
 
@@ -90,7 +98,7 @@ class AdminController extends Controller
         
         return Inertia::render('Admin/ManageStudents', [
             'users' => $allUserStudent,
-            'students' => $studentWithTheirCourses,
+            'students' => $students,
             'courses' => $allCourses
         ]);
     }
@@ -283,5 +291,61 @@ class AdminController extends Controller
         $module->delete();
 
         return redirect()->back()->with('success','Deleted a module');
+    }
+
+    //FOR INSTRUCTORS
+    public function manageInstructors() {
+        $allInstructorUser = User::where('role', 'instructor')
+            ->with(['classInstructor.course', 'classInstructor.subject'])
+            ->get();
+    
+        $instructorsWithAssignments = $allInstructorUser->map(function ($instructor) {
+            return [
+                'id' => $instructor->id,
+                'name' => $instructor->name,
+                'email' => $instructor->email,
+                'account_id' => $instructor->account_id,
+                'contact_number' => $instructor->contact_number,
+                'remarks' => $instructor->remarks,
+                'status' => $instructor->status,
+                'teaching_assignments' => $instructor->classInstructor->map(function ($assignment) {
+                    return [
+                        'id' => $assignment->id,
+                        'course_code' => $assignment->course->code ?? 'N/A',
+                        'course_name' => $assignment->course->name ?? 'N/A',
+                        'subject_code' => $assignment->subject->code ?? 'N/A',
+                        'subject_title' => $assignment->subject->title ?? 'N/A',
+                        'subject_semester' => $assignment->subject->semester ?? 'N/A',
+                        'year_level' => $assignment->year_level,
+                        'section' => $assignment->section,
+                    ];
+                })
+            ];
+        });
+    
+        // Get course-subject relationships for filtering
+        $courseSubjects = CourseSubject::with(['course', 'subject'])->get();
+        
+        $courseSubjectsGrouped = $courseSubjects->groupBy('course_id')->map(function ($subjects, $courseId) use ($courseSubjects) {
+            $course = $courseSubjects->firstWhere('course_id', $courseId)->course;
+            
+            return [
+                'course_id' => $courseId,
+                'course_code' => $course->code,
+                'course_name' => $course->name,
+                'subjects' => $subjects->map(function ($courseSubject) {
+                    return [
+                        'id' => $courseSubject->subject->id,
+                        'code' => $courseSubject->subject->code,
+                        'title' => $courseSubject->subject->title,
+                    ];
+                })
+            ];
+        });
+                
+        return Inertia::render('Admin/ManageInstructors', [
+            'instructors' => $instructorsWithAssignments,
+            'courseSubjects' => $courseSubjectsGrouped,
+        ]);
     }
 }

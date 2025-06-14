@@ -21,6 +21,9 @@ class User extends Authenticatable
         'name',
         'account_id',
         'email',
+        'status',
+        'remarks',
+        'contact_number',
         'password',
         'role',
     ];
@@ -30,9 +33,9 @@ class User extends Authenticatable
         return $this->role === 'student';
     }
 
-    public function isTeacher()
+    public function isInstructor()
     {
-        return $this->role === 'teacher';
+        return $this->role === 'instructor';
     }
 
     public function isAdmin()
@@ -70,24 +73,41 @@ class User extends Authenticatable
     }
 
     //Method to get all subjects from all courses the student is on
-    public function getSubjectsAttribute()
-    {
-        if (!$this->studentSection) {
-            return collect();
-        }
-    
-        return Subject::whereHas('courses', function($query) {
-                $query->whereHas('students', function($subQuery) {
-                    $subQuery->where('users.id', $this->id);
-                });
-            })
-            ->where('year_level', $this->studentSection->year_level)
-            ->get();
-    }
 
     public function studentSection()
     {
         return $this->hasOne(StudentProfile::class, 'student_id');
     }
 
+    public function classInstructor()
+    {
+        return $this->hasMany(ClassInstructor::class, 'instructor_id', 'id');
+    }
+
+    public function getSubjectsAttribute()
+    {
+        if (!$this->studentSection) {
+            return collect();
+        }
+    
+        return Subject::with(['classInstructors' => function($query) {
+                $query->where('course_id', $this->studentSection->course_id)    // Added course_id
+                      ->where('year_level', $this->studentSection->year_level)
+                      ->where('section', $this->studentSection->section)
+                      ->with('instructor'); // Load the instructor relationship
+            }])
+            ->whereHas('classInstructors', function($query) {
+                $query->where('course_id', $this->studentSection->course_id)    // Added course_id
+                      ->where('year_level', $this->studentSection->year_level)
+                      ->where('section', $this->studentSection->section);
+            })
+            ->get()
+            ->map(function($subject) {
+                // Add instructor info directly to the subject
+                $classInstructor = $subject->classInstructors->first();
+                $subject->instructor_name = $classInstructor ? $classInstructor->instructor->name : 'TBA';
+                $subject->instructor_email = $classInstructor ? $classInstructor->instructor->email : null;
+                return $subject;
+            });
+    }
 }

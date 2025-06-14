@@ -21,7 +21,7 @@ class CheckRole
             // Redirect to their appropriate dashboard based on their role
             return match($user->role ?? 'student') {
                 'admin' => redirect('/admin/dashboard'),
-                'teacher' => redirect('/teacher/dashboard'),
+                'instructor' => redirect('/instructor/dashboard'),
                 'student' => redirect('/student/dashboard'),
                 default => redirect('/student/dashboard')
             };

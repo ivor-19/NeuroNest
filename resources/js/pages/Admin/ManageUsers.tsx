@@ -95,7 +95,7 @@ export default function ManageUsers() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="student">Student</SelectItem>
-                        <SelectItem value="teacher">Teacher/Instructor</SelectItem>
+                        <SelectItem value="instructor">Teacher/Instructor</SelectItem>
                         <SelectItem value="admin">Administrator</SelectItem>
                       </SelectContent>
                     </Select>

@@ -18,7 +18,7 @@ import AppLogoIcon from '../built-in-shadcn/app-logo-icon';
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: '/teacher/dashboard',
+        href: '/instructor/dashboard',
         icon: LayoutGrid,
     },
 ];
@@ -38,11 +38,11 @@ const mainNavItems: NavItem[] = [
 
 const activeItemStyles = 'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
 
-interface TeacherHeaderProps {
+interface InstructorHeaderProps {
     breadcrumbs?: BreadcrumbItem[];
 }
 
-export function TeacherHeader({ breadcrumbs = [] }: TeacherHeaderProps) {
+export function InstructorHeader({ breadcrumbs = [] }: InstructorHeaderProps) {
     const page = usePage<SharedData>();
     const { auth } = page.props;
     const getInitials = useInitials();
@@ -94,7 +94,7 @@ export function TeacherHeader({ breadcrumbs = [] }: TeacherHeaderProps) {
                         </Sheet>
                     </div>
 
-                    <Link href="/teacher/dashboard" prefetch className="flex items-center space-x-2">
+                    <Link href="/instructor/dashboard" prefetch className="flex items-center space-x-2">
                         <AppLogo />
                     </Link>
 

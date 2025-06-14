@@ -16,7 +16,7 @@ class RedirectBasedOnRole
             // Define role-based routes
             $roleRoutes = [
                 'student' => '/student/dashboard',
-                'teacher' => '/teacher/dashboard', 
+                'instructor' => '/instructor/dashboard', 
                 'admin' => '/admin/dashboard'
             ];
             

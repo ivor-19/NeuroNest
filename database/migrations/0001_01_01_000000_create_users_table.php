@@ -16,6 +16,9 @@ return new class extends Migration
             $table->string('name');
             $table->string('account_id')->unique();
             $table->string('email')->unique();
+            $table->string('contact_number')->nullable(); 
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->string('remarks')->nullable(); 
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();

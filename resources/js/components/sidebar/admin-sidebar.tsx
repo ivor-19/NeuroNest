@@ -79,7 +79,7 @@ const data = {
         },
         {
           title: "Instructors",
-          href: "#",
+          href: "/admin/manage-instructors",
           icon: GraduationCap,
         },
         {

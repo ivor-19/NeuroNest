@@ -10,20 +10,20 @@ import AppLogo from '../built-in-shadcn/app-logo';
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: '/teacher/dashboard',
+        href: '/instructor/dashboard',
         icon: LayoutGrid,
     },
 ];
 
 
-export function TeacherSidebar() {
+export function InstructorSidebar() {
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href="/teacher/dashboard" prefetch>
+                            <Link href="/instructor/dashboard" prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
@@ -31,9 +31,9 @@ export function TeacherSidebar() {
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent>
+            {/* <SidebarContent>
                 <NavMain items={mainNavItems} />
-            </SidebarContent>
+            </SidebarContent> */}
 
             <SidebarFooter>
                 <NavUser />

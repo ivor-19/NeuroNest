@@ -15,7 +15,7 @@ interface User {
     role?: string;
 }
 
-interface TeacherDashboardProps {
+interface InstructorDashboardProps {
     user: User;
 }
 
@@ -26,7 +26,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Dashboard({ user }: TeacherDashboardProps) {
+export default function Dashboard({ user }: InstructorDashboardProps) {
   const studentCourses = [
     {
       id: 1,

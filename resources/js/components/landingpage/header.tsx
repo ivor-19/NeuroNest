@@ -69,12 +69,12 @@ export default function Header() {
                                 onClick={toggleMenu}>
                                 Dashboard
                             </Link>
-                        ) : auth.user?.role === 'teacher' ? (
+                        ) : auth.user?.role === 'instructor' ? (
                             <Link
-                                href={route('teacher.dashboard')}
+                                href={route('instructor.dashboard')}
                                 className="inline-block rounded-sm border border-white/20 px-5 py-1.5 text-sm leading-normal text-white hover:border-white/40 transition-colors"
                                 onClick={toggleMenu}>
-                                Teacher Panel
+                                Instructor Panel
                             </Link>
                         ) : auth.user?.role === 'student' ? (
                             <Link
@@ -136,12 +136,12 @@ export default function Header() {
                                     onClick={toggleMenu}>
                                     Dashboard
                                 </Link>
-                            ) : auth.user?.role === 'teacher' ? (
+                            ) : auth.user?.role === 'instructor' ? (
                                 <Link
-                                    href={route('teacher.dashboard')}
+                                    href={route('instructor.dashboard')}
                                     className="inline-block rounded-sm border border-[#006A62] px-5 py-1.5 text-sm leading-normal text-[#006A62] hover:bg-[#006A62] hover:text-white transition-colors"
                                     onClick={toggleMenu}>
-                                    Teacher Panel
+                                    Instructor Panel
                                 </Link>
                             ) : auth.user?.role === 'student' ? (
                                 <Link

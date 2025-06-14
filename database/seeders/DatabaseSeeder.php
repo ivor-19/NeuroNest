@@ -32,12 +32,12 @@ class DatabaseSeeder extends Seeder
         );
 
         User::updateOrCreate(
-            ['email' => 'teacher@example.com'], // search
+            ['email' => 'instructor@example.com'], // search
             [
-                'name' => 'teacher',
-                'account_id' => 'TA12345678',
+                'name' => 'instructor',
+                'account_id' => 'IN12345678',
                 'password' => Hash::make('12345678'), // default password
-                'role' => 'teacher'
+                'role' => 'instructor'
             ]
         );
 
