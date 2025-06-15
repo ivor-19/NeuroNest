@@ -20,6 +20,11 @@ return new class extends Migration
             $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
+
+            $table->unique(
+                ['course_id', 'subject_id', 'year_level', 'section'],
+                'unique_assignment'
+            );
         });
     }
 

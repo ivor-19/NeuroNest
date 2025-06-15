@@ -367,11 +367,23 @@ class AdminController extends Controller
             'subject_id' => 'required|exists:subjects,id',
             'year_level' => 'required|string',
             'section' => 'required|string',
-
         ]);
     
+        $existingAssignment = ClassInstructor::where([
+            'course_id' => $request->course_id,
+            'year_level' => $request->year_level,
+            'section' => $request->section,
+            'subject_id' => $request->subject_id,
+        ])->exists();
+    
+        if ($existingAssignment) {
+            return back()->withErrors([
+                'message' => 'There is already an instructor assigned for this section with the same course, year level, and subject.'
+            ]);
+        }
+    
         ClassInstructor::create($request->all());
-        return redirect()->back()->with('success',`Successfully assigned`);
+        return back()->with('success', 'Successfully assigned');
     }
 
 }

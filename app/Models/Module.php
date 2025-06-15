@@ -21,6 +21,11 @@ class Module extends Model
         return $this->belongsTo(User::class, 'creator_id', 'id');
     }
 
+    public function courseSubjects()
+    {
+        return $this->hasMany(CourseSubject::class, 'subject_id', 'subject_id');
+    }
+
     public function moduleAccess()
     {
         return $this->hasMany(ModuleAccess::class);

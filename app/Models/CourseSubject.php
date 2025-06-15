@@ -19,4 +19,9 @@ class CourseSubject extends Model
     {
         return $this->belongsTo(Subject::class, 'subject_id', 'id');
     }
+
+    public function modules()
+    {
+        return $this->hasMany(Module::class, 'subject_id', 'subject_id');
+    }
 }

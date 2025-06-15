@@ -2,7 +2,20 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { BookOpen, Clock, Star, CheckCircle, Lock, ArrowLeft, FileText, Video, Award, ChevronRight } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import {
+  BookOpen,
+  Clock,
+  Star,
+  CheckCircle,
+  Lock,
+  ArrowLeft,
+  FileText,
+  Video,
+  Award,
+  ChevronRight,
+  AlertCircle,
+} from "lucide-react"
 import HeaderLayout from "@/layouts/header-layout"
 import { Head, router } from "@inertiajs/react"
 
@@ -11,10 +24,11 @@ interface Module {
   title: string
   description: string
   isActive: boolean
-  isCompleted?: boolean // Added optional completed status
+  isCompleted?: boolean
   duration?: string
   lessons?: number
   type?: "video" | "reading" | "quiz"
+  status?: "available" | "disabled"
 }
 
 interface Subject {
@@ -32,9 +46,26 @@ interface Props {
 export default function Modules({ subject, modules }: Props) {
   const [isEnrolled, setIsEnrolled] = useState(true)
 
-  // Calculate progress only on enrolled and completed modules
-  const completedModules = modules.filter((module) => module.isCompleted).length
-  const progress = modules.length > 0 ? (completedModules / modules.length) * 100 : 0
+  // Calculate progress only on available and completed modules
+  const availableModules = modules.filter((module) => module.isActive)
+  const completedModules = availableModules.filter((module) => module.isCompleted).length
+  const progress = availableModules.length > 0 ? (completedModules / availableModules.length) * 100 : 0
+
+  // Count disabled modules
+  const disabledCount = modules.filter((module) => !module.isActive).length
+
+  const getModuleIcon = (type?: string) => {
+    switch (type) {
+      case "video":
+        return <Video className="h-3 w-3" />
+      case "reading":
+        return <FileText className="h-3 w-3" />
+      case "quiz":
+        return <Star className="h-3 w-3" />
+      default:
+        return <BookOpen className="h-3 w-3" />
+    }
+  }
 
   return (
     <HeaderLayout>
@@ -42,156 +73,272 @@ export default function Modules({ subject, modules }: Props) {
       <div className="min-h-screen mt-14">
         <div className="px-4 sm:px-6 lg:px-8 py-8">
           {/* Back Button */}
-          <Button variant="ghost" onClick={() => router.visit(route('student.dashboard'))} className="mb-6 text-gray-600 hover:text-gray-900">
+          <Button
+            variant="ghost"
+            onClick={() => router.visit(route("student.dashboard"))}
+            className="mb-8 hover:bg-accent"
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Go back
+            Back to Dashboard
           </Button>
 
           {/* Course Header */}
-          <div className="mb-8">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-900 mb-3">{subject.title}</h1>
-                <p className="text-lg text-gray-600 max-w-3xl">{subject.description}</p>
-              </div>
+          <div className="mb-10">
+            <div className="mb-8">
+              <h1 className="text-2xl font-bold text-foreground">{subject.title}</h1>
+              <p className="text-sm text-muted-foreground max-w-4xl leading-relaxed">{subject.description}</p>
             </div>
 
             {/* Progress Section */}
-            {isEnrolled && modules.length > 0 && (
-              <Card className="border-0 shadow-sm bg-white">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Course Progress</h3>
-                      <p className="text-sm text-gray-500">
-                        {completedModules} of {modules.length} modules completed
+            {isEnrolled && availableModules.length > 0 && (
+              <Card className="border border-border bg-card shadow-sm font-geist">
+                <CardContent className="py-4 px-8">
+                  <div className="flex justify-between items-center mb-8">
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-semibold text-card-foreground">Course Progress</h3>
+                      <p className="text-muted-foreground text-sm font-geist">
+                        {completedModules} of {availableModules.length} available modules completed
                       </p>
+                      {disabledCount > 0 && (
+                        <div className="flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4 text-amber-500" />
+                          <p className="text-xs text-amber-600 dark:text-amber-400">
+                            {disabledCount} modules currently disabled by instructor
+                          </p>
+                        </div>
+                      )}
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-blue-600">{Math.round(progress)}%</div>
+                      <div className="text-3xl font-bold text-primary mb-1">{Math.round(progress)}%</div>
+                      <p className="text-xs text-muted-foreground">Complete</p>
                     </div>
                   </div>
-                  <Progress value={progress} className="h-2" />
+                  <div className="space-y-2">
+                    <Progress value={progress} className="h-3" />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Started</span>
+                      <span>Completed</span>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             )}
           </div>
 
           {/* Modules Section */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">Subject Content</h2>
-              <span className="text-sm text-gray-500">{modules.length} {modules.length === 1 ? 'module' : 'modules'}</span>
+              <h2 className="text-xl font-semibold text-foreground">Course Content</h2>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <Badge variant="secondary" className="font-normal">
+                  {availableModules.length} Available
+                </Badge>
+                {disabledCount > 0 && (
+                  <Badge
+                    variant="outline"
+                    className="font-normal border-amber-200 text-amber-700 dark:border-amber-800 dark:text-amber-300"
+                  >
+                    {disabledCount} Disabled
+                  </Badge>
+                )}
+              </div>
             </div>
 
             {modules.length > 0 ? (
-              <div className="space-y-3">
-                {modules.map((module, index) => (
-                  <Card
-                    key={module.id}
-                    className={`transition-all duration-200 hover:shadow-md cursor-pointer border ${
-                      module.isCompleted
-                        ? "border-green-200 bg-green-50/50"
-                        : isEnrolled
-                          ? "border-gray-200 bg-white hover:border-blue-200"
-                          : "border-gray-200 bg-gray-50"
-                    }`}
-                  >
-                    <CardContent className="p-5">
-                      <div className="flex items-center space-x-4">
-                        {/* Module Status Icon */}
-                        <div className="flex-shrink-0">
-                          <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
-                              module.isCompleted
-                                ? "bg-green-100 text-green-700"
-                                : isEnrolled
-                                  ? "bg-blue-100 text-blue-700"
-                                  : "bg-gray-100 text-gray-500"
-                            }`}
-                          >
-                            {module.isCompleted ? (
-                              <CheckCircle className="h-5 w-5" />
-                            ) : isEnrolled ? (
-                              <span>{index + 1}</span>
-                            ) : (
-                              <Lock className="h-5 w-5" />
-                            )}
-                          </div>
-                        </div>
+              <div className="space-y-4">
+                {modules.map((module, index) => {
+                  const isDisabled = !module.isActive
 
-                        {/* Module Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-base font-medium text-gray-900 truncate">{module.title}</h3>
-                              </div>
-                              <p className="text-sm text-gray-600 mb-2 line-clamp-2">{module.description}</p>
-
-                              {/* Module Meta */}
-                              <div className="flex items-center gap-4 text-xs text-gray-500">
-                                {module.type && (
-                                  <div className="flex items-center gap-1">
-                                    {module.type === "video" && <Video className="h-3 w-3" />}
-                                    {module.type === "reading" && <FileText className="h-3 w-3" />}
-                                    {module.type === "quiz" && <Star className="h-3 w-3" />}
-                                    <span className="capitalize">{module.type}</span>
-                                  </div>
-                                )}
-                                {module.duration && (
-                                  <div className="flex items-center gap-1">
-                                    <Clock className="h-3 w-3" />
-                                    <span>{module.duration}</span>
-                                  </div>
-                                )}
-                                {module.lessons && <span>{module.lessons} lessons</span>}
-                              </div>
-                            </div>
-
-                            {/* Action Button */}
-                            <div className="flex items-center gap-2 ml-4">
-                              {isEnrolled && (
-                                <Button size="sm" variant={module.isCompleted ? "outline" : "default"} className="text-xs">
-                                  {module.isCompleted ? "Review" : "Start"}
-                                </Button>
+                  return (
+                    <Card
+                      key={module.id}
+                      className={`transition-all duration-200 ${
+                        isDisabled
+                          ? "border-border bg-muted/30 opacity-70"
+                          : module.isCompleted
+                            ? "border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/20 hover:shadow-lg cursor-pointer"
+                            : isEnrolled
+                              ? "border-border bg-card hover:border-primary/20 hover:shadow-lg cursor-pointer"
+                              : "border-border bg-card"
+                      }`}
+                    >
+                      <CardContent className="px-6 py-2">
+                        <div className="flex items-start gap-6">
+                          {/* Module Status Icon */}
+                          <div className="flex-shrink-0">
+                            <div
+                              className={`w-12 h-12 rounded-full flex items-center justify-center text-xs font-semibold ${
+                                isDisabled
+                                  ? "bg-muted text-muted-foreground"
+                                  : module.isCompleted
+                                    ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
+                                    : isEnrolled
+                                      ? "bg-primary/10 text-primary"
+                                      : "bg-muted text-muted-foreground"
+                              }`}
+                            >
+                              {isDisabled ? (
+                                <Lock className="h-5 w-5" />
+                              ) : module.isCompleted ? (
+                                <CheckCircle className="h-5 w-5" />
+                              ) : isEnrolled ? (
+                                <span>{index + 1}</span>
+                              ) : (
+                                <Lock className="h-5 w-5" />
                               )}
-                              <ChevronRight className="h-4 w-4 text-gray-400" />
+                            </div>
+                          </div>
+
+                          {/* Module Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1 space-y-3">
+                                <div className="flex items-center gap-2">
+                                  <h3 className={` font-semibold ${isDisabled ? "text-muted-foreground" : "text-card-foreground"}`}>
+                                    {module.title}
+                                  </h3>
+                                  {isDisabled && (
+                                    <Badge variant="outline" className="border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300">
+                                      <AlertCircle className="h-3 w-3 mr-1" />
+                                      Disabled
+                                    </Badge>
+                                  )}
+                                  {module.isCompleted && (
+                                    <Badge variant="outline" className="border-green-200 dark:border-green-800 text-green-700 dark:text-green-300">
+                                      <CheckCircle className="h-3 w-3 mr-1" />
+                                      Completed
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className={`text-sm leading-relaxed ${isDisabled ? "text-muted-foreground/70" : "text-muted-foreground" }`}>
+                                  {module.description}
+                                </p>
+
+                                {/* Module Meta */}
+                                <div
+                                  className={`flex items-center gap-6 text-sm ${
+                                    isDisabled ? "text-muted-foreground/70" : "text-muted-foreground"
+                                  }`}
+                                >
+                                  {module.type && (
+                                    <div className="flex items-center gap-2">
+                                      {getModuleIcon(module.type)}
+                                      <span className="capitalize font-medium">{module.type}</span>
+                                    </div>
+                                  )}
+                                  {module.duration && (
+                                    <div className="flex items-center gap-2">
+                                      <Clock className="h-3 w-3" />
+                                      <span>{module.duration}</span>
+                                    </div>
+                                  )}
+                                  {module.lessons && (
+                                    <div className="flex items-center gap-2">
+                                      <BookOpen className="h-3 w-3" />
+                                      <span>{module.lessons} lessons</span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Disabled Message */}
+                                {isDisabled && (
+                                  <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
+                                    <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                                    <p className="text-xs text-amber-700 dark:text-amber-300">
+                                      This module has been temporarily disabled by your instructor and will become
+                                      available when enabled.
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Action Button */}
+                              <div className="flex items-center gap-3 flex-shrink-0">
+                                {isEnrolled && !isDisabled && (
+                                  <Button
+                                    size="default"
+                                    variant={module.isCompleted ? "outline" : "default"}
+                                    className="min-w-[100px]"
+                                  >
+                                    {module.isCompleted ? "Review" : "Start"}
+                                  </Button>
+                                )}
+                                {isDisabled && (
+                                  <Button size="default" variant="ghost" disabled className="min-w-[100px]">
+                                    Unavailable
+                                  </Button>
+                                )}
+                                <ChevronRight
+                                  className={`h-5 w-5 ${
+                                    isDisabled ? "text-muted-foreground/50" : "text-muted-foreground"
+                                  }`}
+                                />
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  )
+                })}
               </div>
             ) : (
-              <Card className="border-0 shadow-sm">
-                <CardContent className="text-center py-12">
-                  <BookOpen className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No modules available</h3>
-                  <p className="text-sm text-gray-500">There are no modules for this subject in your course.</p>
+              <Card className="border border-border bg-card">
+                <CardContent className="text-center py-16">
+                  <BookOpen className="mx-auto h-16 w-16 text-muted-foreground/50 mb-6" />
+                  <h3 className="text-xl font-semibold mb-3 text-card-foreground">No modules available</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    There are no modules for this subject in your course. Check back later or contact your instructor.
+                  </p>
                 </CardContent>
               </Card>
             )}
           </div>
 
-          {/* Completion Card */}
-          {isEnrolled && modules.length > 0 && progress < 100 && (
-            <Card className="mt-8 border-0 shadow-sm bg-blue-50">
-              <CardContent className="p-6 text-center">
-                <div className="max-w-md mx-auto">
-                  <Award className="h-10 w-10 text-blue-600 mx-auto mb-3" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Complete this course to earn your certificate
-                  </h3>
-                  <div className="mb-4">
-                    <Progress value={progress} className="mb-2" />
-                    <p className="text-sm text-gray-600">
-                      {completedModules} of {modules.length} modules completed
+          {/* Info Card for Disabled Modules */}
+          {disabledCount > 0 && (
+            <Card className="mt-8 border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <AlertCircle className="h-6 w-6 text-amber-600 dark:text-amber-400 mt-1 flex-shrink-0" />
+                  <div className="space-y-2">
+                    <h4 className="text-base font-semibold text-amber-800 dark:text-amber-200">
+                      Some modules are currently disabled
+                    </h4>
+                    <p className="text-amber-700 dark:text-amber-300 leading-relaxed text-sm">
+                      Your instructor has temporarily disabled {disabledCount} module{disabledCount !== 1 ? "s" : ""}{" "}
+                      for your section. These will become available when your instructor enables them. You can continue
+                      with the available modules in the meantime.
                     </p>
                   </div>
-                  <Button className="bg-blue-600 hover:bg-blue-700">Continue Learning</Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Completion Card */}
+          {isEnrolled && availableModules.length > 0 && progress < 100 && (
+            <Card className="mt-10 border border-border bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5">
+              <CardContent className="p-8 text-center">
+                <div className="max-w-lg mx-auto space-y-6">
+                  <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+                    <Award className="h-8 w-8 text-primary" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-semibold text-card-foreground">
+                      Complete your course to earn a certificate
+                    </h3>
+                    <p className="text-muted-foreground">
+                      You're making great progress! Complete all available modules to earn your course completion
+                      certificate.
+                    </p>
+                  </div>
+                  <div className="space-y-3">
+                    <Progress value={progress} className="h-2" />
+                    <p className="text-sm text-muted-foreground">
+                      {completedModules} of {availableModules.length} available modules completed
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>

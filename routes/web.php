@@ -26,6 +26,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // instructor routes - protected by role:instructor middleware
     Route::middleware(['role:instructor'])->prefix('instructor')->group(function () {
         Route::get('/dashboard', [InstructorController::class, 'dashboard'])->name('instructor.dashboard');
+        Route::get('/subjects/modules', [InstructorController::class, 'modules'])->name('instructor.modules');
         // Add more instructor routes here
     });
     

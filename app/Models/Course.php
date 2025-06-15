@@ -31,4 +31,8 @@ class Course extends Model
         return $this->belongsToMany(User::class, 'class_instructors', 'course_id', 'instructor_id');
     }
 
+    public function classInstructors()
+    {
+        return $this->hasMany(ClassInstructor::class);
+    }
 }

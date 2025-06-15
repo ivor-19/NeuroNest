@@ -37,19 +37,34 @@ class StudentController extends Controller
                 'message' => 'No instructor assigned to your section for this subject yet.'
             ]);
         }
-
-        // Get only accessible modules for this student's section
-        $accessibleModules = Module::where('subject_id', $subject_id)
-            ->whereHas('moduleAccess', function($query) use ($classInstructor) {
-                $query->where('class_instructor_id', $classInstructor->id)
-                      ->where('is_available', true);
-            })
-            ->get();
-
+    
+        // Get ALL modules for this subject with their access status
+        $modules = Module::where('subject_id', $subject_id)
+            ->with(['moduleAccess' => function($query) use ($classInstructor) {
+                $query->where('class_instructor_id', $classInstructor->id);
+            }])
+            ->get()
+            ->map(function($module) use ($classInstructor) {
+                // Check if this module is accessible for this section
+                $moduleAccess = $module->moduleAccess->first();
+                $isAvailable = $moduleAccess ? $moduleAccess->is_available : false;
+                
+                return [
+                    'id' => $module->id,
+                    'title' => $module->title,
+                    'description' => $module->description,
+                    'isActive' => $isAvailable,  // This controls if module is enabled/disabled
+                    'isCompleted' => false, // You can add completion logic here later
+                    'duration' => $module->duration ?? '30 min', // Add duration to your module model
+                    'type' => 'reading', // Add type to your module model or set default
+                    'status' => $isAvailable ? 'available' : 'disabled'
+                ];
+            });
+    
         return Inertia::render('Student/Modules', [
             'subject' => $subject,
-            'modules' => $accessibleModules,
-            'instructor' => $classInstructor->instructor_name ?? 'Unknown', // if you have instructor name
+            'modules' => $modules,
+            'instructor' => $classInstructor->instructor->name ?? 'Unknown',
         ]);
     }
 }

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Edit, Trash2, Search, UserCheck, Plus, MapPin, Clock, GraduationCap, BookOpen, Users, Calendar } from "lucide-react"
+import { Edit, Trash2, Search, UserCheck, Plus, MapPin, Clock, GraduationCap, BookOpen, Users, Calendar, UserPlus, Mail, Phone, Trash } from "lucide-react"
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
@@ -59,6 +59,8 @@ type InstructorProps = {
 
 export default function ManageInstructors({ instructors, courseSubjects  } : InstructorProps) {
   const [activeTab, setActiveTab] = useState("view-instructors")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedInstructorForAssignment, setSelectedInstructorForAssignment] = useState<number | null>(null)
   const { data, setData, post, processing, errors, reset} = useForm({
     instructor_id: '',
     course_id: '',
@@ -79,14 +81,22 @@ export default function ManageInstructors({ instructors, courseSubjects  } : Ins
       .toUpperCase()
   }
 
+  const [alreadyAssigned, setAlreadyAssigned] = useState(false);
   const handleAssignInstructor = () => {
     console.log("Assigning instructor:", data)
     post(route('admin.assignInstructor'), {
       onSuccess: () => {
         reset()
+        setAlreadyAssigned(false)
       },
       onError: (errors) => {
         console.error(errors)
+
+        const hasAssignmentError = Object.values(errors).some(error => 
+          error.includes('There is already an instructor assigned')
+        );
+        
+        setAlreadyAssigned(hasAssignmentError);  
       }
     })
     
@@ -126,6 +136,18 @@ export default function ManageInstructors({ instructors, courseSubjects  } : Ins
     });
   };
 
+  const filteredInstructors = instructors.filter(
+    (instructor) =>
+      instructor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      instructor.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      instructor.account_id?.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
+
+  const handleQuickAssign = (instructorId: number) => {
+    setSelectedInstructorForAssignment(instructorId)
+    setData((prev) => ({ ...prev, instructor_id: instructorId.toString() }))
+    setActiveTab("assign-instructor")
+  }
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
@@ -137,82 +159,125 @@ export default function ManageInstructors({ instructors, courseSubjects  } : Ins
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="view-instructors">All Instructors</TabsTrigger>
-          <TabsTrigger value="assign-instructor">Assign Instructor</TabsTrigger>
-          <TabsTrigger value="by-instructor">By Instructor</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
+          <TabsTrigger value="view-instructors" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            All Instructors
+          </TabsTrigger>
+          <TabsTrigger value="assign-instructor" className="flex items-center gap-2">
+            <UserPlus className="h-4 w-4" />
+            Assign
+          </TabsTrigger>
+          <TabsTrigger value="by-instructor" className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4" />
+            Assignments
+          </TabsTrigger>
         </TabsList>
 
         {/* VIEW ALL INSTRUCTORS TAB */}
-        <TabsContent value="view-instructors" className="space-y-4">
+        <TabsContent value="view-instructors" className="space-y-6">
           <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>All Instructors</CardTitle>
-                <div className="flex items-center gap-2">
+            <CardHeader className="pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  All Instructors
+                </CardTitle>
+                <div className="flex items-center gap-3">
                   <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search instructors..." className="pl-8 w-64" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search instructors..."
+                      className="pl-9 w-64"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                   </div>
-                  <Button onClick={() => setActiveTab("add-instructor")}>
+                  <Button>
                     <Plus className="h-4 w-4 mr-2" />
                     Add Instructor
                   </Button>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {instructors.map((instructor) => {
-                  return (
-                    <div key={instructor.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center gap-4">
-                        <Avatar className="h-12 w-12">
+            <CardContent className="space-y-4">
+              {filteredInstructors.map((instructor) => (
+                <Card key={instructor.id} className="border border-border hover:border-border/80 transition-colors">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-4 flex-1">
+                        <Avatar className="h-12 w-12 ring-2 ring-border">
                           <AvatarImage src="" alt={instructor.name} />
-                          <AvatarFallback>{getInitials(instructor.name)}</AvatarFallback>
+                          <AvatarFallback className="bg-muted font-semibold">
+                            {getInitials(instructor.name)}
+                          </AvatarFallback>
                         </Avatar>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium">{instructor.name}</p>
-                            <Badge variant="outline">{instructor.account_id}</Badge>
-                            {/* <Badge variant="secondary">{instructor.position}</Badge> */}
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="font-semibold text-lg">{instructor.name}</h3>
+                            <Badge variant="outline" className="font-mono text-xs">
+                              {instructor.account_id}
+                            </Badge>
+                            <Badge
+                              variant={instructor.status === "active" ? "default" : "secondary"}
+                              className="capitalize"
+                            >
+                              {instructor.status}
+                            </Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            {instructor.email} 
-                            {instructor.contact_number && <span> • {instructor.contact_number}</span>}
-                          </p>
-                          {/* <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-                            <span>{instructor.department}</span>
-                            <span>{instructor.experienceYears} years exp.</span>
-                            <span>{instructorAssignments.length} assignments</span>
-                          </div> */}
-                          {/* <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              {instructor.officeLocation}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {instructor.officeHours}
-                            </span>
-                          </div> */}
+
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <Mail className="h-3 w-3" />
+                                <span>{instructor.email}</span>
+                              </div>
+                              {instructor.contact_number && (
+                                <div className="flex items-center gap-1">
+                                  <Phone className="h-3 w-3" />
+                                  <span>{instructor.contact_number}</span>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <BookOpen className="h-3 w-3" />
+                                <span>{instructor.teaching_assignments?.length || 0} assignments</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Users className="h-3 w-3" />
+                                <span>Active this semester</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={instructor.status === "active" ? "default" : "secondary"}>
-                          {instructor.status}
-                        </Badge>
+
+                      <div className="flex items-center gap-2 ml-4">
+                        
                         <Button variant="outline" size="sm">
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
-                  )
-                })}
-              </div>
+                  </CardContent>
+                </Card>
+              ))}
+
+              {filteredInstructors.length === 0 && (
+                <div className="text-center py-12">
+                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="font-medium text-lg mb-2">No instructors found</h3>
+                  <p className="text-muted-foreground">
+                    {searchQuery ? "Try adjusting your search terms" : "Get started by adding your first instructor"}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -321,11 +386,17 @@ export default function ManageInstructors({ instructors, courseSubjects  } : Ins
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 h-full items-center">
                   <Button onClick={handleAssignInstructor}>Assign Instructor</Button>
                   <Button variant="outline" onClick={() => setActiveTab("view-assignments")}>
                     Cancel
                   </Button>
+                  {alreadyAssigned && (
+                    <p className="text-destructive text-xs">There is already an instructor assigned for this section.</p>
+                  )}
+                  {(errors.course_id || errors.instructor_id || errors.year_level || errors.section || errors.subject_id) && (
+                    <p className="text-xs text-destructive">Complete all fields</p>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -333,130 +404,141 @@ export default function ManageInstructors({ instructors, courseSubjects  } : Ins
         </TabsContent>
 
         {/* BY INSTRUCTOR TAB */}
-        <TabsContent value="by-instructor" className="space-y-6 transition-colors">
-        <Card className="border-[var--(zinc)] shadow-sm">
-          <CardHeader className="pb-6">
-            <div className="flex items-center gap-3">
-              <div>
-                <CardTitle className="text-xl">Teaching Assignments</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">Manage instructor assignments and course sections</p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {instructors.map((instructor) => (
-              <div key={instructor.id} className="group">
-                <Card className="border border-muted hover:border-muted-300 transition-colors">
+        <TabsContent value="by-instructor" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5" />
+                Teaching Assignments Overview
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                View and manage all instructor assignments by instructor
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {instructors.map((instructor) => (
+                <Card key={instructor.id} className="border border-border">
                   <CardContent className="p-6">
                     {/* Instructor Header */}
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex items-center gap-4">
-                        <Avatar className="h-14 w-14 ring-2 ring-muted">
+                        <Avatar className="h-14 w-14 ring-2 ring-border">
                           <AvatarImage src="" alt={instructor.name} />
-                          <AvatarFallback className=" font-semibold bg-[var(--zinc)]">
+                          <AvatarFallback className="bg-muted font-semibold">
                             {getInitials(instructor.name)}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <h3 className="font-semibold text-lg ">{instructor.name}</h3>
-                          {/* <p className="text-sm text-gray-600 mb-1">{instructor.department}</p> */}
-                          <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <h3 className="font-semibold text-lg mb-1">{instructor.name}</h3>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+                            <div className="flex items-center gap-1">
+                              <Mail className="h-3 w-3" />
+                              <span>{instructor.email}</span>
+                            </div>
+                            <Badge variant="outline" className="text-xs">
+                              {instructor.account_id}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
                             <div className="flex items-center gap-1">
                               <BookOpen className="h-3 w-3" />
                               <span>{instructor.teaching_assignments?.length || 0} courses</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Users className="h-3 w-3" />
-                              <span>
-                                {/* {instructor.teaching_assignments?.reduce(
-                                  (sum, assignment) => sum + (assignment.student_count || 0),
-                                  0,
-                                ) || 0}{" "} */}
-                                0
-                                students
-                              </span>
+                              <span>Active assignments</span>
                             </div>
                           </div>
                         </div>
                       </div>
-                      <Badge
-                        variant={instructor.teaching_assignments?.length > 0 ? "default" : "secondary"}
-                        className="px-3 py-1"
-                      >
-                        {instructor.teaching_assignments?.length || 0} assignments
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant={instructor.teaching_assignments?.length > 0 ? "default" : "secondary"}
+                          className="px-3 py-1"
+                        >
+                          {instructor.teaching_assignments?.length || 0} assignments
+                        </Badge>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleQuickAssign(instructor.id)}
+                          className="gap-2"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Assign
+                        </Button>
+                      </div>
                     </div>
 
-                    {/* Assignments Grid */}
+                    {/* Assignments */}
                     {instructor.teaching_assignments?.length > 0 ? (
-                      <div className="grid gap-3">
-                        {instructor.teaching_assignments.map((assignment) => (
-                          <div
-                            key={assignment.id}
-                            className="flex items-center justify-between p-4 rounded-lg border border-muted bg-[var(--zinc)] transition-all group/assignment"
-                          >
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <div className="flex items-center gap-2">
-                                  <Badge variant="outline" className="font-mono text-xs px-2 py-1 bg-background">
+                      <div className="space-y-3">
+                        <h4 className="font-medium text-sm text-muted-foreground mb-3">Current Assignments</h4>
+                        <div className="grid gap-3">
+                          {instructor.teaching_assignments.map((assignment) => (
+                            <div
+                              key={assignment.id}
+                              className="flex items-center justify-between p-4 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors"
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <Badge variant="outline" className="font-mono text-xs bg-background">
                                     {assignment.course_code}
                                   </Badge>
-                                  <span className="text-sm font-medium ">
+                                  <Badge className="bg-primary/10 text-primary hover:bg-primary/10">
+                                    {assignment.subject_code}
+                                  </Badge>
+                                  <span className="text-sm font-medium">
                                     Year {assignment.year_level} • Section {assignment.section}
                                   </span>
                                 </div>
-                                <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
-                                  {assignment.subject_code}
-                                </Badge>
+
+                                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="h-3 w-3" />
+                                    <span>Semester {assignment.subject_semester}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <BookOpen className="h-3 w-3" />
+                                    <span>{assignment.subject_title}</span>
+                                  </div>
+                                </div>
                               </div>
 
-                              <div className="flex items-center gap-4 text-xs text-gray-600">
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="h-3 w-3" />
-                                  <span>Semester {assignment.subject_semester}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Users className="h-3 w-3" />
-                                  <span>0 students</span>
-                                </div>
-                                {assignment.subject_title && (
-                                  <span className="text-gray-500">• {assignment.subject_title}</span>
-                                )}
-                              </div>
+                              <Button variant="ghost" size="sm" className="gap-2 text-destructive text-xs">
+                                <Trash2 className="h-4 w-4"/>
+                                Remove
+                              </Button>
                             </div>
-
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="opacity-0 group-hover/assignment:opacity-100 transition-opacity"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     ) : (
-                      <div className="text-center py-12">
-                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <BookOpen className="h-8 w-8 text-gray-400" />
+                      <div className="text-center py-8">
+                        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                          <BookOpen className="h-8 w-8 text-muted-foreground" />
                         </div>
-                        <h4 className="font-medium text-gray-900 mb-2">No assignments yet</h4>
-                        <p className="text-sm text-gray-600 mb-4">
+                        <h4 className="font-medium mb-2">No assignments yet</h4>
+                        <p className="text-sm text-muted-foreground mb-4">
                           This instructor hasn't been assigned to any courses this semester.
                         </p>
-                        <Button variant="outline" size="sm" className="gap-2" onClick={() => setActiveTab("assign-instructor")}>
-                          <Users className="h-4 w-4" />
-                          Assign Sections
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2"
+                          onClick={() => handleQuickAssign(instructor.id)}
+                        >
+                          <UserPlus className="h-4 w-4" />
+                          Assign Courses
                         </Button>
                       </div>
                     )}
                   </CardContent>
                 </Card>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </TabsContent>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
       </Tabs>
     </div>
