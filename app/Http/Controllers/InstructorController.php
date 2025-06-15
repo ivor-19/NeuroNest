@@ -95,4 +95,15 @@ class InstructorController extends Controller
             'modules' => $modules,
         ]);
     }
+
+    public function moduleAvailability($id)
+    {
+        $moduleAccess = ModuleAccess::findOrFail($id);
+        
+        // Toggle the is_available status
+        $moduleAccess->is_available = !$moduleAccess->is_available;
+        $moduleAccess->save();
+        
+        return redirect()->back();
+    }
 }

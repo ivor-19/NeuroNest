@@ -27,6 +27,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['role:instructor'])->prefix('instructor')->group(function () {
         Route::get('/dashboard', [InstructorController::class, 'dashboard'])->name('instructor.dashboard');
         Route::get('/subjects/modules', [InstructorController::class, 'modules'])->name('instructor.modules');
+
+        Route::POST('/subjects/modules/edit-availability/{id}', [InstructorController::class, 'moduleAvailability'])->name('instructor.moduleAvailability');
         // Add more instructor routes here
     });
     

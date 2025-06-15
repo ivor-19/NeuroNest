@@ -90,7 +90,7 @@ export default function Dashboard({ sections = [] }: InstructorProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Welcome Section */}
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {auth.user.name}</h2>
+            <h2 className="text-3xl font-bold  mb-2">Welcome back, {auth.user.name}</h2>
             <p className="text-gray-600">Here's what's happening with your sections today.</p>
           </div>
   
@@ -143,7 +143,7 @@ export default function Dashboard({ sections = [] }: InstructorProps) {
   
           {/* Main Content */}
           <Tabs defaultValue="sections" className="space-y-6">
-            <TabsList>
+            <TabsList className="rounded-xl">
               <TabsTrigger value="sections">My Sections</TabsTrigger>
               <TabsTrigger value="assignments">Assignments</TabsTrigger>
               <TabsTrigger value="students">Students</TabsTrigger>
@@ -247,10 +247,10 @@ export default function Dashboard({ sections = [] }: InstructorProps) {
                           </span>
                         </div>
                         <div className="flex space-x-2">
-                          <Button size="sm" className="flex-1" onClick={() => router.visit(route('instructor.modules', { course_id: section.course_id, year_level: section.year_level, section: section.section, subject_id: section.subject_id }))}>
+                          <Button size="sm" className="flex-1 rounded-xl" onClick={() => router.visit(route('instructor.modules', { course_id: section.course_id, year_level: section.year_level, section: section.section, subject_id: section.subject_id }))}>
                             Manage Subject
                           </Button>
-                          <Button size="sm" variant="outline" onClick={() => console.log(section.subject.id)}>
+                          <Button size="sm" variant="outline" className="rounded-xl" onClick={() => console.log(section.subject.id)}>
                             View
                           </Button>
                         </div>
