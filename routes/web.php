@@ -29,7 +29,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/sections', [InstructorController::class, 'sections'])->name('instructor.sections');
         Route::get('/sections/subjects/modules', [InstructorController::class, 'modules'])->name('instructor.modules');
 
-        Route::POST('/subjects/modules/edit-availability/{id}', [InstructorController::class, 'moduleAvailability'])->name('instructor.moduleAvailability');
+        Route::post('/subjects/modules/edit-availability/{id}', [InstructorController::class, 'moduleAvailability'])->name('instructor.moduleAvailability');
+        Route::post('/create-assessment', [InstructorController::class, 'createAssessment'])->name('instructor.createAssessment');
         // Add more instructor routes here
     });
     

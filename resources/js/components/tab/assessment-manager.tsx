@@ -14,6 +14,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Plus, MoreHorizontal, Search, Edit, Trash2, Users, FileText, CheckCircle, AlertCircle, Calendar, Settings, ArrowLeft } from "lucide-react"
+import { router, useForm, usePage } from "@inertiajs/react"
+import { SharedData } from "@/types"
 
 // interface AssessmentAssignment { id: number; assessment_id: number; course_id: number; year_level: string; section: string; is_available: boolean; opened_at?: string; closed_at?: string; created_at: string; updated_at: string; assessment: AssessmentList }
 interface ClassInstructor { 
@@ -77,6 +79,14 @@ interface Props {
 
 
 export default function AssessmentManager({ modules, classInstructor, assessments }: Props) {
+  const { auth } = usePage<SharedData>().props;
+  const { data, setData, post, processing, errors, reset} = useForm({
+    instructor_id: auth.user.id,
+    subject_id: classInstructor.subject.id,
+    title: '',
+    description: '',
+  }) 
+
   const [activeTab, setActiveTab] = useState("list")
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -102,15 +112,17 @@ export default function AssessmentManager({ modules, classInstructor, assessment
     assessment.description.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  // const handleCreateAssessment = () => {
-  //   const assessment: Assessment = {
-  //     id: Date.now(), instructor_id: instructorId, title: newAssessment.title, description: newAssessment.description,
-  //     created_at: new Date().toISOString(), updated_at: new Date().toISOString()
-  //   }
-  //   setAssessments([assessment, ...assessments])
-  //   setNewAssessment({ title: "", description: "" })
-  //   setActiveTab("list")
-  // }
+  const handleCreateAssessment = async (e: React.FormEvent) => {
+    e.preventDefault()
+    post(route('instructor.createAssessment'), {
+      onSuccess: () => {
+        reset();
+      },
+      onError: (errors) => {
+        console.error('Error occured', errors)
+      }
+    })
+  }
 
   // const handleDeleteAssessment = (assessment: Assessment) => {
   //   setSelectedAssessment(assessment)
@@ -272,12 +284,12 @@ export default function AssessmentManager({ modules, classInstructor, assessment
                     <CardContent className="space-y-6">
                       <div className="space-y-2">
                         <Label htmlFor="title">Assessment Title</Label>
-                        <Input id="title" placeholder="e.g., Midterm Exam, Weekly Quiz #1" value={newAssessment.title} onChange={e => setNewAssessment({ ...newAssessment, title: e.target.value })} />
+                        <Input id="title" placeholder="e.g., Midterm Exam, Weekly Quiz #1" value={data.title} onChange={e => setData('title', e.target.value)} />
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="description">Description</Label>
-                        <Textarea id="description" placeholder="Brief description of the assessment..." value={newAssessment.description} onChange={e => setNewAssessment({ ...newAssessment, description: e.target.value })} rows={3} />
+                        <Textarea id="description" placeholder="Brief description of the assessment..." value={data.description} onChange={e => setData('description', e.target.value)} rows={3} />
                       </div>
 
                       <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
@@ -299,7 +311,7 @@ export default function AssessmentManager({ modules, classInstructor, assessment
 
                       <div className="flex justify-end gap-3">
                         <Button variant="outline" onClick={() => setActiveTab("list")}>Cancel</Button>
-                        <Button  disabled={!newAssessment.title.trim() || !newAssessment.description.trim()}>Create Assessment</Button>
+                        <Button  onClick={handleCreateAssessment}>Create Assessment</Button>
                       </div>
                     </CardContent>
                   </Card>

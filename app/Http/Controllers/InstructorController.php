@@ -8,6 +8,7 @@ use App\Models\Module;
 use App\Models\ModuleAccess;
 use App\Models\StudentProfile;
 use App\Models\Subject;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -170,5 +171,19 @@ class InstructorController extends Controller
         $moduleAccess->save();
         
         return redirect()->back();
+    }
+
+    public function createAssessment(Request $request){
+        $request->validate([
+            'instructor_id' => 'required|integer|exists:users,id',
+            'subject_id' => 'required|integer|exists:subjects,id',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+          
+           ]);
+    
+        Assessment::create($request->all());
+        return redirect()->back()->with('success',`Successfully added a assessment`);
+
     }
 }
