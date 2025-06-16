@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import type { BreadcrumbItem } from "@/types"
-import { Head, router, useForm } from "@inertiajs/react"
+import type { BreadcrumbItem, SharedData } from "@/types"
+import { Head, router, useForm, usePage } from "@inertiajs/react"
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -66,6 +66,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ]
 
 export default function ManageSubjects({ subjects }: SubjectProps) {
+  const {auth} = usePage<SharedData>().props
   const [activeTab, setActiveTab] = useState("modules")
   const [selectedSubject, setSelectedSubject] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
@@ -97,7 +98,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
   } = useForm({
     title: "",
     subject_id: "",
-    creator_id: 3,
+    creator_id: auth.user.id,
     status: "",
     description: "",
     order: "",
@@ -119,19 +120,37 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
     })
   }
 
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
   const handleAddModule = async (e: React.FormEvent) => {
-    e.preventDefault()
-    modulePost(route("admin.addModule"), {
+    e.preventDefault();
+    
+    // Create FormData
+    const formData = new FormData();
+    
+    formData.append('subject_id', moduleData.subject_id);
+    formData.append('creator_id', auth.user.id.toString());
+    formData.append('title', moduleData.title);
+    formData.append('description', moduleData.description);
+    formData.append('status', moduleData.status);
+    formData.append('order', moduleData.order);
+    
+    if (pdfFile) {
+      formData.append('pdf', pdfFile);
+    }
+
+    // Use Inertia router directly
+    router.post(route("admin.addModule"), formData, {
       onSuccess: () => {
-        moduleReset()
-        setShowAddForm(false)
-        console.log("Success: ", moduleData)
+        moduleReset();
+        setShowAddForm(false);
+        setPdfFile(null);
+        console.log("Module added successfully!");
       },
-      onError: (errors) => {
-        console.error('Error occured', errors)
+      onError: (errors: any) => {
+        console.error('Error occurred:', errors);
       },
-    })
-  }
+    });
+  };
 
   const getModulesBySubject = (subjectCode: string) => {
     if (subjectCode === "all") return allModules
@@ -362,7 +381,11 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                             </div>
                             <div className="space-y-2 md:col-span-2">
                               <Label htmlFor="module-file">PDF File</Label>
-                              <Input id="module-file" type="file" accept=".pdf" />
+                              <Input 
+                                type="file"
+                                accept=".pdf"
+                                onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
+                              />
                             </div>
                           </div>
                           <div className="flex gap-2">

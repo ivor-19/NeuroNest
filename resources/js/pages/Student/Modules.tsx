@@ -15,6 +15,7 @@ import {
   Award,
   ChevronRight,
   AlertCircle,
+  Download,
 } from "lucide-react"
 import HeaderLayout from "@/layouts/header-layout"
 import { Head, router } from "@inertiajs/react"
@@ -24,9 +25,9 @@ interface Module {
   title: string
   description: string
   isActive: boolean
-  isCompleted?: boolean
-  duration?: string
+  isDone?: boolean
   lessons?: number
+  pdf: string
   type?: "video" | "reading" | "quiz"
   status?: "available" | "disabled"
 }
@@ -48,7 +49,7 @@ export default function Modules({ subject, modules }: Props) {
 
   // Calculate progress only on available and completed modules
   const availableModules = modules.filter((module) => module.isActive)
-  const completedModules = availableModules.filter((module) => module.isCompleted).length
+  const completedModules = availableModules.filter((module) => module.isDone).length
   const progress = availableModules.length > 0 ? (completedModules / availableModules.length) * 100 : 0
 
   // Count disabled modules
@@ -155,7 +156,7 @@ export default function Modules({ subject, modules }: Props) {
                       className={`transition-all duration-200 ${
                         isDisabled
                           ? "border-border bg-muted/30 opacity-70"
-                          : module.isCompleted
+                          : module.isDone
                             ? "border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/20 hover:shadow-lg cursor-pointer"
                             : isEnrolled
                               ? "border-border bg-card hover:border-primary/20 hover:shadow-lg cursor-pointer"
@@ -170,7 +171,7 @@ export default function Modules({ subject, modules }: Props) {
                               className={`w-12 h-12 rounded-full flex items-center justify-center text-xs font-semibold ${
                                 isDisabled
                                   ? "bg-muted text-muted-foreground"
-                                  : module.isCompleted
+                                  : module.isDone
                                     ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
                                     : isEnrolled
                                       ? "bg-primary/10 text-primary"
@@ -179,7 +180,7 @@ export default function Modules({ subject, modules }: Props) {
                             >
                               {isDisabled ? (
                                 <Lock className="h-5 w-5" />
-                              ) : module.isCompleted ? (
+                              ) : module.isDone ? (
                                 <CheckCircle className="h-5 w-5" />
                               ) : isEnrolled ? (
                                 <span>{index + 1}</span>
@@ -203,7 +204,7 @@ export default function Modules({ subject, modules }: Props) {
                                       Disabled
                                     </Badge>
                                   )}
-                                  {module.isCompleted && (
+                                  {module.isDone && (
                                     <Badge variant="outline" className="border-green-200 dark:border-green-800 text-green-700 dark:text-green-300">
                                       <CheckCircle className="h-3 w-3 mr-1" />
                                       Completed
@@ -213,7 +214,6 @@ export default function Modules({ subject, modules }: Props) {
                                 <p className={`text-sm leading-relaxed ${isDisabled ? "text-muted-foreground/70" : "text-muted-foreground" }`}>
                                   {module.description}
                                 </p>
-
                                 {/* Module Meta */}
                                 <div
                                   className={`flex items-center gap-6 text-sm ${
@@ -226,12 +226,12 @@ export default function Modules({ subject, modules }: Props) {
                                       <span className="capitalize font-medium">{module.type}</span>
                                     </div>
                                   )}
-                                  {module.duration && (
+                                  {/* {module.duration && (
                                     <div className="flex items-center gap-2">
                                       <Clock className="h-3 w-3" />
                                       <span>{module.duration}</span>
                                     </div>
-                                  )}
+                                  )} */}
                                   {module.lessons && (
                                     <div className="flex items-center gap-2">
                                       <BookOpen className="h-3 w-3" />
@@ -257,10 +257,11 @@ export default function Modules({ subject, modules }: Props) {
                                 {isEnrolled && !isDisabled && (
                                   <Button
                                     size="default"
-                                    variant={module.isCompleted ? "outline" : "default"}
-                                    className="min-w-[100px]"
+                                    variant={module.isDone ? "outline" : "default"}
+                                    className="min-w-[100px] cursor-pointer"
+                                    onClick={() => console.log(module.pdf)}
                                   >
-                                    {module.isCompleted ? "Review" : "Start"}
+                                    <Download />
                                   </Button>
                                 )}
                                 {isDisabled && (
@@ -268,11 +269,7 @@ export default function Modules({ subject, modules }: Props) {
                                     Unavailable
                                   </Button>
                                 )}
-                                <ChevronRight
-                                  className={`h-5 w-5 ${
-                                    isDisabled ? "text-muted-foreground/50" : "text-muted-foreground"
-                                  }`}
-                                />
+                               
                               </div>
                             </div>
                           </div>

@@ -22,42 +22,38 @@ class StudentController extends Controller
     public function modules($subject_id)
     {
         $user = auth()->user();
-        
-        // Find subject
         $subject = Subject::findOrFail($subject_id);
-        
-        // Get the class instructor for this student's section and subject
         $classInstructor = $user->getClassInstructorForSubject($subject_id);
-        
+    
         if (!$classInstructor) {
-            // No instructor assigned to this section for this subject
             return Inertia::render('Student/Modules', [
                 'subject' => $subject,
-                'modules' => collect([]), // empty collection
+                'modules' => collect([]),
                 'message' => 'No instructor assigned to your section for this subject yet.'
             ]);
         }
     
-        // Get ALL modules for this subject with their access status
         $modules = Module::where('subject_id', $subject_id)
             ->with(['moduleAccess' => function($query) use ($classInstructor) {
                 $query->where('class_instructor_id', $classInstructor->id);
             }])
+            ->with(['completions' => function($query) use ($user) {
+                $query->where('student_id', $user->id);
+            }])
             ->get()
-            ->map(function($module) use ($classInstructor) {
-                // Check if this module is accessible for this section
-                $moduleAccess = $module->moduleAccess->first();
-                $isAvailable = $moduleAccess ? $moduleAccess->is_available : false;
-                
+            ->map(function($module) {
+                $isAvailable = optional($module->moduleAccess->first())->is_available ?? false;
+                $isDone = $module->completions->isNotEmpty();
+    
                 return [
                     'id' => $module->id,
                     'title' => $module->title,
                     'description' => $module->description,
-                    'isActive' => $isAvailable,  // This controls if module is enabled/disabled
-                    'isCompleted' => false, // You can add completion logic here later
-                    'duration' => $module->duration ?? '30 min', // Add duration to your module model
-                    'type' => 'reading', // Add type to your module model or set default
-                    'status' => $isAvailable ? 'available' : 'disabled'
+                    'pdf' => $module->pdf,
+                    'isActive' => $isAvailable,
+                    'isDone' => $isDone, // Simple boolean
+                    'type' => 'reading',
+                    'status' => $isAvailable ? ($isDone ? 'done' : 'available') : 'disabled'
                 ];
             });
     
