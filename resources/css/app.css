@@ -139,4 +139,27 @@
     body {
         @apply bg-background text-foreground;
     }
+
+    /* Scrollbar styles for modern browsers */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--ring); /* Use your custom variable or any color */
+    border-radius: 0.5rem;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: var(--muted); /* Light gray background */
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background-color: var(--muted-foreground);
+  }
+
+  .dark ::-webkit-scrollbar-track {
+    background-color: var(--muted);
+  }
 }

@@ -20,6 +20,7 @@ interface Subject {
 	title: string;
 	description: string;
 	isActive: boolean;
+	semester: string;
 	instructor_name?: string;  // Added instructor info
 	instructor_email?: string; // Added instructor email
 }
@@ -119,15 +120,17 @@ export default function Dashboard({ user, subjects }: StudentDashboardProps) {
 												<CardHeader>
 													<div className="flex items-center justify-between">
 														<Badge variant="secondary" className="text-xs">{subject.code}</Badge>
-														<Badge 
+														<Badge variant="outline" className="text-xs">{subject.semester} Semester</Badge>
+														{/* <Badge 
 															variant={subject.isActive ? "default" : "secondary"}
 															className="text-xs"
 														>
 															{subject.isActive ? "Active" : "Inactive"}
-														</Badge>
+														</Badge> */}
 													</div>
 													<CardTitle className="text-lg">{subject.title}</CardTitle>
 													<CardDescription className="space-y-1">
+														
 														<div>{subject.description}</div>
 														{/* Instructor Info */}
 														{subject.instructor_name && (

@@ -27,6 +27,17 @@ return new class extends Migration
             // Add unique constraint on subject_id and order combination. Means each subject can only have one module with order 1 and so on...
             $table->unique(['subject_id', 'order'], 'unique_subject_module_order');
         });
+
+        Schema::create('module_access', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('module_id')->constrained('modules')->onDelete('cascade');
+            $table->foreignId('class_instructor_id')->constrained('class_instructors')->onDelete('cascade');
+            $table->boolean('is_available')->default(true);
+            $table->timestamps();
+            
+            // Prevent duplicate entries
+            $table->unique(['module_id', 'class_instructor_id']);
+        });
     }
 
     /**
@@ -40,5 +51,6 @@ return new class extends Migration
         });
     
         Schema::dropIfExists('modules');
+        Schema::dropIfExists('module_access');
     }
 };
