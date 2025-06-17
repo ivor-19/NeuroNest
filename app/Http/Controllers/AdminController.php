@@ -277,7 +277,8 @@ class AdminController extends Controller
         return redirect()->back()->with('success','Deleted a subject');
     }
 
-    public function addModule(Request $request){
+    public function addModule(Request $request)
+    {
         $request->validate([
             'subject_id' => 'required|integer|exists:subjects,id',
             'creator_id' => 'required|integer|exists:users,id',
@@ -285,12 +286,27 @@ class AdminController extends Controller
             'description' => 'required|string|max:255',
             'status' => 'required|string',
             'order' => 'required|integer',
-
-          
-           ]);
+            'pdf' => 'required|file|mimes:pdf|max:10240', // 10MB max
+        ]);
     
-        Module::create($request->all());
-        return redirect()->back()->with('success',`Successfully added a module`);
+        // Handle file upload
+        $pdfPath = null;
+        if ($request->hasFile('pdf')) {
+            $pdfPath = $request->file('pdf')->store('modules/pdfs', 'public');
+        }
+    
+        // Create module with file path
+        Module::create([
+            'subject_id' => $request->subject_id,
+            'creator_id' => $request->creator_id,
+            'title' => $request->title,
+            'description' => $request->description,
+            'status' => $request->status,
+            'order' => $request->order,
+            'pdf' => $pdfPath, // Store the file path
+        ]);
+    
+        return redirect()->back()->with('success', 'Successfully added a module');
     }
 
     public function deleteModule($id){

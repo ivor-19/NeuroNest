@@ -31,6 +31,11 @@ class Module extends Model
         return $this->hasMany(ModuleAccess::class);
     }
 
+    public function completions()
+    {
+        return $this->hasMany(ModuleCompletion::class);
+    }
+
    // Auto-create access records when new module is created
    protected static function booted()
    {

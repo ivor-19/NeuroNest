@@ -27,6 +27,30 @@ return new class extends Migration
             // Add unique constraint on subject_id and order combination. Means each subject can only have one module with order 1 and so on...
             $table->unique(['subject_id', 'order'], 'unique_subject_module_order');
         });
+
+        Schema::create('module_access', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('module_id')->constrained('modules')->onDelete('cascade');
+            $table->foreignId('class_instructor_id')->constrained('class_instructors')->onDelete('cascade');
+            $table->boolean('is_available')->default(true);
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp(column: 'updated_at')->useCurrent();
+            
+            // Prevent duplicate entries
+            $table->unique(['module_id', 'class_instructor_id']);
+        });
+
+        Schema::create('module_completions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('module_id')->constrained('modules')->onDelete('cascade');
+            $table->boolean('is_done')->default(false); // Simple boolean flag
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp(column: 'updated_at')->useCurrent();
+            
+            // Prevent duplicate entries
+            $table->unique(['student_id', 'module_id']);
+        });
     }
 
     /**
@@ -40,5 +64,7 @@ return new class extends Migration
         });
     
         Schema::dropIfExists('modules');
+        Schema::dropIfExists('module_access');
+        Schema::dropIfExists('module_completions');
     }
 };

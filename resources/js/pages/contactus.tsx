@@ -1,6 +1,7 @@
 import { useForm, Head } from '@inertiajs/react';
 import Header from '@/components/landingpage/header';
 import Footer from '@/components/landingpage/footer';
+import React, { useMemo } from 'react';
 
 export default function ContactUs() {
     const { data, setData, post, processing, errors } = useForm({
@@ -13,6 +14,17 @@ export default function ContactUs() {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
+
+        if (name === 'contactNumber') {
+            // Only allow numbers
+            if (!/^\d*$/.test(value)) return;
+        }
+
+        if (name === 'message') {
+            // Limit to 300 characters
+            if (value.length > 300) return;
+        }
+
         setData(prev => ({
             ...prev,
             [name]: value
@@ -23,7 +35,6 @@ export default function ContactUs() {
         e.preventDefault();
         post('/contact', {
             onSuccess: () => {
-                // Optionally reset form or show success message
                 setData({
                     firstName: '',
                     lastName: '',
@@ -34,6 +45,8 @@ export default function ContactUs() {
             }
         });
     };
+
+    const characterCount = data.message.length;
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -140,10 +153,14 @@ export default function ContactUs() {
                                             onChange={handleInputChange}
                                             placeholder="Your Message"
                                             rows={6}
+                                            maxLength={300}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-colors resize-vertical"
                                             required
                                         />
-                                        {errors.message && <span className="text-red-600 text-sm">{errors.message}</span>}
+                                        <div className="flex justify-between items-center text-sm text-gray-500 mt-1">
+                                            <span>{characterCount}/300 characters</span>
+                                            {errors.message && <span className="text-red-600">{errors.message}</span>}
+                                        </div>
                                     </div>
 
                                     <button

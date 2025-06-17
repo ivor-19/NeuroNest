@@ -1,23 +1,17 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   BookOpen,
   Users,
   FileText,
-  Plus,
   MoreHorizontal,
   TrendingUp,
   Clock,
   CheckCircle,
-  Search,
-  Filter,
   TextSelect,
 } from "lucide-react"
 import HeaderLayout from "@/layouts/header-layout"
@@ -52,36 +46,16 @@ type InstructorProps = {
 }
 
 export default function Dashboard({ sections = [] }: InstructorProps) {
-	const { auth } = usePage<SharedData>().props;
+  const { auth } = usePage<SharedData>().props;
+  const [showAllSections, setShowAllSections] = useState(false)
 
-  const [searchTerm, setSearchTerm] = useState("")
-  const [subjectFilter, setSubjectFilter] = useState("all")
-  const [semesterFilter, setSemesterFilter] = useState("all")
+  // Determine which sections to display based on showAll state
+  const displayedSections = showAllSections ? sections : sections.slice(0, 3)
 
-  // Get unique subjects and semesters for filter options
-  const uniqueSubjects = [...new Set(sections.map(section => section.subject.code))]
-  const uniqueSemesters = [...new Set(sections.map(section => section.subject.semester))]
-
-  // Filter sections based on search and filters
-  const filteredSections = sections.filter(section => {
-    const searchTermLower = searchTerm.toLowerCase()
-    const matchesSearch = 
-      searchTerm === '' || 
-      section.course_code.toLowerCase().includes(searchTermLower) ||
-      section.subject.title.toLowerCase().includes(searchTermLower) ||
-      section.subject.code.toLowerCase().includes(searchTermLower) ||
-      section.section.toLowerCase().includes(searchTermLower)
-
-    const matchesSubject = subjectFilter === 'all' || section.subject.code === subjectFilter
-    const matchesSemester = semesterFilter === 'all' || section.subject.semester === semesterFilter
-    
-    return matchesSearch && matchesSubject && matchesSemester
-  })
-
-  // Calculate stats based on filtered sections
-  const totalSections = filteredSections.length
-  const totalStudents = filteredSections.reduce((sum, section) => sum + section.student_count, 0)
-  const pendingGrades = filteredSections.length * 5 // Mock data
+  // Calculate stats
+  const totalSections = sections.length
+  const totalStudents = sections.reduce((sum, section) => sum + section.student_count, 0)
+  const pendingGrades = sections.length * 5 // Mock data
 
   return (
     <HeaderLayout>
@@ -90,7 +64,7 @@ export default function Dashboard({ sections = [] }: InstructorProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Welcome Section */}
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {auth.user.name}</h2>
+            <h2 className="text-3xl font-bold mb-2">Welcome back, {auth.user.name}</h2>
             <p className="text-gray-600">Here's what's happening with your sections today.</p>
           </div>
   
@@ -143,79 +117,31 @@ export default function Dashboard({ sections = [] }: InstructorProps) {
   
           {/* Main Content */}
           <Tabs defaultValue="sections" className="space-y-6">
-            <TabsList>
+            <TabsList className="rounded-xl">
               <TabsTrigger value="sections">My Sections</TabsTrigger>
               <TabsTrigger value="assignments">Assignments</TabsTrigger>
               <TabsTrigger value="students">Students</TabsTrigger>
             </TabsList>
   
             <TabsContent value="sections" className="space-y-6">
-              {/* Filters */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Filter className="h-5 w-5" />
-                    Filter Sections
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    {/* Search */}
-                    <div className="flex-1">
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                        <Input
-                          placeholder="Search sections, subjects, or rooms..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Subject Filter */}
-                    <Select value={subjectFilter} onValueChange={setSubjectFilter}>
-                      <SelectTrigger className="w-full sm:w-[200px]">
-                        <SelectValue placeholder="Filter by Subject" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Subjects</SelectItem>
-                        {uniqueSubjects.map((subject) => (
-                          <SelectItem key={subject} value={subject}>
-                            {subject}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    {/* Semester Filter */}
-                    <Select value={semesterFilter} onValueChange={setSemesterFilter}>
-                      <SelectTrigger className="w-full sm:w-[200px]">
-                        <SelectValue placeholder="Filter by Semester" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Semesters</SelectItem>
-                        {uniqueSemesters.map((semester) => (
-                          <SelectItem key={semester} value={semester}>
-                            {semester}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Results Count */}
-              <div className="mb-4">
+              <div className="flex justify-between items-center mb-4">
                 <p className="text-sm text-gray-600">
-                  Showing {filteredSections.length} sections
+                  Showing {displayedSections.length} of {totalSections} sections
                 </p>
+                {sections.length > 3 && (
+                  <Button 
+                    variant="link" 
+                    className="text-primary hover:underline cursor-pointer" 
+                    onClick={() => router.visit(route('instructor.sections'))}
+                  >
+                    {showAllSections ? 'Show Less' : 'View All'}
+                  </Button>
+                )}
               </div>
-
+              
               {/* Subjects Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredSections.map(section => (
+                {displayedSections.map(section => (
                   <Card key={`${section.id}-${section.subject.id}`}>
                     <CardHeader>
                       <div className="flex items-center justify-between">
@@ -247,10 +173,10 @@ export default function Dashboard({ sections = [] }: InstructorProps) {
                           </span>
                         </div>
                         <div className="flex space-x-2">
-                          <Button size="sm" className="flex-1" onClick={() => router.visit(route('instructor.modules', { course_id: section.course_id, year_level: section.year_level, section: section.section, subject_id: section.subject_id }))}>
+                          <Button size="sm" className="flex-1 rounded-xl" onClick={() => router.visit(route('instructor.modules', { course_id: section.course_id, year_level: section.year_level, section: section.section, subject_id: section.subject_id }))}>
                             Manage Subject
                           </Button>
-                          <Button size="sm" variant="outline" onClick={() => console.log(section.subject.id)}>
+                          <Button size="sm" variant="outline" className="rounded-xl" onClick={() => console.log(section.subject.id)}>
                             View
                           </Button>
                         </div>
@@ -260,14 +186,12 @@ export default function Dashboard({ sections = [] }: InstructorProps) {
                 ))}
               </div>
 
-              {/* No Results */}
-              {filteredSections.length === 0 && (
+              {/* No Sections Message */}
+              {sections.length === 0 && (
                 <div className="text-center py-12">
                   <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    {searchTerm || subjectFilter !== 'all' || semesterFilter !== 'all' 
-                      ? "No sections match your filters" 
-                      : "You are not currently assigned to any sections"}
+                    You are not currently assigned to any sections
                   </h3>
                 </div>
               )}

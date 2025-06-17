@@ -27,7 +27,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Instructor routes
     Route::middleware(['role:instructor'])->prefix('instructor')->group(function () {
         Route::get('/dashboard', [InstructorController::class, 'dashboard'])->name('instructor.dashboard');
-        Route::get('/subjects/modules', [InstructorController::class, 'modules'])->name('instructor.modules');
+         Route::get('/subjects/modules', [InstructorController::class, 'modules'])->name('instructor.modules');
+        Route::get('/sections', [InstructorController::class, 'sections'])->name('instructor.sections');
+        Route::get('/sections/subjects/modules', [InstructorController::class, 'modules'])->name('instructor.modules');
+
+        Route::post('/subjects/modules/edit-availability/{id}', [InstructorController::class, 'moduleAvailability'])->name('instructor.moduleAvailability');
+        Route::post('/create-assessment', [InstructorController::class, 'createAssessment'])->name('instructor.createAssessment');
+        // Add more instructor routes here
     });
     
     // Admin routes
