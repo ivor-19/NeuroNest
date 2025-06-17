@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AssessmentController;
+use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\InstructorController;
 use Illuminate\Support\Facades\Route;
@@ -29,8 +31,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/sections', [InstructorController::class, 'sections'])->name('instructor.sections');
         Route::get('/sections/subjects/modules', [InstructorController::class, 'modules'])->name('instructor.modules');
 
-        Route::post('/subjects/modules/edit-availability/{id}', [InstructorController::class, 'moduleAvailability'])->name('instructor.moduleAvailability');
-        Route::post('/create-assessment', [InstructorController::class, 'createAssessment'])->name('instructor.createAssessment');
+        Route::post('/create-assessment', [AssessmentController::class, 'createAssessment'])->name('instructor.createAssessment');
+        Route::post('/assessment-availability/{id}', [AssessmentController::class, 'assessmentAvailability'])->name('instructor.assessmentAvailability');
+        Route::post('/assign-assessment', [AssessmentController::class, 'assignAssessment'])->name('instructor.assignAssessment');
+
+        Route::post('/module-availability/{id}', [ModuleController::class, 'moduleAvailability'])->name('instructor.moduleAvailability');
         // Add more instructor routes here
     });
     
@@ -46,7 +51,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/add-user', [AdminController::class, 'store'])->name('admin.addUser');
         Route::post('/add-course', [AdminController::class, 'addCourse'])->name('admin.addCourse');
         Route::post('/add-subject', [AdminController::class, 'addSubject'])->name('admin.addSubject');
-        Route::post('/add-module', [AdminController::class, 'addModule'])->name('admin.addModule');
+        Route::post('/add-module', [ModuleController::class, 'addModule'])->name('admin.addModule');
 
         Route::post('/assign-student', [AdminController::class, 'assignStudentToSection'])->name('admin.assignStudent');
         Route::post('/assign-subjects', [AdminController::class, 'assignSubjectsToCourse'])->name('admin.assignSubjects');
@@ -55,7 +60,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/delete-course/{id}', [AdminController::class, 'deleteCourse'])->name('admin.deleteCourse');
         Route::delete('/remove-subject/{id}', [AdminController::class, 'removeSubjectFromACourse'])->name('admin.removeSubject');
         Route::delete('/delete-subject/{id}', [AdminController::class, 'deleteSubject'])->name('admin.deleteSubject');
-        Route::delete('/delete-module/{id}', [AdminController::class, 'deleteModule'])->name('admin.deleteModule');
+        Route::delete('/delete-module/{id}', [ModuleController::class, 'deleteModule'])->name('admin.deleteModule');
     });
 });
 

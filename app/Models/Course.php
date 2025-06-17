@@ -35,4 +35,9 @@ class Course extends Model
     {
         return $this->hasMany(ClassInstructor::class);
     }
+
+    public function assessmentAssignment()
+    {
+        return $this->belongsToMany(AssessmentAssignment::class);
+    }
 }
