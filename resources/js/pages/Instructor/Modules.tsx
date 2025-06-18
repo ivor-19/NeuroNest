@@ -15,69 +15,18 @@ import { BookOpen, Plus, MoreHorizontal, Search, Download, Grid3X3, List, X, Cal
 import HeaderLayout from "@/layouts/header-layout"
 import { Head, router } from "@inertiajs/react"
 import AssessmentManager from "@/components/tab/assessment-manager"
+import { 
+  InstructorAccessabilityProps,
+  ModuleAccess,
+  AssessmentList,
+  AssessmentAssignment,
+  Question 
+} from "@/types/utils/instructor-accessability-types";
 
-interface ClassInstructor { 
-  id: number; 
-  course: {
-    id: number;
-    name: string;
-  }; 
-  subject: {
-    id: number; 
-    code: string; 
-    title: string; 
-    description: string; 
-    year_level: string; 
-    semester: string; 
-    isActive: boolean 
-  }; 
-  year_level: string; 
-  section: string 
-}
-
-interface ModuleAccess { 
-  id: number; 
-  module_id: number; 
-  class_instructor_id: number; 
-  is_available: boolean; 
-  module: {
-    id: number; 
-    subject_id: 
-    number; title:
-    string; description: 
-    string; status: "published" | "draft"; 
-    order: number; materials?: 
-    any; pdf?: string | null 
-  }
-}
-
-interface AssessmentList {
-  id: number;
-  title: string;
-  description: string;
-  instructor: {
-    id: number;
-    name: string;
-  }
-  subject: {
-    id: number;
-    code: string;
-    title: string;
-  }
-
-  instructor_id: number;
-  subject_id: number;
-}
-
-interface Props { 
-  classInstructor: ClassInstructor; 
-  modules: ModuleAccess[] 
-  assessments: AssessmentList[]
-}
 
 type ViewType = "modules" | "assessments"
 
-export default function Modules({ modules, classInstructor, assessments }: Props) {
+export default function Modules({ modules, classInstructor, assessments, assignments }: InstructorAccessabilityProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [availabilityFilter, setAvailabilityFilter] = useState("all")
   const [viewMode, setViewMode] = useState<"grid" | "list">("list")
@@ -86,7 +35,7 @@ export default function Modules({ modules, classInstructor, assessments }: Props
   const [currentView, setCurrentView] = useState<ViewType>("modules")
 
   useEffect(() => {
-    console.log("Assessments: ", assessments)
+    console.log("Assignments: ", assignments)
   },[])
 
   const filteredModules = moduleAccesses.filter((moduleAccess) => {
@@ -107,8 +56,8 @@ export default function Modules({ modules, classInstructor, assessments }: Props
 
   const availableCount = moduleAccesses.filter((ma) => ma.is_available).length
   const totalCount = moduleAccesses.length
-  const totalAssessments = 8
-  const publishedAssessments = 5
+  const availableAssessments = assignments.filter((a) => a.is_available).length
+  const totalAssessments = assignments.length
   const clearFilters = () => { setSearchTerm(""); setAvailabilityFilter("all") }
   const hasActiveFilters = searchTerm !== "" || availabilityFilter !== "all"
 
@@ -125,16 +74,17 @@ export default function Modules({ modules, classInstructor, assessments }: Props
     label: "Module Progress",
      description: "modules available"
   } : {
-    current: publishedAssessments, 
+    current: availableAssessments, 
     total: totalAssessments, 
     label: "Assessment Progress", 
-    description: "assessments published"
+    description: "assessments available"
   }
 
   const progressData = getProgressData()
 
   const renderModulesView = () => (
     <div className="flex flex-col h-full">
+      <Head title={"Modules"} />
       {/* Fixed filter header */}
       <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-6 sticky top-0 z-10">
         <div className="flex items-center gap-4 ">
@@ -171,7 +121,7 @@ export default function Modules({ modules, classInstructor, assessments }: Props
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-auto p-6 bg-slate-50 dark:bg-slate-900">
+      <Card className="flex-1 overflow-auto m-4 p-4 ">
         {filteredModules.length > 0 ? viewMode === "list" ? (
           <div className="space-y-3">
             {filteredModules.map((moduleAccess) => (
@@ -254,15 +204,15 @@ export default function Modules({ modules, classInstructor, assessments }: Props
             </CardContent>
           </Card>
         )}
-      </div>
+      </Card>
+      
     </div>
   )
 
-  const renderAssessmentsView = () => <AssessmentManager modules={modules} classInstructor={classInstructor} assessments={assessments}/>
+  const renderAssessmentsView = () => <AssessmentManager modules={modules} classInstructor={classInstructor} assessments={assessments} assignments={assignments}/>
 
   return (
     <HeaderLayout>
-      <Head title={"Dashboard"} />
       <div className="min-h-[calc(100vh-4rem)] mt-16">
         <div className="flex h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-900">
           <div className={`${sidebarOpen ? "w-80" : "w-16"} transition-all duration-300 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col shadow-sm`}>
@@ -302,12 +252,12 @@ export default function Modules({ modules, classInstructor, assessments }: Props
                   <div className="text-xs text-slate-500 dark:text-slate-400">{Math.round((progressData.current / progressData.total) * 100)}% {progressData.description}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <div className={`${progressData.current != 0 ? 'bg-emerald-50 dark:bg-emerald-900/20': 'bg-slate-50 dark:bg-slate-700/50'} p-3 rounded-lg`}>
+                    <div className={`flex items-center gap-2 ${progressData.current != 0 ? 'text-emerald-600 dark:text-emerald-400': 'text-slate-600 dark:text-slate-400'}`}>
+                      <CheckCircle className={`h-4 w-4`} />
                       <div>
-                        <div className="text-xs text-emerald-600 dark:text-emerald-400">{currentView === "modules" ? "Available" : "Published"}</div>
-                        <div className="font-bold text-emerald-700 dark:text-emerald-300">{progressData.current}</div>
+                        <div className={`text-xs`}>{currentView === "modules" ? "Available" : "Active"}</div>
+                        <div className="font-bold ">{progressData.current}</div>
                       </div>
                     </div>
                   </div>

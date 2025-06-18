@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Assessment;
+use App\Models\AssessmentAssignment;
 use App\Models\ClassInstructor;
 use App\Models\Module;
 use App\Models\ModuleAccess;
@@ -154,36 +155,28 @@ class InstructorController extends Controller
             ->where('subject_id', $classInstructor->subject_id) // ← filter by subject
             ->get();
 
+         // Get assessment assignments for this specific class
+            // Option 1: All assignments for this class
+            // $assessmentAssignment = AssessmentAssignment::with(['assessment', 'course'])
+            // ->where('course_id', $courseId)
+            // ->where('year_level', $yearLevel)
+            // ->where('section', $section)
+            // ->get();
 
+        // Option 2: Only assignments for assessments created by current instructor
+        $assessmentAssignment = AssessmentAssignment::with(['assessment', 'course'])
+            ->where('course_id', $courseId)
+            ->whereHas('assessment', function ($query) use ($instructorId) {
+                $query->where('instructor_id', $instructorId);
+            })
+            ->get();
+        
         return Inertia::render('Instructor/Modules', [
             'classInstructor' => $classInstructor,
             'modules' => $modules,
             'assessments' => $assessmentList,
+            'assignments' => $assessmentAssignment,
         ]);
     }
 
-    public function moduleAvailability($id)
-    {
-        $moduleAccess = ModuleAccess::findOrFail($id);
-        
-        // Toggle the is_available status
-        $moduleAccess->is_available = !$moduleAccess->is_available;
-        $moduleAccess->save();
-        
-        return redirect()->back();
-    }
-
-    public function createAssessment(Request $request){
-        $request->validate([
-            'instructor_id' => 'required|integer|exists:users,id',
-            'subject_id' => 'required|integer|exists:subjects,id',
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-          
-           ]);
-    
-        Assessment::create($request->all());
-        return redirect()->back()->with('success',`Successfully added a assessment`);
-
-    }
 }
