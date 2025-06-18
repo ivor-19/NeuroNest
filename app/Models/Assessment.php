@@ -31,4 +31,14 @@ class Assessment extends Model
         return $this->hasMany(AssessmentAssignment::class);
     }
 
+    public function questions()
+    {
+        return $this->hasMany(Question::class)->orderBy('order');
+    }
+
+    // Calculate total points from questions
+    public function getTotalPointsAttribute()
+    {
+        return $this->questions()->sum('points');
+    }
 }

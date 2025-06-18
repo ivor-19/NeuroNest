@@ -18,7 +18,9 @@ import {
   Download,
 } from "lucide-react"
 import HeaderLayout from "@/layouts/header-layout"
-import { Head, router } from "@inertiajs/react"
+import { Head, router, usePage } from "@inertiajs/react"
+import { SharedData } from "@/types"
+import { toast } from "sonner"
 
 interface Module {
   id: number
@@ -45,6 +47,7 @@ interface Props {
 }
 
 export default function Modules({ subject, modules }: Props) {
+  const { auth } = usePage<SharedData>().props
   const [isEnrolled, setIsEnrolled] = useState(true)
 
   // Calculate progress only on available and completed modules
@@ -66,6 +69,17 @@ export default function Modules({ subject, modules }: Props) {
       default:
         return <BookOpen className="h-3 w-3" />
     }
+  }
+
+  const handleModuleDone = async (moduleId : number) => {
+    router.post(route('student.moduleCompletion'), {student_id: auth.user.id, module_id: moduleId}, {
+      onSuccess: () => {
+        toast('Module Completed')
+      },
+      onError: () => {
+        toast('Error has occured. Try again.')
+      }
+    })
   }
 
   return (
@@ -157,9 +171,9 @@ export default function Modules({ subject, modules }: Props) {
                         isDisabled
                           ? "border-border bg-muted/30 opacity-70"
                           : module.isDone
-                            ? "border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/20 hover:shadow-lg cursor-pointer"
+                            ? "border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/20 hover:shadow-lg "
                             : isEnrolled
-                              ? "border-border bg-card hover:border-primary/20 hover:shadow-lg cursor-pointer"
+                              ? "border-border bg-card hover:border-primary/20 hover:shadow-lg "
                               : "border-border bg-card"
                       }`}
                     >
@@ -253,7 +267,7 @@ export default function Modules({ subject, modules }: Props) {
                               </div>
 
                               {/* Action Button */}
-                              <div className="flex items-center gap-3 flex-shrink-0">
+                              <div className="flex items-center gap-6 flex-shrink-0 flex-col justify-between">
                                 {isEnrolled && !isDisabled && (
                                   <Button
                                     size="default"
@@ -263,13 +277,17 @@ export default function Modules({ subject, modules }: Props) {
                                   >
                                     <Download />
                                   </Button>
+                                  
                                 )}
                                 {isDisabled && (
                                   <Button size="default" variant="ghost" disabled className="min-w-[100px]">
                                     Unavailable
                                   </Button>
                                 )}
-                               
+                                {!module.isDone && !isDisabled && 
+                                  <Button variant={"ghost"} className="text-xs text-muted-foreground cursor-pointer" onClick={() => handleModuleDone(module.id)}>mark as complete</Button>
+                                }
+                                
                               </div>
                             </div>
                           </div>

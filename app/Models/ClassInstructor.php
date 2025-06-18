@@ -37,6 +37,18 @@ class ClassInstructor extends Model
         return $this->hasMany(ModuleAccess::class);
     }
 
+    public function assessments()
+    {
+        return $this->hasMany(Assessment::class);
+        // or whatever the foreign key is
+    }
+
+    public function assignments()
+    {
+        return $this->hasMany(AssessmentAssignment::class);
+        // or whatever the foreign key is
+    }
+
     // Auto-create module access when class instructor is created
     protected static function booted()
     {

@@ -96,8 +96,14 @@ export default function AssessmentManager({ modules, classInstructor, assessment
         reset()
         // Open question builder modal after successful creation
         setQuestionBuilderOpen(true)
+        
+         // Get the latest assessment from the updated assessments array
+        const assessments = response.props.assessments;
+        const latestAssessment = assessments[assessments.length - 1]; // Get the last one (newest)
+
+        console.log(latestAssessment)
         setSelectedAssessment(
-          response.assessment || {
+          latestAssessment ||  {
             id: Date.now(),
             ...data,
             instructor: auth.user,
@@ -136,7 +142,7 @@ export default function AssessmentManager({ modules, classInstructor, assessment
     setAssignmentData({ is_available: false, opened_at: "", closed_at: "" })
   }
 
-  const handleConfirmAssignment = async () => {
+  const handleAssignAssessment = async () => {
     if (!selectedAssessment) return
     const newAssignment: AssessmentAssignment = {
       id: Date.now(),
@@ -177,6 +183,7 @@ export default function AssessmentManager({ modules, classInstructor, assessment
     setSelectedAssessment(assessment)
     setDeleteDialogOpen(true)
   }
+  
   const confirmDelete = () => {
     if (selectedAssessment) {
       setDeleteDialogOpen(false)
@@ -201,7 +208,7 @@ export default function AssessmentManager({ modules, classInstructor, assessment
       type: "multiple-choice",
       question: "",
       options: ["", "", "", ""],
-      correctAnswer: "",
+      correctAnswer: "0", // 
       points: 1,
     })
     setEditingQuestionIndex(null)
@@ -209,18 +216,19 @@ export default function AssessmentManager({ modules, classInstructor, assessment
 
   const handleQuestionTypeChange = (type: Question["type"]) => {
     const newQuestion = { ...currentQuestion, type }
-
+  
     if (type === "true-false") {
       newQuestion.options = ["True", "False"]
-      newQuestion.correctAnswer = ""
+      newQuestion.correctAnswer = "0" 
     } else if (type === "multiple-choice") {
       newQuestion.options = ["", "", "", ""]
-      newQuestion.correctAnswer = ""
+      newQuestion.correctAnswer = "0"
     } else {
+      // For short-answer and essay questions
       newQuestion.options = undefined
-      newQuestion.correctAnswer = ""
+      newQuestion.correctAnswer = undefined 
     }
-
+  
     setCurrentQuestion(newQuestion)
   }
 
@@ -236,10 +244,26 @@ export default function AssessmentManager({ modules, classInstructor, assessment
   const handleRemoveOption = (index: number) => {
     if (currentQuestion.options && currentQuestion.options.length > 2) {
       const newOptions = currentQuestion.options.filter((_, i) => i !== index)
+      
+      // Better logic for handling correctAnswer when removing options
+      let newCorrectAnswer = currentQuestion.correctAnswer
+      
+      // Convert correctAnswer to string for comparison
+      const currentAnswerStr = String(currentQuestion.correctAnswer || "0")
+      
+      // If we're removing the currently selected answer, reset to first option
+      if (currentAnswerStr === index.toString()) {
+        newCorrectAnswer = "0"
+      } 
+      // If the correct answer is after the removed option, decrement its index
+      else if (parseInt(currentAnswerStr) > index) {
+        newCorrectAnswer = (parseInt(currentAnswerStr) - 1).toString()
+      }
+      
       setCurrentQuestion({
         ...currentQuestion,
         options: newOptions,
-        correctAnswer: currentQuestion.correctAnswer === index.toString() ? "" : currentQuestion.correctAnswer,
+        correctAnswer: newCorrectAnswer,
       })
     }
   }
@@ -260,23 +284,45 @@ export default function AssessmentManager({ modules, classInstructor, assessment
       toast("Please enter a question")
       return
     }
-
+  
+    // ✅ FIXED: Better validation with proper TypeScript handling
     if (currentQuestion.type === "multiple-choice" || currentQuestion.type === "true-false") {
-      if (!currentQuestion.correctAnswer) {
+      // Check if correctAnswer is not set (empty string or undefined)
+      if (!currentQuestion.correctAnswer && currentQuestion.correctAnswer !== "0") {
         toast("Please select the correct answer")
         return
       }
+      
+      // Validate that all options are filled
       if (currentQuestion.options?.some((opt) => !opt.trim())) {
         toast("Please fill in all answer options")
         return
       }
+      
+      // ✅ FIXED: Proper TypeScript handling for correctAnswer validation
+      const correctAnswerStr = String(currentQuestion.correctAnswer) // Convert to string
+      const correctIndex = parseInt(correctAnswerStr)
+      
+      if (isNaN(correctIndex) || correctIndex < 0 || correctIndex >= (currentQuestion.options?.length || 0)) {
+        toast("Invalid correct answer selection")
+        return
+      }
     }
-
+  
+    // Debug logging to see what's being saved
+    console.log("Saving question:", {
+      type: currentQuestion.type,
+      question: currentQuestion.question,
+      correctAnswer: currentQuestion.correctAnswer,
+      options: currentQuestion.options,
+      points: currentQuestion.points
+    })
+  
     const questionToSave = {
       ...currentQuestion,
       id: currentQuestion.id || Date.now().toString(),
     }
-
+  
     if (editingQuestionIndex !== null) {
       const newQuestions = [...questions]
       newQuestions[editingQuestionIndex] = questionToSave
@@ -286,7 +332,7 @@ export default function AssessmentManager({ modules, classInstructor, assessment
       setQuestions([...questions, questionToSave])
       toast("Question added successfully")
     }
-
+  
     resetCurrentQuestion()
   }
 
@@ -300,23 +346,79 @@ export default function AssessmentManager({ modules, classInstructor, assessment
     toast("Question deleted")
   }
 
-  const handleSaveAssessment = () => {
+  // saving assessment with questions
+  const handleSaveAssessment = async () => {
     if (questions.length === 0) {
       toast("Please add at least one question")
       return
     }
-
-    // Here you would typically save the questions to your backend
-    console.log("Saving assessment with questions:", { assessment: selectedAssessment, questions })
-
-    toast("Assessment saved successfully!", {
-      description: `${questions.length} questions have been added to your assessment.`,
-    })
-
-    setQuestionBuilderOpen(false)
-    setQuestions([])
-    resetCurrentQuestion()
-    setActiveTab("assessment-management")
+  
+    try {
+      // Debug: Log the original questions data
+      console.log("Original questions data:", questions)
+      
+      // ✅ ADDED: Validate all questions before saving
+      const invalidQuestions = questions.filter((question, index) => {
+        if ((question.type === "multiple-choice" || question.type === "true-false") 
+            && (!question.correctAnswer && question.correctAnswer !== "0")) {
+          console.error(`Question ${index + 1} has no correct answer:`, question)
+          return true
+        }
+        return false
+      })
+      
+      if (invalidQuestions.length > 0) {
+        toast(`${invalidQuestions.length} question(s) are missing correct answers. Please review and fix them.`)
+        return
+      }
+  
+      // Format questions data to match Laravel controller and database expectations
+      const formattedQuestions = questions.map((question, index) => {
+        const formatted = {
+          type: question.type,
+          question: question.question,
+          points: question.points,
+          options: question.options || null,
+          correctAnswer: question.correctAnswer || null,
+          order: index
+        }
+        
+        // Debug: Log each formatted question
+        console.log(`Formatted question ${index + 1}:`, formatted)
+        
+        return formatted
+      })
+  
+      // Debug: Log the final formatted data
+      console.log("Final formatted questions:", formattedQuestions)
+  
+     
+      
+      await router.post(route('instructor.saveQuestions', { assessment: selectedAssessment?.id }), { 
+        questions: formattedQuestions
+      }, {
+        onSuccess: () => {
+          console.log("Success! Formatted questions were:", formattedQuestions)
+          toast("Assessment saved successfully!", {
+            description: `${questions.length} questions have been added to your assessment.`,
+          })
+          setQuestionBuilderOpen(false)
+          setQuestions([])
+          resetCurrentQuestion()
+          setActiveTab("assessment-management")
+        },
+        onError: (error) => {
+          console.error('Error saving assessment:', error)
+          console.log("Failed data was:", formattedQuestions)
+          toast("Error saving assessment. Please try again.")
+        }
+      })
+      
+  
+    } catch (error) {
+      console.error('Error saving assessment:', error)
+      toast("Error saving assessment. Please try again.")
+    }
   }
 
   const getTotalPoints = () => questions.reduce((total, q) => total + q.points, 0)
@@ -488,7 +590,7 @@ export default function AssessmentManager({ modules, classInstructor, assessment
                       </div>
                       <div className="flex justify-end gap-3">
                         <Button variant="outline" onClick={() => setActiveTab("section-assessments")}>Cancel</Button>
-                        <Button onClick={handleCreateAssessment} disabled={processing}>{processing ? "Creating..." : "Create Assessment"}</Button>
+                        <Button onClick={handleCreateAssessment}  disabled={processing || !data.title || !data.description} className="transition-all">{processing ? "Creating..." : "Create Assessment"}</Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -618,11 +720,12 @@ export default function AssessmentManager({ modules, classInstructor, assessment
         </Card>
 
         {/* Question Builder Modal */}
-        <Dialog open={questionBuilderOpen} onOpenChange={setQuestionBuilderOpen}>
-          <DialogContent className="min-w-[70%] overflow-y-auto">
+        <Dialog open={questionBuilderOpen}>
+          <DialogContent className="min-w-[70%] overflow-y-auto max-h-[90%]">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <HelpCircle className="h-5 w-5" /> Add Questions to "{selectedAssessment?.title}"
+                ID: {selectedAssessment?.id}
               </DialogTitle>
               <DialogDescription> Create questions for your assessment. You can add multiple choice, true/false, short answer, and essay questions.</DialogDescription>
             </DialogHeader>
@@ -726,7 +829,7 @@ export default function AssessmentManager({ modules, classInstructor, assessment
                   <Badge variant="secondary">Total Points: {getTotalPoints()}</Badge>
                 </div>
 
-                <div className="space-y-3 max-h-96 overflow-y-auto">
+                <div className="space-y-3 max-h-[550px] overflow-y-auto">
                   {questions.map((question, index) => (
                     <Card key={question.id} className="p-4">
                       <div className="flex items-start justify-between gap-3">
@@ -861,7 +964,7 @@ export default function AssessmentManager({ modules, classInstructor, assessment
 
             <DialogFooter>
               <Button variant={"outline"} onClick={() => setAssignModalOpen(false)}> Cancel </Button>
-              <Button onClick={handleConfirmAssignment}>Assign to Section</Button>
+              <Button onClick={handleAssignAssessment}>Assign to Section</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
