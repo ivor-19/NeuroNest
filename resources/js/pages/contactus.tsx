@@ -1,10 +1,10 @@
-import { useState, ChangeEvent } from 'react';
-import { Head } from '@inertiajs/react';
+import { useForm, Head } from '@inertiajs/react';
 import Header from '@/components/landingpage/header';
 import Footer from '@/components/landingpage/footer';
+import React, { useMemo } from 'react';
 
 export default function ContactUs() {
-    const [formData, setFormData] = useState({
+    const { data, setData, post, processing, errors } = useForm({
         firstName: '',
         lastName: '',
         contactNumber: '',
@@ -12,19 +12,41 @@ export default function ContactUs() {
         message: ''
     });
 
-    const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
+
+        if (name === 'contactNumber') {
+            // Only allow numbers
+            if (!/^\d*$/.test(value)) return;
+        }
+
+        if (name === 'message') {
+            // Limit to 300 characters
+            if (value.length > 300) return;
+        }
+
+        setData(prev => ({
             ...prev,
             [name]: value
         }));
     };
 
-    const handleSubmit = () => {
-        console.log('Form submitted:', formData);
-        // Add your form submission logic here, e.g.:
-        // router.post('/contact', formData);
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        post('/contact', {
+            onSuccess: () => {
+                setData({
+                    firstName: '',
+                    lastName: '',
+                    contactNumber: '',
+                    emailAddress: '',
+                    message: ''
+                });
+            }
+        });
     };
+
+    const characterCount = data.message.length;
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -49,7 +71,7 @@ export default function ContactUs() {
                                     </p>
                                 </div>
 
-                                <div className="space-y-6">
+                                <form onSubmit={handleSubmit} className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -59,12 +81,13 @@ export default function ContactUs() {
                                                 type="text"
                                                 id="firstName"
                                                 name="firstName"
-                                                value={formData.firstName}
+                                                value={data.firstName}
                                                 onChange={handleInputChange}
                                                 placeholder="First Name"
                                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-colors"
                                                 required
                                             />
+                                            {errors.firstName && <span className="text-red-600 text-sm">{errors.firstName}</span>}
                                         </div>
                                         <div>
                                             <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -74,12 +97,13 @@ export default function ContactUs() {
                                                 type="text"
                                                 id="lastName"
                                                 name="lastName"
-                                                value={formData.lastName}
+                                                value={data.lastName}
                                                 onChange={handleInputChange}
                                                 placeholder="Last Name"
                                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-colors"
                                                 required
                                             />
+                                            {errors.lastName && <span className="text-red-600 text-sm">{errors.lastName}</span>}
                                         </div>
                                     </div>
 
@@ -92,12 +116,13 @@ export default function ContactUs() {
                                                 type="tel"
                                                 id="contactNumber"
                                                 name="contactNumber"
-                                                value={formData.contactNumber}
+                                                value={data.contactNumber}
                                                 onChange={handleInputChange}
                                                 placeholder="Contact Number"
                                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-colors"
                                                 required
                                             />
+                                            {errors.contactNumber && <span className="text-red-600 text-sm">{errors.contactNumber}</span>}
                                         </div>
                                         <div>
                                             <label htmlFor="emailAddress" className="block text-sm font-medium text-gray-700 mb-2">
@@ -107,12 +132,13 @@ export default function ContactUs() {
                                                 type="email"
                                                 id="emailAddress"
                                                 name="emailAddress"
-                                                value={formData.emailAddress}
+                                                value={data.emailAddress}
                                                 onChange={handleInputChange}
                                                 placeholder="Email Address"
                                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-colors"
                                                 required
                                             />
+                                            {errors.emailAddress && <span className="text-red-600 text-sm">{errors.emailAddress}</span>}
                                         </div>
                                     </div>
 
@@ -123,23 +149,28 @@ export default function ContactUs() {
                                         <textarea
                                             id="message"
                                             name="message"
-                                            value={formData.message}
+                                            value={data.message}
                                             onChange={handleInputChange}
                                             placeholder="Your Message"
                                             rows={6}
+                                            maxLength={300}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-colors resize-vertical"
                                             required
                                         />
+                                        <div className="flex justify-between items-center text-sm text-gray-500 mt-1">
+                                            <span>{characterCount}/300 characters</span>
+                                            {errors.message && <span className="text-red-600">{errors.message}</span>}
+                                        </div>
                                     </div>
 
                                     <button
-                                        type="button"
-                                        onClick={handleSubmit}
+                                        type="submit"
+                                        disabled={processing}
                                         className="bg-teal-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-teal-700 transition-colors duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 outline-none"
                                     >
-                                        Submit Form
+                                        {processing ? 'Submitting...' : 'Submit Form'}
                                     </button>
-                                </div>
+                                </form>
                             </div>
 
                             <div className="bg-teal-600 p-8 lg:p-12 flex items-center justify-center">

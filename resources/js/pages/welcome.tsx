@@ -4,6 +4,7 @@ import Header from '@/components/landingpage/header';
 import Courses from '@/components/landingpage/courses';
 import AboutUs from '@/components/landingpage/aboutus';
 import Footer from '@/components/landingpage/footer';
+import ChatSup from '@/components/landingpage/chatsup'; // Import the ChatSup component
 
 export default function Welcome() {
   const { auth } = usePage<SharedData>().props;
@@ -56,7 +57,7 @@ export default function Welcome() {
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
                   <Link
-                    href={route('login')} // Ensure route('register') is defined
+                    href={route('login')}
                     className="inline-block rounded-lg bg-[#F88F60] px-7 py-3 text-base font-medium text-white hover:bg-[#e77d4d]"
                   >
                     Login
@@ -98,28 +99,25 @@ export default function Welcome() {
                   {/* Slightly bigger background container */}
                   <div className="aspect-[3/4] max-w-[400px] max-h-[520px] bg-gradient-to-br from-[#F88F60] to-[#e77d4d] rounded-2xl flex items-center justify-center overflow-hidden">
                     <img
-                      src="/assets/Educator.jfif" // Replace with your image URL/path
+                      src="/assets/Educator.jfif"
                       alt="Professional Educator"
                       className="w-full h-full object-cover rounded-xl"
                     />
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
         </section>
 
         {/* Main content area */}
+        <Courses />
+        <AboutUs />
 
-        <Courses/>
+        {/* Add ChatSup component here or adjust placement as needed */}
+        <ChatSup />
 
-        <AboutUs/>
-
-        <Footer/>
-
-        
-       
+        <Footer />
       </div>
     </>
   );

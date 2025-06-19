@@ -5,6 +5,7 @@ use App\Http\Controllers\AssessmentController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\InstructorController;
+use App\Http\Controllers\ContactController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -16,9 +17,10 @@ Route::get('/contactus', function () {
     return Inertia::render('contactus');
 })->name('contactus');
 
+Route::post('/contact', [ContactController::class, 'store']);
+
 Route::middleware(['auth', 'verified'])->group(function () {
-    
-    // Student routes - protected by role:student middleware
+    // Student routes
     Route::middleware(['role:student'])->prefix('student')->group(function () {
         Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('student.dashboard');
         Route::get('/subject/{subject_id}/modules', [StudentController::class, 'modules'])->name('student.modules');
@@ -28,9 +30,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     });
     
-    // instructor routes - protected by role:instructor middleware
+    // Instructor routes
     Route::middleware(['role:instructor'])->prefix('instructor')->group(function () {
         Route::get('/dashboard', [InstructorController::class, 'dashboard'])->name('instructor.dashboard');
+         Route::get('/subjects/modules', [InstructorController::class, 'modules'])->name('instructor.modules');
         Route::get('/sections', [InstructorController::class, 'sections'])->name('instructor.sections');
         Route::get('/sections/subjects/modules', [InstructorController::class, 'modules'])->name('instructor.modules');
         Route::get('/sections/assessments', [InstructorController::class, 'assessments'])->name('instructor.assessments');
@@ -46,7 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
        
     });
     
-    // Admin routes - protected by role:admin middleware
+    // Admin routes
     Route::middleware(['role:admin'])->prefix('admin')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
         Route::get('/manage-users', [AdminController::class, 'manageUsers'])->name('admin.manageUsers');
@@ -54,6 +57,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/manage-courses', [AdminController::class, 'manageCourses'])->name('admin.manageCourses');
         Route::get('/manage-subjects', [AdminController::class, 'manageSubjects'])->name('admin.manageSubjects');
         Route::get('/manage-instructors', [AdminController::class, 'manageInstructors'])->name('admin.manageInstructors');
+
+        Route::get('/contactus', [ContactController::class, 'index'])->name('admin.contactus');
+        // Add these lines in your admin middleware group
+Route::delete('/contacts/{id}', [ContactController::class, 'destroy'])->name('admin.contacts.destroy');
+Route::delete('/contacts', [ContactController::class, 'destroyMultiple'])->name('admin.contacts.destroyMultiple');
 
         Route::post('/add-user', [AdminController::class, 'store'])->name('admin.addUser');
         Route::post('/add-course', [AdminController::class, 'addCourse'])->name('admin.addCourse');

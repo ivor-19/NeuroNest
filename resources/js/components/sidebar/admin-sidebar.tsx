@@ -1,14 +1,5 @@
-// types.ts or wherever you define your types
-import { LucideIcon } from "lucide-react";
-
-export interface NavItem {
-  title: string;
-  href: string;
-  icon?: LucideIcon;
-}
-
-// AdminSidebar.tsx
-import type * as React from "react"
+// components/sidebar/admin-sidebar.tsx
+import * as React from "react";
 import {
   BookOpen,
   Calendar,
@@ -16,10 +7,11 @@ import {
   GraduationCap,
   Layers,
   LayoutDashboard,
+  Mail,
   MessageSquare,
   UserPlus,
   Users,
-} from "lucide-react"
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -30,12 +22,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/ui/sidebar"
-import { Link } from "@inertiajs/react"
-import AppLogo from "../built-in-shadcn/app-logo"
-import { NavUser } from "../built-in-shadcn/nav-user"
-import { NavMain } from "../built-in-shadcn/nav-main"
-
+} from "@/components/ui/sidebar";
+import { Link } from "@inertiajs/react";
+import AppLogo from "../built-in-shadcn/app-logo";
+import { NavUser } from "../built-in-shadcn/nav-user";
+import { NavMain } from "../built-in-shadcn/nav-main";
 
 const data = {
   navMain: [
@@ -102,10 +93,15 @@ const data = {
           href: "#",
           icon: MessageSquare,
         },
+        {
+          title: "Contact Us",
+          href: "/admin/contactus",
+          icon: Mail,
+        },
       ],
     },
   ],
-}
+};
 
 export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -129,5 +125,5 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }
