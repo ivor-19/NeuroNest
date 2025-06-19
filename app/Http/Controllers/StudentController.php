@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AssessmentAssignment;
 use App\Models\Module;
 use App\Models\Subject;
 use Illuminate\Http\Request;
@@ -61,6 +62,47 @@ class StudentController extends Controller
             'subject' => $subject,
             'modules' => $modules,
             'instructor' => $classInstructor->instructor->name ?? 'Unknown',
+        ]);
+    }
+
+    public function assessment()
+    {
+        $user = auth()->user()->load('studentSection');
+        $studentProfile = $user->studentSection;
+        
+        if (!$studentProfile) {
+            return redirect()->back()->with('error', 'Student profile not found.');
+        }
+        
+        $assessments = AssessmentAssignment::with([
+                'assessment.questions', 
+                'assessment.subject', // Add subject relationship
+                'course'
+            ])
+            ->with(['assessment' => function($query) {
+                $query->withSum('questions', 'points');
+            }])
+            ->where('course_id', $studentProfile->course_id)
+            ->where('year_level', $studentProfile->year_level)
+            ->where('section', $studentProfile->section)
+            ->where(function($query) {
+                $query->whereNull('opened_at')
+                    ->orWhere('opened_at', '<=', now());
+            })
+            ->where(function($query) {
+                $query->whereNull('closed_at')
+                    ->orWhere('closed_at', '>=', now());
+            })
+            ->get()
+            ->map(function ($assignment) {
+                // Add total_points to the assessment object for easier frontend access
+                $assignment->assessment->total_points = $assignment->assessment->questions_sum_points;
+                return $assignment;
+            });
+        
+        return Inertia::render('Student/Assessment', [
+            'assessments' => $assessments,
+            'studentProfile' => $studentProfile
         ]);
     }
 }

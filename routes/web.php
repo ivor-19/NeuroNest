@@ -22,9 +22,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['role:student'])->prefix('student')->group(function () {
         Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('student.dashboard');
         Route::get('/subject/{subject_id}/modules', [StudentController::class, 'modules'])->name('student.modules');
+        Route::get('/assessment', [StudentController::class, 'assessment'])->name('student.assessment');
 
         Route::post('/subject/module-complete', [ModuleController::class, 'moduleCompletion'])->name('student.moduleCompletion');
-        // Add more student routes here
+    
     });
     
     // instructor routes - protected by role:instructor middleware
@@ -42,7 +43,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{assessment}/save-questions', [AssessmentController::class, 'saveQuestions'])->name('instructor.saveQuestions');
 
         Route::post('/module-availability/{id}', [ModuleController::class, 'moduleAvailability'])->name('instructor.moduleAvailability');
-        // Add more instructor routes here
+       
     });
     
     // Admin routes - protected by role:admin middleware

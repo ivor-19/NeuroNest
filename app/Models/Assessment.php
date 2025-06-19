@@ -39,6 +39,6 @@ class Assessment extends Model
     // Calculate total points from questions
     public function getTotalPointsAttribute()
     {
-        return $this->questions()->sum('points');
+        return $this->questions->sum('points');
     }
 }

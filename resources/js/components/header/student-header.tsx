@@ -21,6 +21,11 @@ const mainNavItems: NavItem[] = [
         href: '/student/dashboard',
         icon: LayoutGrid,
     },
+    {
+        title: 'Assessment',
+        href: '/student/assessment',
+        icon: BookOpen,
+    },
 ];
 
 // const rightNavItems: NavItem[] = [
@@ -109,14 +114,14 @@ export function StudentHeader({ breadcrumbs = [] }: StudentHeaderProps) {
                                             className={cn(
                                                 navigationMenuTriggerStyle(),
                                                 page.url === item.href && activeItemStyles,
-                                                'h-9 cursor-pointer px-3',
+                                                'h-9 cursor-pointer px-3 ',
                                             )}
                                         >
                                             {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
                                             {item.title}
                                         </Link>
                                         {page.url === item.href && (
-                                            <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>
+                                            <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-muted-foreground"></div>
                                         )}
                                     </NavigationMenuItem>
                                 ))}
