@@ -25,6 +25,8 @@ import {
   Play,
   Timer,
   AlertTriangle,
+  Eye,
+  Trophy,
 } from "lucide-react"
 import {
   AlertDialog,
@@ -69,7 +71,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
   }
 
   // Get unique courses and statuses for filter options
-  const uniqueCourses = [...new Set(assessments.map((assessment) => assessment.course.code || assessment.course.title))]
+  const uniqueCourses = [...new Set(assessments.map((assessment) => assessment.assessment.subject?.code ||  assessment.assessment.subject?.title))]
   const uniqueStatuses = ["available", "completed", "overdue", "upcoming"]
 
   // Filter assessments based on search and filters
@@ -77,13 +79,13 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
     const searchTermLower = searchTerm.toLowerCase()
     const matchesSearch =
       searchTerm === "" ||
-      assessment.assessment.title.toLowerCase().includes(searchTermLower) ||
-      assessment.course.code?.toLowerCase().includes(searchTermLower) ||
+      assessment.assessment.subject?.title.toLowerCase().includes(searchTermLower) ||
+      assessment.assessment.subject?.code?.toLowerCase().includes(searchTermLower) ||
       "" ||
-      assessment.course.title.toLowerCase().includes(searchTermLower)
+      assessment.assessment.subject?.title.toLowerCase().includes(searchTermLower)
 
     const matchesCourse =
-      courseFilter === "all" || assessment.course.code === courseFilter || assessment.course.title === courseFilter
+      courseFilter === "all" ||assessment.assessment.subject?.code === courseFilter || assessment.assessment.subject?.title === courseFilter
 
     const status = getAssessmentStatus(assessment)
     const matchesStatus = statusFilter === "all" || status === statusFilter
@@ -312,8 +314,8 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                   <span className="text-sm">{selectedAssessment?.assessment.title}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm font-medium text-muted-foreground">Course:</span>
-                  <span className="text-sm">{selectedAssessment?.course.title}</span>
+                  <span className="text-sm font-medium text-muted-foreground">Subject:</span>
+                  <span className="text-sm">{selectedAssessment?.assessment.subject?.code} - {selectedAssessment?.assessment.subject?.title}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm font-medium text-muted-foreground">Submitted:</span>
@@ -346,15 +348,16 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
         <div className="min-h-screen mt-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-10">
             {/* Combined Header with Progress */}
-            <Card className="bg-gradient-to-r from-primary/5 via-primary/3 to-primary/5 border-primary/20 shadow-lg">
-              <CardHeader className="pb-6">
-                {/* Header Section */}
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-4">
+            <Card className="shadow-lg">
+              <CardHeader className="pb-4">
+                {/* Compact Header Row */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost"className="flex items-center gap-2 hover:bg-white/50">
-                          <ArrowLeft className="h-4 w-4" />Back to Assessments
+                        <Button variant="ghost" size="sm" className="flex items-center gap-2  h-8">
+                          <ArrowLeft className="h-3 w-3" />
+                          Back
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
@@ -364,81 +367,81 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                             <AlertDialogTitle>Are you sure you want to go back?</AlertDialogTitle>
                           </div>
                           <AlertDialogDescription>
-                            Your progress might get unsaved. Any changes you've made will be lost if you continue without saving.
+                            Your progress might get unsaved. Any changes you've made will be lost if you continue without
+                            saving.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Stay on Page</AlertDialogCancel>
-                          <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={handleBackToList}>Yes, Go Back</AlertDialogAction>
+                          <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={handleBackToList}>
+                            Yes, Go Back
+                          </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
-                    <Separator orientation="vertical" className="h-6" />
+                    <Separator orientation="vertical" className="h-5" />
                     <div>
-                      <CardTitle className="text-2xl mb-1">{selectedAssessment.assessment.title}</CardTitle>
-                      <CardDescription className="text-sm">
+                      <CardTitle className="text-xl leading-tight">{selectedAssessment.assessment.title}</CardTitle>
+                      <CardDescription className="text-xs mt-0.5">
                         {selectedAssessment.assessment.subject?.code} - {selectedAssessment.assessment.subject?.title}
                       </CardDescription>
                     </div>
                   </div>
-                  <div className="flex items-center gap-6">
-                    {/* <div className="text-center px-4 py-2 rounded-xl">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                        <Clock className="h-4 w-4" />
-                        Duration
-                      </div>
-                      <div className="font-bold">{selectedAssessment.assessment.duration || 0} mins</div>
-                    </div> */}
-                    <div className="text-center  px-4 py-2 rounded-xl">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                        <FileText className="h-4 w-4" />
-                        Questions
-                      </div>
-                      <div className="font-bold">{questions.length}</div>
+
+                  {/* Compact Stats */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg border">
+                      <FileText className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-sm font-medium">{questions.length}</span>
+                      <span className="text-xs text-muted-foreground">questions</span>
                     </div>
-                    <div className="text-center  backdrop-blur-sm px-4 py-2 rounded-xl">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                        <CheckCircle className="h-4 w-4" />
-                        Total Points
-                      </div>
-                      <div className="font-bold">{selectedAssessment.assessment.total_points}</div>
+                    <div className="flex items-center gap-1  px-3 py-1.5 rounded-lg border">
+                      <CheckCircle className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-sm font-medium">{selectedAssessment.assessment.total_points}</span>
+                      <span className="text-xs text-muted-foreground">points</span>
                     </div>
                   </div>
                 </div>
-    
-                {/* Progress Section */}
-                <div className="backdrop-blur-sm rounded-xl p-6 border">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <div className="text-lg font-semibold mb-1">Assessment Progress</div>
-                      <div className="text-sm text-muted-foreground">
-                        Keep track of your completion status • {answeredCount} of {questions.length} questions completed
+
+                {/* Compact Progress */}
+                <div className=" rounded-lg p-4 border">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <div className="text-sm font-semibold">Progress</div>
+                        <div className="text-xs text-muted-foreground">
+                          {answeredCount}/{questions.length} completed
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                       <div className="text-right">
                         <div
-                          className={`text-3xl font-bold mb-1 ${progressPercentage === 100 ? "text-green-600" : "text-primary"}`}
+                          className={`text-2xl font-bold leading-none ${
+                            progressPercentage === 100 ? "text-green-600" : "text-primary"
+                          }`}
                         >
                           {Math.round(progressPercentage)}%
                         </div>
-                        <div className="text-xs text-muted-foreground">Complete</div>
                       </div>
                       {progressPercentage === 100 && (
-                        <div className="flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-xl border border-green-200">
-                          <CheckCircle className="h-4 w-4" />
-                          <span className="font-medium text-sm">Ready to submit</span>
+                        <div className="flex items-center gap-1.5 bg-green-100 text-green-700 px-3 py-1.5 rounded-lg border border-green-200">
+                          <CheckCircle className="h-3 w-3" />
+                          <span className="font-medium text-xs">Ready</span>
                         </div>
                       )}
                     </div>
                   </div>
-                  <Progress
-                    value={progressPercentage}
-                    className={`h-3 mb-3 ${progressPercentage === 100 ? "[&>div]:bg-green-500" : ""}`}
-                  />
-                  <div className="flex justify-between items-center text-xs text-muted-foreground">
-                    <span>Started</span>
-                    <span>Complete</span>
+
+                  <div className="space-y-1">
+                    <Progress
+                      value={progressPercentage}
+                      className={`h-2 ${progressPercentage === 100 ? "[&>div]:bg-green-500" : ""}`}
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Started</span>
+                      <span>Complete</span>
+                    </div>
                   </div>
                 </div>
               </CardHeader>
@@ -514,9 +517,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <Badge variant="outline">
-                          Question {currentQuestionIndex + 1} of {questions.length}
-                        </Badge>
+                        <Badge variant="outline"> Question {currentQuestionIndex + 1} of {questions.length}</Badge>
                         <Badge>{currentQuestion.points} points</Badge>
                       </div>
                     </div>
@@ -526,27 +527,14 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                     {renderQuestion(currentQuestion)}
     
                     <div className="flex justify-between items-center pt-6 border-t">
-                      <Button
-                        variant="outline"
-                        onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
-                        disabled={currentQuestionIndex === 0}
-                        className="rounded-xl"
-                      >
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        Previous
+                      <Button variant="outline" onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))} disabled={currentQuestionIndex === 0} className="rounded-xl" >
+                        <ArrowLeft className="h-4 w-4 mr-2" /> Previous
                       </Button>
     
-                      <div className="text-sm text-muted-foreground">
-                        Question {currentQuestionIndex + 1} of {questions.length}
-                      </div>
+                      <div className="text-sm text-muted-foreground"> Question {currentQuestionIndex + 1} of {questions.length} </div>
     
-                      <Button
-                        onClick={() => setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))}
-                        disabled={currentQuestionIndex === questions.length - 1}
-                        className="rounded-xl"
-                      >
-                        Next
-                        <ArrowLeft className="h-4 w-4 ml-2 rotate-180" />
+                      <Button onClick={() => setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))} disabled={currentQuestionIndex === questions.length - 1} className="rounded-xl" >
+                        Next <ArrowLeft className="h-4 w-4 ml-2 rotate-180" />
                       </Button>
                     </div>
                   </CardContent>
@@ -566,19 +554,19 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-10">
           {/* Header */}
           <Card>
-            <CardContent className="p-8">
+            <CardContent className="px-8 py-4">
               <div className="flex items-center gap-8">
                 <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center">
                   <User className="h-10 w-10 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  <h1 className="text-2xl font-bold mb-3 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                     My Assessments
                   </h1>
-                  <p className="text-muted-foreground mb-4 text-lg">
+                  <p className="text-muted-foreground mb-4 text-sm">
                     Complete your assigned assessments and track your academic progress
                   </p>
-                  <div className="flex items-center gap-6 text-muted-foreground">
+                  <div className="flex items-center gap-6 text-muted-foreground text-xs">
                     <span className="flex items-center gap-2 bg-muted px-3 py-1 rounded-full">
                       <BookOpen className="h-4 w-4" />
                       {studentProfile.year_level} - Section {studentProfile.section}
@@ -637,13 +625,13 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
 
                 {/* Course Filter */}
                 <div className="w-full sm:w-[220px]">
-                  <Label className="text-sm font-medium mb-2 block">Course</Label>
+                  <Label className="text-sm font-medium mb-2 block">Subject</Label>
                   <Select value={courseFilter} onValueChange={setCourseFilter}>
                     <SelectTrigger className="rounded-xl">
-                      <SelectValue placeholder="All Courses" />
+                      <SelectValue placeholder="All Subjects" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Courses</SelectItem>
+                      <SelectItem value="all">All Subjects</SelectItem>
                       {uniqueCourses.map((course) => (
                         <SelectItem key={course} value={course}>
                           {course}
@@ -691,19 +679,25 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
 
                 return (
                   <Card key={assessmentAssignment.id} className="hover:shadow-lg transition-all duration-200">
-                    <CardHeader>                     
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
-                          {assessment.subject?.code}
-                          <span className="text-base">-  {assessment.subject?.title}</span>
-                      </CardTitle>                               
-                      <CardDescription className="flex flex-col gap-2">
-                        <div className="font-medium text-foreground">{assessment.title}</div>
-                        {/* <Badge variant="outline" className={getStatusColor(status)}>
+                     <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      {assessment.subject?.code}
+                      <span className="text-base">- {assessment.subject?.title}</span>
+                    </CardTitle>
+                    <CardDescription className="flex flex-col gap-2">
+                      <div className="font-medium text-foreground">{assessment.title}</div>
+                      {assessment.status === 'completed' ? (
+                        <Badge variant="outline" className={'bg-blue-100 text-blue-800 border-blue-200'}>
+                          Completed
+                        </Badge>
+                      ):(
+                        <Badge variant="outline" className={getStatusColor(status)}>
                           {status.charAt(0).toUpperCase() + status.slice(1)}
-                        </Badge> */}
-                      </CardDescription>
-                    </CardHeader>
+                        </Badge>
+                      )}
+                    </CardDescription>
+                  </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
                         {assessment.description && (
@@ -745,49 +739,67 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                             <span className="font-medium capitalize">{assessment.type || "Assessment"}</span>
                           </div> */}
                         </div>
-
-                        <div className="bg-orange-50 border border-orange-300 p-3 rounded-lg dark:bg-orange-900/20 dark:border-orange-700/80">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-orange-700 font-medium flex items-center gap-1 dark:text-orange-300">
-                              <Calendar className="h-3 w-3" />
-                              Due Date
-                            </span>
-                            <span className={`font-medium ${isOverdue ? "text-red-600 dark:text-red-400" : "text-orange-700 dark:text-orange-300"}`}>
-                              {closedAt ? (
-                                <>
-                                  {closedAt.toLocaleDateString()} at{" "}
-                                  {closedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                                </>
-                              ):(
-                                <>No assigned date</>
-                              )}
-                            </span>
+                        
+                        {assessment.status === 'completed' ? (
+                          <div className="bg-blue-50 border border-blue-300 p-3 rounded-lg dark:bg-blue-900/20 dark:border-blue-700/80">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-blue-700 font-medium flex items-center gap-1 dark:text-blue-300">
+                                <Trophy className="h-3 w-3" />
+                                Your Score
+                              </span>
+                              <span className="font-bold text-blue-700 dark:text-blue-300">
+                                {assessment.percentage}% (
+                                {parseInt(assessment.student_score, 10)}/
+                                {assessment.total_points}
+                                )
+                              </span>
+                            </div>
                           </div>
-                          {isOverdue && <p className="text-xs text-red-600 mt-1 dark:text-red-400">This assessment is overdue</p>}
-                        </div>
+                        ):(      
+                          <div className="bg-orange-50 border border-orange-300 p-3 rounded-lg dark:bg-orange-900/20 dark:border-orange-700/80">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className={`font-medium flex items-center gap-1 ${isOverdue ? "text-red-600 dark:text-red-400" : "text-orange-700 dark:text-orange-300"}`}>
+                                <Calendar className="h-3 w-3" />
+                                Due Date
+                              </span>
+                              <span className={`font-medium ${isOverdue ? "text-red-600 dark:text-red-400" : "text-orange-700 dark:text-orange-300"}`}>
+                                {closedAt ? (
+                                  <>
+                                    {closedAt.toLocaleDateString()} at{" "}
+                                    {closedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                  </>
+                                ):(
+                                  <>No assigned date</>
+                                )}
+                              </span>
+                            </div>
+                            {isOverdue && <p className="text-xs text-red-600 mt-1 dark:text-red-400">This assessment is overdue</p>}
+                          </div>
+                        )}
                                               
 
                         <div className="flex space-x-2 pt-2">
-                          <Button
-                            size="sm"
-                            className="flex-1 rounded-xl"
-                            disabled={!assessmentAssignment.is_available}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              if (assessmentAssignment.is_available) {
-                                setSelectedAssessment(assessmentAssignment)
-                              }
-                            }}
-                          >
-                            {assessmentAssignment.is_available ? (
-                              <>
-                                <Play className="h-3 w-3 mr-1" />
-                                Start Assessment
-                              </>
-                            ) : (
-                              "Unavailable"
-                            )}
-                          </Button>
+                          {assessment.status === 'completed' ? (
+                            <Button size="sm" variant="outline" className="flex-1 rounded-xl cursor-pointer">
+                              <Eye className="h-3 w-3 mr-1" />View Results
+                            </Button>
+                          ):(
+                            <Button size="sm" className="flex-1 rounded-xl cursor-pointer" disabled={!assessmentAssignment.is_available}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (assessmentAssignment.is_available) {
+                                  setSelectedAssessment(assessmentAssignment)
+                                }
+                              }}
+                            >
+                              {assessmentAssignment.is_available ? (
+                                <> <Play className="h-3 w-3 mr-1" /> Start Assessment </>
+                              ) : (
+                                "Unavailable"
+                              )}
+                            </Button>
+                          )}
+                         
                           {/* <Button size="sm" variant="outline" className="rounded-xl">
                             <FileText className="h-3 w-3 mr-1" />
                             Details

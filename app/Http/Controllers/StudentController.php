@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\AssessmentAssignment;
 use App\Models\Module;
+use App\Models\Question;
+use App\Models\StudentResponse;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -76,7 +78,7 @@ class StudentController extends Controller
         
         $assessments = AssessmentAssignment::with([
                 'assessment.questions', 
-                'assessment.subject', // Add subject relationship
+                'assessment.subject',
                 'course'
             ])
             ->with(['assessment' => function($query) {
@@ -89,14 +91,26 @@ class StudentController extends Controller
                 $query->whereNull('opened_at')
                     ->orWhere('opened_at', '<=', now());
             })
-            ->where(function($query) {
-                $query->whereNull('closed_at')
-                    ->orWhere('closed_at', '>=', now());
-            })
+            // ->where(function($query) {
+            //     $query->whereNull('closed_at')
+            //         ->orWhere('closed_at', '>=', now());
+            // })
             ->get()
-            ->map(function ($assignment) {
-                // Add total_points to the assessment object for easier frontend access
+            ->map(function ($assignment) use ($user) {
+                // Add total_points to the assessment object
                 $assignment->assessment->total_points = $assignment->assessment->questions_sum_points;
+                
+                // ADD STATUS CALCULATION
+                $assignment->assessment->status = $this->getAssessmentStatus($assignment->assessment->id, $user->id);
+                
+                // ADD SCORE IF COMPLETED
+                if ($assignment->assessment->status === 'completed') {
+                    $assignment->assessment->student_score = $this->getStudentScore($assignment->assessment->id, $user->id);
+                    $assignment->assessment->percentage = $assignment->assessment->total_points > 0 
+                        ? round(($assignment->assessment->student_score / $assignment->assessment->total_points) * 100, 2)
+                        : 0;
+                }
+                
                 return $assignment;
             });
         
@@ -104,5 +118,29 @@ class StudentController extends Controller
             'assessments' => $assessments,
             'studentProfile' => $studentProfile
         ]);
+    }
+    
+    // ADD THESE TWO METHODS TO YOUR CONTROLLER
+    private function getAssessmentStatus($assessmentId, $studentId)
+    {
+        $totalQuestions = Question::where('assessment_id', $assessmentId)->count();
+        $answeredQuestions = StudentResponse::where('assessment_id', $assessmentId)
+            ->where('student_id', $studentId)
+            ->count();
+    
+        if ($answeredQuestions == 0) {
+            return 'not_started';
+        } elseif ($answeredQuestions < $totalQuestions) {
+            return 'in_progress';
+        } else {
+            return 'completed';
+        }
+    }
+    
+    private function getStudentScore($assessmentId, $studentId)
+    {
+        return StudentResponse::where('assessment_id', $assessmentId)
+            ->where('student_id', $studentId)
+            ->sum('points_earned');
     }
 }

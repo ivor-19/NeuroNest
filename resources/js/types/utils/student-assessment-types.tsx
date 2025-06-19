@@ -10,7 +10,7 @@ export interface Course {
 
 export interface Subject {
   id: number;
-  name: string;
+  title: string;
   code?: string;
   description?: string;
   created_at: string;
@@ -54,6 +54,10 @@ interface Assessment {
   total_points: number;           // Added in the map() function
   subject?: Subject;              // Added subject relationship
   type?: string
+
+  status: 'not_started' | 'in_progress' | 'completed';
+  student_score?: number;         // Only present when completed
+  percentage?: number;            // Only present when completed
 }
 
 export interface AssessmentAssignment {
