@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ClassInstructor;
 use App\Models\Module;
 use App\Models\ModuleAccess;
+use App\Models\ModuleCompletion;
 use App\Models\ModuleControl;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -62,5 +63,24 @@ class ModuleController extends Controller
         $moduleAccess->save();
         
         return redirect()->back();
+    }
+
+    public function moduleCompletion(Request $request)
+    {
+        $request->validate([
+            'student_id' => 'required|integer|exists:users,id',
+            'module_id' => 'required|integer|exists:modules,id',
+
+        ]);
+    
+        // Create module with file path
+        ModuleCompletion::create([
+            'student_id' => $request->student_id,
+            'module_id' => $request->module_id,
+            'is_done' => true,
+
+        ]);
+    
+        return redirect()->back()->with('success', 'Successfully finish a module');
     }
 }

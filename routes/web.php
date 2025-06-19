@@ -24,6 +24,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['role:student'])->prefix('student')->group(function () {
         Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('student.dashboard');
         Route::get('/subject/{subject_id}/modules', [StudentController::class, 'modules'])->name('student.modules');
+
+        Route::post('/subject/module-complete', [ModuleController::class, 'moduleCompletion'])->name('student.moduleCompletion');
+        // Add more student routes here
     });
     
     // Instructor routes
@@ -32,10 +35,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
          Route::get('/subjects/modules', [InstructorController::class, 'modules'])->name('instructor.modules');
         Route::get('/sections', [InstructorController::class, 'sections'])->name('instructor.sections');
         Route::get('/sections/subjects/modules', [InstructorController::class, 'modules'])->name('instructor.modules');
+        Route::get('/sections/assessments', [InstructorController::class, 'assessments'])->name('instructor.assessments');
+
+        Route::get('/sections/{assessment}/questions', [AssessmentController::class, 'getQuestions'])->name('instructor.getQuestions');
 
         Route::post('/create-assessment', [AssessmentController::class, 'createAssessment'])->name('instructor.createAssessment');
         Route::post('/assessment-availability/{id}', [AssessmentController::class, 'assessmentAvailability'])->name('instructor.assessmentAvailability');
         Route::post('/assign-assessment', [AssessmentController::class, 'assignAssessment'])->name('instructor.assignAssessment');
+        Route::post('/{assessment}/save-questions', [AssessmentController::class, 'saveQuestions'])->name('instructor.saveQuestions');
 
         Route::post('/module-availability/{id}', [ModuleController::class, 'moduleAvailability'])->name('instructor.moduleAvailability');
         // Add more instructor routes here

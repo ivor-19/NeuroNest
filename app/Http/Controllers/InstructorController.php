@@ -129,15 +129,15 @@ class InstructorController extends Controller
         ]);
     }
 
-    public function modules(Request $request)
+   // Shared Data method
+    private function getSharedData(Request $request)
     {
         $instructorId = auth()->id();
-
         $courseId = $request->query('course_id');
         $yearLevel = $request->query('year_level');
         $section = $request->query('section');
         $subjectId = $request->query('subject_id');
-
+        
         $classInstructor = ClassInstructor::where('instructor_id', $instructorId)
             ->where('course_id', $courseId)
             ->where('year_level', $yearLevel)
@@ -145,25 +145,16 @@ class InstructorController extends Controller
             ->where('subject_id', $subjectId)
             ->with(['subject', 'course'])
             ->firstOrFail();
-
+            
         $modules = ModuleAccess::where('class_instructor_id', $classInstructor->id)
             ->with('module')
             ->get();
-
+            
         $assessmentList = Assessment::with(['subject', 'instructor'])
             ->where('instructor_id', $instructorId)
-            ->where('subject_id', $classInstructor->subject_id) // ← filter by subject
+            ->where('subject_id', $classInstructor->subject_id)
             ->get();
-
-         // Get assessment assignments for this specific class
-            // Option 1: All assignments for this class
-            // $assessmentAssignment = AssessmentAssignment::with(['assessment', 'course'])
-            // ->where('course_id', $courseId)
-            // ->where('year_level', $yearLevel)
-            // ->where('section', $section)
-            // ->get();
-
-        // Option 2: Only assignments for assessments created by current instructor
+            
         $assessmentAssignment = AssessmentAssignment::with(['assessment', 'course'])
             ->where('course_id', $courseId)
             ->whereHas('assessment', function ($query) use ($instructorId) {
@@ -171,12 +162,25 @@ class InstructorController extends Controller
             })
             ->get();
         
-        return Inertia::render('Instructor/Modules', [
+        return [
             'classInstructor' => $classInstructor,
             'modules' => $modules,
             'assessments' => $assessmentList,
             'assignments' => $assessmentAssignment,
-        ]);
+        ];
     }
 
+    public function modules(Request $request)
+    {
+        $data = $this->getSharedData($request);
+        return Inertia::render('Instructor/Modules', $data);
+    }
+
+    public function assessments(Request $request)
+    {
+        $data = $this->getSharedData($request);
+        return Inertia::render('Instructor/Assessments', $data);
+    }
+
+  
 }
