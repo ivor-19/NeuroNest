@@ -124,4 +124,9 @@ class User extends Authenticatable
             ->where('subject_id', $subjectId)
             ->first();
     }
+
+    public function student()
+{
+    return $this->belongsTo(User::class, 'student_id');
+}
 }

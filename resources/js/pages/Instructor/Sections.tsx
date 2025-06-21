@@ -184,9 +184,7 @@ export default function Sections({ sections = [] }: InstructorProps) {
                         <Button size="sm" className="flex-1 rounded-xl" onClick={() => router.visit(route('instructor.modules', { course_id: section.course_id, year_level: section.year_level, section: section.section, subject_id: section.subject_id }))}>
                           Manage Subject
                         </Button>
-                        <Button size="sm" variant="outline" className="rounded-xl" onClick={() => console.log(section.subject.id)}>
-                          View
-                        </Button>
+                       
                       </div>
                     </div>
                   </CardContent>

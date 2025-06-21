@@ -25,4 +25,9 @@ class StudentProfile extends Model
     {
         return $this->belongsTo(Course::class, 'course_id', 'id');
     }
+
+    public function studentResponses()
+    {
+        return $this->hasMany(StudentResponse::class, 'student_id', 'student_id');
+    }
 }

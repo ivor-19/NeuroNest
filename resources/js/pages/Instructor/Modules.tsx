@@ -238,7 +238,7 @@ export default function Modules({ modules, classInstructor, assessments, assignm
                                 </div>
                                 <div className="flex items-center gap-1">
                                   {moduleAccess.module.pdf && <Button variant="ghost" size="sm" className="h-9 w-9 p-0 hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => console.log(moduleAccess.module.pdf)}><Download className="h-4 w-4" /></Button>}
-                                  <Button variant="ghost" size="sm" className="h-9 w-9 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"><MoreHorizontal className="h-4 w-4" /></Button>
+                                
                                 </div>
                               </div>
                             </div>

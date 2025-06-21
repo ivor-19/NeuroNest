@@ -103,8 +103,8 @@ class StudentController extends Controller
                 // ADD STATUS CALCULATION
                 $assignment->assessment->status = $this->getAssessmentStatus($assignment->assessment->id, $user->id);
                 
-                // ADD SCORE IF COMPLETED
-                if ($assignment->assessment->status === 'completed') {
+                // ADD SCORE IF COMPLETED / INCOMPLETE
+                if ($assignment->assessment->status !== 'not_started') {
                     $assignment->assessment->student_score = $this->getStudentScore($assignment->assessment->id, $user->id);
                     $assignment->assessment->percentage = $assignment->assessment->total_points > 0 
                         ? round(($assignment->assessment->student_score / $assignment->assessment->total_points) * 100, 2)

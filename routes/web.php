@@ -27,6 +27,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/assessment', [StudentController::class, 'assessment'])->name('student.assessment');
 
         Route::post('/subject/module-complete', [ModuleController::class, 'moduleCompletion'])->name('student.moduleCompletion');
+        Route::post('/assessment/submit-assessment', [AssessmentController::class, 'submitAssessment'])->name('student.submitAssessment');
     
     });
     
@@ -39,6 +40,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/sections/assessments', [InstructorController::class, 'assessments'])->name('instructor.assessments');
 
         Route::get('/sections/{assessment}/questions', [AssessmentController::class, 'getQuestions'])->name('instructor.getQuestions');
+        Route::get('/assessments/respondents', [AssessmentController::class, 'getRespondents'])->name('assessments.respondents');
 
         Route::post('/create-assessment', [AssessmentController::class, 'createAssessment'])->name('instructor.createAssessment');
         Route::post('/assessment-availability/{id}', [AssessmentController::class, 'assessmentAvailability'])->name('instructor.assessmentAvailability');
@@ -46,7 +48,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{assessment}/save-questions', [AssessmentController::class, 'saveQuestions'])->name('instructor.saveQuestions');
 
         Route::post('/module-availability/{id}', [ModuleController::class, 'moduleAvailability'])->name('instructor.moduleAvailability');
-       
+
+        Route::delete('/assessments/{assessment}', [AssessmentController::class, 'deleteAssessment'])->name('instructor.deleteAssessment');
+        Route::delete('/assessment-assignments/{id}', [AssessmentController::class, 'removeAssignedAssessment'])->name('instructor.removeAssignedAssessment');
     });
     
     // Admin routes

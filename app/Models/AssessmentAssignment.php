@@ -28,4 +28,16 @@ class AssessmentAssignment extends Model
     {
         return $this->belongsTo(Assessment::class);
     }
+
+    public function students()
+    {
+        return $this->hasManyThrough(
+            StudentProfile::class,
+            StudentResponse::class,
+            'assessment_id', // Foreign key on student_responses table
+            'id',           // Foreign key on student_profiles table
+            'assessment_id', // Local key on assessment_assignments table
+            'student_id'    // Local key on student_responses table
+        );
+    }
 }

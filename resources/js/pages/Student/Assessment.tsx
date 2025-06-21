@@ -27,6 +27,8 @@ import {
   AlertTriangle,
   Eye,
   Trophy,
+  AlertCircle,
+  Star,
 } from "lucide-react"
 import {
   AlertDialog,
@@ -40,8 +42,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import HeaderLayout from "@/layouts/header-layout"
-import { Head } from "@inertiajs/react"
+import { Head, router } from "@inertiajs/react"
 import { AssessmentAssignment, Question, StudentAssessmentProps } from "@/types/utils/student-assessment-types"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { toast } from "sonner"
 
 
 export default function Assessment({ assessments, studentProfile }: StudentAssessmentProps) {
@@ -57,18 +61,19 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
 
   // Get status for each assessment
   const getAssessmentStatus = (assessment: AssessmentAssignment) => {
-    if (isSubmitted) return "completed"
-
-    const now = new Date()
-    const openedAt = assessment.opened_at ? new Date(assessment.opened_at) : null
-    const closedAt = assessment.closed_at ? new Date(assessment.closed_at) : null
-
-    if (assessment.is_available === 0) return "upcoming"
-    if (closedAt && now > closedAt) return "overdue"
-    if (openedAt && now >= openedAt) return "available"
-
-    return "upcoming"
-  }
+    if (isSubmitted) return "completed";
+  
+    const now = new Date();
+    const openedAt = assessment.opened_at ? new Date(assessment.opened_at) : null;
+    const closedAt = assessment.closed_at ? new Date(assessment.closed_at) : null;
+  
+    if (assessment.is_available === 0) return "upcoming";
+    if (closedAt && now > closedAt) return "overdue";
+    if (openedAt && now < openedAt) return "upcoming";
+  
+    // If there's no openedAt or now is after it
+    return "available";
+  };
 
   // Get unique courses and statuses for filter options
   const uniqueCourses = [...new Set(assessments.map((assessment) => assessment.assessment.subject?.code ||  assessment.assessment.subject?.title))]
@@ -100,15 +105,86 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
     }))
   }
 
+ 
   const handleSubmitAssessment = () => {
-    console.log("Assessment Answers:", {
-      assessmentId: selectedAssessment?.assessment.id,
-      studentId: studentProfile.student_id,
-      answers: answers,
-      submittedAt: new Date().toISOString(),
+    // Prepare individual answer records for each question
+    const answerRecords = selectedAssessment?.assessment?.questions?.map((question: any) => {
+      const userAnswer = answers[question.id] || null;
+      
+      // For multiple choice, convert selected option to index
+      let answerToSave: string | number | null = userAnswer;
+      if (question.type === 'multiple_choice' && userAnswer !== null) {
+        // If userAnswer is the actual option text, find its index
+        const optionIndex = question.options?.findIndex((option: string) => option === userAnswer);
+        answerToSave = optionIndex !== -1 ? optionIndex : userAnswer;
+      }
+      
+      // For true/false, also save as index (0 or 1)
+      if (question.type === 'true_false' && userAnswer !== null) {
+        // If userAnswer is the actual option text, find its index
+        const optionIndex = question.options?.findIndex((option: string) => option === userAnswer);
+        answerToSave = optionIndex !== -1 ? optionIndex : userAnswer;
+      }
+      
+      // Determine if answer is correct (you'll need your own logic here)
+      const isCorrect = checkIfAnswerIsCorrect(question, answerToSave);
+      
+      // Calculate points earned based on correctness
+      const pointsEarned = isCorrect ? question.points : 0;
+      
+      return {
+        assessment_id: selectedAssessment.assessment.id,
+        question_correct_answer: question.correct_answer,
+        question_id: question.id,
+        student_id: studentProfile.student_id,
+        answer: answerToSave, // Save as index (0, 1, 2, 3) for multiple choice, (0, 1) for true/false
+        is_correct: isCorrect ? 1 : 0, // Convert boolean to tinyint
+        points_earned: pointsEarned,
+        feedback: null as string | null, 
+      };
+    });
+  
+    console.log("Assessment Answer Records:", answerRecords);
+    router.post(route('student.submitAssessment'), {
+      responses: answerRecords
+    }, {
+        onSuccess: () => {
+            toast('Assessment Complete.')
+            setIsSubmitted(true);
+        },
+        onError: (errors) => {
+            toast('Error submitting. Please try again.')
+            console.error(errors)
+        }
     })
-    setIsSubmitted(true)
-  }
+    
+  };
+
+  const checkIfAnswerIsCorrect = (question : any, userAnswer : any) => {
+    // This depends on your question structure
+    // For multiple choice:
+    if (question.type === 'multiple-choice') {
+      return userAnswer === question.correct_answer;
+    }
+
+    if (question.type === 'true-false') {
+      return userAnswer === question.correct_answer;
+    }
+    
+    // For text answers:
+    if (question.type === 'short-answer') {
+      return userAnswer?.toLowerCase().trim() === question.correct_answer?.toLowerCase().trim();
+    }
+
+     // For text answers:
+     if (question.type === 'essay') {
+      return userAnswer?.toLowerCase().trim() === question.correct_answer?.toLowerCase().trim();
+    }
+    
+    // Add more logic based on your question types
+    return false;
+  };
+  
 
   const handleBackToList = () => {
     setSelectedAssessment(null)
@@ -169,9 +245,9 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
       case "multiple-choice":
         return (
           <div className="space-y-3">
-            <RadioGroup value={currentAnswer} onValueChange={(value) => handleAnswerChange(question.id, value)}>
+            <RadioGroup value={currentAnswer?.toString()} onValueChange={(value) => handleAnswerChange(question.id, value)}>
               {parsedOptions.map((option, index) => {
-                const isSelected = currentAnswer === option
+                const isSelected = Number(currentAnswer) === index;
                 return (
                   <div
                     key={index}
@@ -181,7 +257,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                         : "border-border hover:border-primary/50 hover:bg-primary/5"
                     }`}
                   >
-                    <RadioGroupItem value={option} id={`option-${index}`} className="mt-0.5 ml-4 bg-muted" />
+                    <RadioGroupItem value={index.toString()} id={`option-${index}`} className="mt-0.5 ml-4 bg-muted" />
                     <Label
                       htmlFor={`option-${index}`}
                       className={`cursor-pointer flex-1 text-sm leading-relaxed  p-4 ${
@@ -200,7 +276,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
       case "true-false":
         return (
           <div className="space-y-3">
-            <RadioGroup value={currentAnswer} onValueChange={(value) => handleAnswerChange(question.id, value)}>
+            <RadioGroup value={currentAnswer?.toString()} onValueChange={(value) => handleAnswerChange(question.id, value)}>
               <div
                 className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer ${
                   currentAnswer === "true"
@@ -343,9 +419,9 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
     }
 
     return (
-      <HeaderLayout>
+      <>
         <Head title={selectedAssessment.assessment.title} />
-        <div className="min-h-screen mt-16">
+        <div className="min-h-screen">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-10">
             {/* Combined Header with Progress */}
             <Card className="shadow-lg">
@@ -488,9 +564,80 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                       )
                     })}
                   </div>
-                  <Button onClick={handleSubmitAssessment} className="w-full rounded-xl" size="lg">
-                    Submit Assessment
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button className="w-full rounded-xl" size="lg">
+                        Submit Assessment
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="sm:max-w-md">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2 text-xl">
+                          <FileText className="h-5 w-5 " />
+                          Submit Assessment
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-base">
+                          Are you sure you want to submit your assessment?
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+            
+                      <div className="space-y-4 ">
+                        <Alert className="bg-yellow-50 border-yellow-300 border dark:bg-yellow-900/20 dark:border-yellow-700/80 text-yellow-700 dark:text-yellow-300">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertDescription className="text-yellow-700 dark:text-yellow-300">Warning: Once submitted, you cannot make any changes to your answers.</AlertDescription>
+                        </Alert>
+            
+                          {/* Progress Summary */}
+                        <div className="border p-4 rounded-lg space-y-3">
+                          <h4 className="font-medium text-sm">Assessment Progress</h4>
+
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span>Questions Completed</span>
+                              <span className="font-medium">
+                                {answeredCount} of {questions.length}
+                              </span>
+                            </div>
+                            <Progress value={progressPercentage} className="h-2" />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                              <span>
+                                Answered: <strong>{answeredCount}</strong>
+                              </span>
+                            </div>
+                            {/* <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-gray-500" />
+                              <span>
+                                Time Used: <strong>{assessmentData.timeUsed}</strong>
+                              </span>
+                            </div> */}
+                          </div>
+                        </div>
+            
+                        {/* Unanswered Questions Warning */}
+                        {answeredCount != questions.length &&
+                          <Alert className="bg-yellow-50 border-yellow-300 border dark:bg-yellow-900/20 dark:border-yellow-700/80 text-yellow-700 dark:text-yellow-300">
+                            <AlertTriangle className="h-4 w-4 text-yellow-700 dark:text-yellow-300" />
+                            <AlertDescription className="text-yellow-700 dark:text-yellow-300">
+                              You have {questions.length - answeredCount} unanswered questions. These will be marked as incorrect if you submit now.
+                              {/* You have{0} unanswered question{0 > 1 ? "s" : ""}. These will be marked as incorrect if you submit now. */}
+                            </AlertDescription>
+                          </Alert>
+                        }
+                        
+                      </div>
+            
+                      <AlertDialogFooter className="flex gap-2">
+                        <AlertDialogCancel>Continue Answering</AlertDialogCancel>
+                        <AlertDialogAction className="rounded-xl cursor-pointer" onClick={handleSubmitAssessment}>
+                        Submit Assessment
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </CardContent>
               </Card>
     
@@ -523,6 +670,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                     </div>
                     <CardTitle className="text-lg leading-relaxed">{currentQuestion.question}</CardTitle>
                   </CardHeader>
+                  
                   <CardContent className="space-y-6">
                     {renderQuestion(currentQuestion)}
     
@@ -530,7 +678,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                       <Button variant="outline" onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))} disabled={currentQuestionIndex === 0} className="rounded-xl" >
                         <ArrowLeft className="h-4 w-4 mr-2" /> Previous
                       </Button>
-    
+                       
                       <div className="text-sm text-muted-foreground"> Question {currentQuestionIndex + 1} of {questions.length} </div>
     
                       <Button onClick={() => setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))} disabled={currentQuestionIndex === questions.length - 1} className="rounded-xl" >
@@ -543,7 +691,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
             </div>
           </div>
         </div>
-      </HeaderLayout>
+      </>
     )
   }
 
@@ -783,23 +931,78 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                             <Button size="sm" variant="outline" className="flex-1 rounded-xl cursor-pointer">
                               <Eye className="h-3 w-3 mr-1" />View Results
                             </Button>
-                          ):(
-                            <Button size="sm" className="flex-1 rounded-xl cursor-pointer" disabled={!assessmentAssignment.is_available}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                if (assessmentAssignment.is_available) {
-                                  setSelectedAssessment(assessmentAssignment)
-                                }
-                              }}
-                            >
-                              {assessmentAssignment.is_available ? (
-                                <> <Play className="h-3 w-3 mr-1" /> Start Assessment </>
-                              ) : (
-                                "Unavailable"
-                              )}
-                            </Button>
+                          ):(               
+                            <>
+                              {assessmentAssignment.is_available && !isOverdue ? (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button size="sm" className="flex-1 rounded-xl cursor-pointer">
+                                      <Play className="h-3 w-3 mr-1" /> Begin Assessment
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent className="sm:max-w-md">
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle className="flex items-center gap-2 text-xl">
+                                        <FileText className="h-5 w-5 text-blue-600" />
+                                        You're About to Start the Assessment
+                                      </AlertDialogTitle>
+                                      <AlertDialogDescription className="text-base">
+                                        Please review the information below before beginning.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                          
+                                    <div className="space-y-4 ">
+                                      <Alert className="bg-blue-50 border-blue-300 border dark:bg-blue-900/20 dark:border-blue-700/80 text-blue-700 dark:text-blue-300">
+                                        <AlertCircle className="h-4 w-4" />
+                                        <AlertDescription className="text-blue-700 dark:text-blue-300">Once you start, you cannot pause or restart the assessment. Leaving will cause your answers to not be saved.</AlertDescription>
+                                      </Alert>
+                          
+                                      <div className="space-y-3">
+                                        <div className="flex items-center gap-3 text-sm">
+                                          <Star className="h-4 w-4 0" />
+                                          <span>
+                                            <strong>Total Points:</strong> {assessment.total_points} points
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-3 text-sm">
+                                          <FileText className="h-4 w-4 " />
+                                          <span>
+                                            <strong>Questions:</strong> {assessment.questions?.length} items
+                                          </span>
+                                        </div>
+                                      </div>
+                          
+                                      <div className="bg-blue-50 border-blue-300 border dark:bg-blue-900/20 dark:border-blue-700/80 p-4 rounded-lg">
+                                        <h4 className="font-medium text-sm mb-2">Before you begin:</h4>
+                                        <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                                          <li>• Ensure you have a stable internet connection</li>
+                                          <li>• Find a quiet environment free from distractions</li>
+                                          <li>• Have any permitted materials ready</li>
+                                          <li>• Close unnecessary browser tabs and applications</li>
+                                        </ul>
+                                      </div>
+                                    </div>
+                          
+                                    <AlertDialogFooter className="flex gap-2">
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction className="rounded-xl cursor-pointer" 
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          if (assessmentAssignment.is_available) {
+                                            setSelectedAssessment(assessmentAssignment)
+                                          }
+                                      }}
+                                      >
+                                        Start Assessment
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              ):(
+                                <Button size="sm" className="flex-1 rounded-xl" disabled>Unavailable</Button>
+                              )}                     
+                            </>                              
                           )}
-                         
                           {/* <Button size="sm" variant="outline" className="rounded-xl">
                             <FileText className="h-3 w-3 mr-1" />
                             Details

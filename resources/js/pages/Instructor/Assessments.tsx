@@ -31,6 +31,9 @@ import { Progress } from "@/components/ui/progress";
 import { AssessmentManagementTab } from "@/components/tab/assessment-management";
 import { CreateAssessmentTab } from "@/components/tab/create-assessment";
 import { QuestionBuilderModal } from "@/components/modal/question-builder";
+import axios from "axios";
+import AssessmentRespondentsModal from "@/components/modal/assessment-respondents";
+import DeleteModal from "@/components/modal/delete-modal";
 
 export default function Assessments({ classInstructor, assessments, assignments }: InstructorAccessabilityProps) {
   const [activeTab, setActiveTab] = useState("section-assessments")
@@ -88,6 +91,42 @@ export default function Assessments({ classInstructor, assessments, assignments 
       ),
     )
   }
+
+  const [openViewRespondents, setOpenViewRespondents] = useState(false)
+  const [quizData, setQuizData] = useState({
+    students: [],
+    total_items: 0,
+    total_points: "0"
+  });
+  const handleViewRespondents = async (assignment: any) => {
+    try {
+      const response = await axios.get(`/instructor/assessments/respondents`, {
+        params: {
+          assessment_id: assignment.assessment.id,
+          course_id: assignment.course_id,
+          year_level: assignment.year_level,
+          section: assignment.section
+        }
+    });
+    setOpenViewRespondents(true)
+    setQuizData(response.data)
+    console.log(response.data);
+    return response.data;
+        return response.data;
+    } catch (error) {
+      console.error('Error fetching respondents:', error);
+    }
+  }
+
+  const [deleteId, setDeleteId] = useState(0);
+  const [routeLink, setRouteLink] = useState('');
+  const handleDeleteAssigned = (assignment: AssessmentAssignment) => {
+    setDeleteId(assignment.id)
+    setRouteLink('instructor.removeAssignedAssessment')
+   
+    setDeleteDialogOpen(true);
+  }
+
   return (
     <HeaderLayout>
       <Head title="Assessments"/>
@@ -271,10 +310,10 @@ export default function Assessments({ classInstructor, assessments, assignments 
                                               </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end" className="w-48">
-                                              <DropdownMenuItem>
-                                                <Users className="h-4 w-4 mr-2" /> View Participants
+                                              <DropdownMenuItem onClick={() => handleViewRespondents(assignment)}>
+                                                <Users className="h-4 w-4 mr-2" /> View Respondents
                                               </DropdownMenuItem>
-                                              <DropdownMenuItem className="text-red-600 focus:text-red-600">
+                                              <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => handleDeleteAssigned(assignment)}>
                                                 <Trash2 className="h-4 w-4 mr-2" />Remove Assignment
                                               </DropdownMenuItem>
                                             </DropdownMenuContent>
@@ -343,6 +382,11 @@ export default function Assessments({ classInstructor, assessments, assignments 
         </div>
       </div>
       {/* Question Builder Modal */}
+      <AssessmentRespondentsModal 
+        open={openViewRespondents}
+        onOpenChange={setOpenViewRespondents}
+        quizData={quizData}
+      />
       <QuestionBuilderModal
         open={questionBuilderOpen}
         onOpenChange={setQuestionBuilderOpen}
@@ -355,7 +399,17 @@ export default function Assessments({ classInstructor, assessments, assignments 
           setActiveTab("assessment-management");
         }}
       />
+      {/* Delete Confirmation Dialog */}
+      <DeleteModal 
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        id={deleteId}
+        routeLink={routeLink}
+
+      />
+    
       </div>
+      
     </HeaderLayout>
   )
 }

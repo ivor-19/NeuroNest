@@ -19,6 +19,8 @@ import type { AssessmentList, AssessmentAssignment, InstructorAccessabilityProps
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { QuestionBuilderModal } from "../modal/question-builder";
 import axios from "axios";
+import AssessmentRespondentsModal from "../modal/assessment-respondents";
+import DeleteModal from "../modal/delete-modal";
 
 interface AssessmentManagementTabProps {
   classInstructor: InstructorAccessabilityProps['classInstructor'];
@@ -41,6 +43,7 @@ export function AssessmentManagementTab({
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [selectedAssessment, setSelectedAssessment] = useState<AssessmentList | null>(null);
   const [assignmentData, setAssignmentData] = useState({ is_available: false, opened_at: "", closed_at: "" });
+ 
 
   const getAssignmentForAssessment = (assessmentId: number) =>
     assessmentAssignments.find(
@@ -60,7 +63,11 @@ export function AssessmentManagementTab({
     setAssignmentData({ is_available: false, opened_at: "", closed_at: "" });
   };
 
+  const [deleteId, setDeleteId] = useState(0);
+  const [routeLink, setRouteLink] = useState('');
   const handleDeleteAssessment = (assessment: AssessmentList) => {
+    setDeleteId(assessment.id)
+    setRouteLink('instructor.deleteAssessment')
     setSelectedAssessment(assessment);
     setDeleteDialogOpen(true);
   };
@@ -109,16 +116,17 @@ export function AssessmentManagementTab({
       assessment.description.toLowerCase().includes(searchTerm.toLowerCase()),
   );
   const [questionBuilderOpen, setQuestionBuilderOpen] = useState(false);
-const [questions, setQuestions] = useState<Question[]>([]);
-const fetchQuestions = async (assessmentId : number) => {
-  try {
-    const response = await axios.get(`/instructor/sections/${assessmentId}/questions`);
-    setQuestions(response.data.questions);
-  } catch (error) {
-    console.error('Error fetching questiosns:', error);
-    toast.error("Failed to load questions");
-  }
-};
+  
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const fetchQuestions = async (assessmentId : number) => {
+    try {
+      const response = await axios.get(`/instructor/sections/${assessmentId}/questions`);
+      setQuestions(response.data.questions);
+    } catch (error) {
+      console.error('Error fetching questiosns:', error);
+      toast.error("Failed to load questions");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -217,18 +225,18 @@ const fetchQuestions = async (assessmentId : number) => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
+                            {/* <DropdownMenuItem>
                               <Edit className="h-4 w-4 mr-2" /> Edit Assessment
-                            </DropdownMenuItem>
+                            </DropdownMenuItem> */}
                             <DropdownMenuItem 
-  onClick={() => { 
-    setSelectedAssessment(assessment); 
-    fetchQuestions(assessment.id);
-    setQuestionBuilderOpen(true); 
-  }}
->
-  <Settings className="h-4 w-4 mr-2" /> Manage Questions
-</DropdownMenuItem>
+                              onClick={() => { 
+                                setSelectedAssessment(assessment); 
+                                fetchQuestions(assessment.id);
+                                setQuestionBuilderOpen(true); 
+                              }}
+                            >
+                              <Settings className="h-4 w-4 mr-2" /> Manage Questions
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleAssignToSection(assessment)}>
                               <Users className="h-4 w-4 mr-2" /> Assign to Section
                             </DropdownMenuItem>
@@ -370,42 +378,26 @@ const fetchQuestions = async (assessmentId : number) => {
         </DialogContent>
       </Dialog>
       <QuestionBuilderModal
-  open={questionBuilderOpen}
-  onOpenChange={setQuestionBuilderOpen}
-  selectedAssessment={selectedAssessment}
-  questions={questions}
-  setQuestions={setQuestions}
-  onComplete={() => {
-    setQuestionBuilderOpen(false);
-    // Optionally refresh the assessment list
-  }}
-/>
+        open={questionBuilderOpen}
+        onOpenChange={setQuestionBuilderOpen}
+        selectedAssessment={selectedAssessment}
+        questions={questions}
+        setQuestions={setQuestions}
+        onComplete={() => {
+          setQuestionBuilderOpen(false);
+          // Optionally refresh the assessment list
+        }}
+      />
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the assessment and remove all associated data.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700"
-              onClick={() => {
-                if (selectedAssessment) {
-                  // Handle delete logic here
-                  console.log("Deleting assessment:", selectedAssessment.id);
-                  setDeleteDialogOpen(false);
-                }
-              }}
-            >
-              Delete Assessment
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteModal 
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        id={deleteId}
+        routeLink={routeLink}
+
+      />
+    
+     
     </div>
   );
 }

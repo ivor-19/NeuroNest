@@ -31,6 +31,11 @@ class StudentResponse extends Model
         return $this->belongsTo(User::class, 'student_id');
     }
 
+    public function studentProfile()
+    {
+        return $this->belongsTo(StudentProfile::class, 'student_id', 'student_id');
+    }
+
     // Auto-grade the response if possible
     public function autoGrade()
     {

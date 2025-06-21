@@ -119,8 +119,8 @@ export default function Dashboard({ sections = [] }: InstructorProps) {
           <Tabs defaultValue="sections" className="space-y-6">
             <TabsList className="rounded-xl">
               <TabsTrigger value="sections">My Sections</TabsTrigger>
-              <TabsTrigger value="assignments">Assignments</TabsTrigger>
-              <TabsTrigger value="students">Students</TabsTrigger>
+              {/* <TabsTrigger value="assignments">Assignments</TabsTrigger>
+              <TabsTrigger value="students">Students</TabsTrigger> */}
             </TabsList>
   
             <TabsContent value="sections" className="space-y-6">
@@ -176,9 +176,9 @@ export default function Dashboard({ sections = [] }: InstructorProps) {
                           <Button size="sm" className="flex-1 rounded-xl" onClick={() => router.visit(route('instructor.modules', { course_id: section.course_id, year_level: section.year_level, section: section.section, subject_id: section.subject_id }))}>
                             Manage Subject
                           </Button>
-                          <Button size="sm" variant="outline" className="rounded-xl" onClick={() => console.log(section.subject.id)}>
+                          {/* <Button size="sm" variant="outline" className="rounded-xl" onClick={() => console.log(section.subject.id)}>
                             View
-                          </Button>
+                          </Button> */}
                         </div>
                       </div>
                     </CardContent>

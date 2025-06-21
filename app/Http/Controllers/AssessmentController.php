@@ -6,6 +6,9 @@ use App\Models\Assessment;
 use App\Models\AssessmentAssignment;
 use App\Models\ClassInstructor;
 use App\Models\Question;
+use App\Models\StudentProfile;
+use App\Models\StudentResponse;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -53,18 +56,18 @@ class AssessmentController extends Controller
             'closed_at' => 'nullable',
         ]);
     
-        $existingAssignment = AssessmentAssignment::where([
-            'assessment_id' => $request->assessment_id,
-            'course_id' => $request->course_id,
-            'year_level' => $request->year_level,
-            'section' => $request->section,
-        ])->exists();
+        // $existingAssignment = AssessmentAssignment::where([
+        //     'assessment_id' => $request->assessment_id,
+        //     'course_id' => $request->course_id,
+        //     'year_level' => $request->year_level,
+        //     'section' => $request->section,
+        // ])->exists();
     
-        if ($existingAssignment) {
-            return back()->withErrors([
-                'message' => 'There is already an assessment dedicated for this section.'
-            ]);
-        }
+        // if ($existingAssignment) {
+        //     return back()->withErrors([
+        //         'message' => 'There is already an assessment dedicated for this section.'
+        //     ]);
+        // }
     
         AssessmentAssignment::create($request->all());
         return back()->with('success', 'Successfully assigned');
@@ -176,5 +179,102 @@ class AssessmentController extends Controller
                 ];
             })
         ]);
+    }
+
+    public function getRespondents(Request $request)
+    {
+        $assessmentId = $request->query('assessment_id');
+        $courseId = $request->query('course_id');
+        $yearLevel = $request->query('year_level');
+        $section = $request->query('section');
+    
+        // 🔢 Total number of questions
+        $totalItems = Question::where('assessment_id', $assessmentId)->count();
+    
+        // 🧮 Total possible points (sum of question points)
+        $totalPossiblePoints = Question::where('assessment_id', $assessmentId)->sum('points');
+    
+        // 👥 Get all student profiles in the class
+        $studentProfiles = StudentProfile::with('student', 'course')
+            ->where('course_id', $courseId)
+            ->where('year_level', $yearLevel)
+            ->where('section', $section)
+            ->get();
+    
+        $studentIds = $studentProfiles->pluck('student_id');
+    
+        // 📊 Responses grouped by student
+        $responses = StudentResponse::select(
+                'student_id',
+                DB::raw('SUM(points_earned) as total_points')
+            )
+            ->where('assessment_id', $assessmentId)
+            ->whereIn('student_id', $studentIds)
+            ->groupBy('student_id')
+            ->get()
+            ->keyBy('student_id');
+    
+        // 🧾 Final student data with status
+        $students = $studentProfiles->map(function ($profile) use ($responses) {
+            $student = $profile->student;
+            $course = $profile->course;
+            $response = $responses[$profile->student_id] ?? null;
+    
+            return [
+                'student_id' => $profile->student_id,
+                'name' => $student?->name ?? 'N/A',
+                'email' => $student?->email ?? 'N/A',
+                'course_code' => $course?->code ?? 'N/A',
+                'year_level' => $profile->year_level,
+                'section' => $profile->section,
+                'total_points' => $response?->total_points ?? 0,
+                'status' => $response ? 'Completed' : 'Not Started',
+            ];
+        });
+    
+        return response()->json([
+            'total_items' => $totalItems,
+            'total_points' => $totalPossiblePoints,
+            'students' => $students,
+        ]);
+    }
+
+    public function submitAssessment(Request $request)
+    {
+        // Validate that we receive an array of responses
+        $request->validate([
+            'responses' => 'required|array',
+            'responses.*.assessment_id' => 'required|integer|exists:assessments,id',
+            'responses.*.question_id' => 'required|integer|exists:questions,id',
+            'responses.*.student_id' => 'required|integer|exists:users,id',
+            'responses.*.answer' => 'nullable|string|max:255',
+            'responses.*.is_correct' => 'boolean',
+            'responses.*.points_earned' => 'integer'
+        ]);
+    
+        // Create multiple records
+        foreach ($request->responses as $response) {
+            StudentResponse::create($response);
+        }
+    
+    
+        return back()->with([
+            'success' => 'Successfully finished assessment',
+        ]);
+    }
+
+    public function deleteAssessment(Request $request, Assessment $assessment)
+    {
+        $assessment->delete();
+        
+        return back()->with('success', 'Assessment deleted successfully');
+    }
+
+    public function removeAssignedAssessment($id)
+    {
+        $assignment = AssessmentAssignment::findOrFail($id);
+        $assignment->delete();
+
+        return back()->with('success', 'Assignment deleted successfully.');
     }
 }
