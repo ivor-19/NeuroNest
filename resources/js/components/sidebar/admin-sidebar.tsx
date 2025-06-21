@@ -83,16 +83,16 @@ const data = {
     {
       title: "OPERATIONS",
       items: [
-        {
-          title: "Assignments & Quizzes",
-          href: "#",
-          icon: ClipboardList,
-        },
-        {
-          title: "Messages",
-          href: "#",
-          icon: MessageSquare,
-        },
+        // {
+        //   title: "Assignments & Quizzes",
+        //   href: "#",
+        //   icon: ClipboardList,
+        // },
+        // {
+        //   title: "Messages",
+        //   href: "#",
+        //   icon: MessageSquare,
+        // },
         {
           title: "Contact Us",
           href: "/admin/contactus",

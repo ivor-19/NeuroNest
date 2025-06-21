@@ -21,7 +21,7 @@ type CourseProps = {
     description: string,
     isActive: number,
     subjects?: {
-      pivotId: number, // Add this - the course_subjects table ID
+      pivotId: number,
       id: number,
       code: string,
       title: string,
@@ -39,10 +39,10 @@ type CourseProps = {
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Manage Courses',
-        href: 'admin/manageCourses',
-    },
+  {
+    title: 'Manage Courses',
+    href: 'admin/manageCourses',
+  },
 ];
 
 export default function ManageCourses({ courses, allSubjects } : CourseProps) {
@@ -52,10 +52,9 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
   const [deleteCourseOpen, setDeleteCourseOpen] = useState(false)
   const [removeSubjectOpen, setRemoveSubjectOpen] = useState(false)
   
-  // State for managing curriculum changes
   const [curriculumChanges, setCurriculumChanges] = useState<{
     toAdd: number[],
-    toRemove: number[] // These will be pivot IDs, not subject IDs
+    toRemove: number[] 
   }>({ toAdd: [], toRemove: [] })
   const [hasChanges, setHasChanges] = useState(false)
 
@@ -71,17 +70,15 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
     const course = courses.find(c => c.id === selectedCourse);
     const originalSubjects = course?.subjects || [];
     
-    // Filter out subjects marked for removal (by pivot ID)
     let modifiedSubjects = originalSubjects.filter(subject => 
       !curriculumChanges.toRemove.includes(subject.pivotId)
     );
     
-    // Add new subjects (these won't have pivot IDs yet)
     const subjectsToAdd = allSubjects.filter(subject => 
       curriculumChanges.toAdd.includes(subject.id)
     ).map(subject => ({
       ...subject,
-      pivotId: 0 // Temporary value for new subjects
+      pivotId: 0 
     }));
     
     modifiedSubjects = [...modifiedSubjects, ...subjectsToAdd];
@@ -133,8 +130,8 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
   
     const payload = {
       course_id: selectedCourse,
-      toAdd: curriculumChanges.toAdd,     // Subject IDs to add
-      toRemove: curriculumChanges.toRemove // Pivot IDs to remove
+      toAdd: curriculumChanges.toAdd,    
+      toRemove: curriculumChanges.toRemove 
     };
   
     router.post(route('admin.assignSubjects'), payload, {
@@ -269,10 +266,7 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
                             ))}
                           </div>
                           {course.subjects && course.subjects.length > 4 && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="mt-2"
+                            <Button variant="ghost" size="sm" className="mt-2"
                               onClick={() => {
                                 setSelectedCourse(course.id);
                                 setActiveTab("manage-curriculum");

@@ -15,20 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import {
-  Plus,
-  Edit,
-  Trash2,
-  Layers,
-  BookOpen,
-  GraduationCap,
-  Calendar,
-  Search,
-  Filter,
-  FileText,
-  Users,
-  MoreHorizontal,
-} from "lucide-react"
+import { Plus, Edit, Trash2, Layers, BookOpen, GraduationCap, Calendar, Search, Filter, FileText, Users, MoreHorizontal } from "lucide-react";
 import AppLayout from "@/layouts/app-layout"
 import { route } from "ziggy-js"
 
@@ -72,13 +59,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [showAddForm, setShowAddForm] = useState(false)
 
-  const {
-    data: subjectData,
-    setData: setSubjectData,
-    post: subjectPost,
-    processing: subjectProcessing,
-    errors: subjectErrors,
-    reset: subjectReset,
+  const { data: subjectData, setData: setSubjectData, post: subjectPost, processing: subjectProcessing, errors: subjectErrors, reset: subjectReset,
   } = useForm({
     code: "",
     title: "",
@@ -88,13 +69,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
     isActive: "",
   })
 
-  const {
-    data: moduleData,
-    setData: setModuleData,
-    post: modulePost,
-    processing: moduleProcessing,
-    errors: moduleErrors,
-    reset: moduleReset,
+  const { data: moduleData, setData: setModuleData, post: modulePost, processing: moduleProcessing, errors: moduleErrors, reset: moduleReset,
   } = useForm({
     title: "",
     subject_id: "",
@@ -124,7 +99,6 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
   const handleAddModule = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Create FormData
     const formData = new FormData();
     
     formData.append('subject_id', moduleData.subject_id);
@@ -138,7 +112,6 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
       formData.append('pdf', pdfFile);
     }
 
-    // Use Inertia router directly
     router.post(route("admin.addModule"), formData, {
       onSuccess: () => {
         moduleReset();
@@ -255,23 +228,15 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
           <CardContent className="space-y-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search subjects and modules..."
-                className="pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+              <Input placeholder="Search subjects and modules..." className="pl-10" value={searchQuery}  onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
-
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-2">
               <TabsList className="grid w-full grid-cols-2 bg-[var(--bg-main-2)]">
                 <TabsTrigger value="modules" className="flex items-center gap-2" onClick={() => setShowAddForm(false)}>
-                  <Layers className="h-4 w-4" />
-                  Modules
+                  <Layers className="h-4 w-4" />Modules
                 </TabsTrigger>
                 <TabsTrigger value="subjects" className="flex items-center gap-2" onClick={() => setShowAddForm(false)}>
-                  <BookOpen className="h-4 w-4" />
-                  Subjects
+                  <BookOpen className="h-4 w-4" /> Subjects
                 </TabsTrigger>
               </TabsList>
 
@@ -282,8 +247,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                     <div className="flex items-center justify-between">
                       <div>
                         <CardTitle className="flex items-center gap-2">
-                          <Layers className="h-5 w-5" />
-                          Learning Modules
+                          <Layers className="h-5 w-5" /> Learning Modules
                         </CardTitle>
                         <p className="text-sm text-muted-foreground mt-1">Manage and organize your course modules</p>
                       </div>
@@ -303,8 +267,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                           </SelectContent>
                         </Select>
                         <Button onClick={() => setShowAddForm(!showAddForm)}>
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Module
+                          <Plus className="h-4 w-4 mr-2" />Add Module
                         </Button>
                       </div>
                     </div>
@@ -322,19 +285,11 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <Label htmlFor="module-title">Module Title</Label>
-                              <Input
-                                id="module-title"
-                                value={moduleData.title}
-                                onChange={(e) => setModuleData("title", e.target.value)}
-                                placeholder="Enter module title"
-                              />
+                              <Input id="module-title" value={moduleData.title} onChange={(e) => setModuleData("title", e.target.value)} placeholder="Enter module title"/>
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="module-subject">Subject</Label>
-                              <Select
-                                value={moduleData.subject_id}
-                                onValueChange={(value) => setModuleData("subject_id", value)}
-                              >
+                              <Select value={moduleData.subject_id} onValueChange={(value) => setModuleData("subject_id", value)}>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select subject" />
                                 </SelectTrigger>
@@ -349,23 +304,11 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                             </div>
                             <div className="space-y-2 md:col-span-2">
                               <Label htmlFor="module-description">Description</Label>
-                              <Textarea
-                                id="module-description"
-                                value={moduleData.description}
-                                onChange={(e) => setModuleData("description", e.target.value)}
-                                placeholder="Describe the module content and objectives"
-                                rows={3}
-                              />
+                              <Textarea id="module-description" value={moduleData.description} onChange={(e) => setModuleData("description", e.target.value)} placeholder="Describe the module content and objectives" rows={3} />
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="module-order">Module Order</Label>
-                              <Input
-                                id="module-order"
-                                type="number"
-                                value={moduleData.order}
-                                onChange={(e) => setModuleData("order", e.target.value)}
-                                placeholder="1, 2, 3..."
-                              />
+                              <Input id="module-order" type="number" value={moduleData.order} onChange={(e) => setModuleData("order", e.target.value)} placeholder="1, 2, 3..."/>
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="module-status">Status</Label>
@@ -381,20 +324,14 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                             </div>
                             <div className="space-y-2 md:col-span-2">
                               <Label htmlFor="module-file">PDF File</Label>
-                              <Input 
-                                type="file"
-                                accept=".pdf"
-                                onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
-                              />
+                              <Input  type="file" accept=".pdf" onChange={(e) => setPdfFile(e.target.files?.[0] || null)} />
                             </div>
                           </div>
                           <div className="flex gap-2">
                             <Button onClick={handleAddModule} disabled={moduleProcessing}>
                               {moduleProcessing ? "Creating..." : "Create Module"}
                             </Button>
-                            <Button variant="outline" onClick={() => setShowAddForm(false)}>
-                              Cancel
-                            </Button>
+                            <Button variant="outline" onClick={() => setShowAddForm(false)}> Cancel</Button>
                           </div>
                         </div>
                         <Separator />
@@ -422,30 +359,25 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                                   {subject && (
                                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                       <span className="flex items-center gap-1">
-                                        <GraduationCap className="h-3 w-3" />
-                                        Year {subject.year_level}
+                                        <GraduationCap className="h-3 w-3" /> Year {subject.year_level}
                                       </span>
                                       <span className="flex items-center gap-1">
-                                        <Calendar className="h-3 w-3" />
-                                        Semester {subject.semester}
+                                        <Calendar className="h-3 w-3" /> Semester {subject.semester}
                                       </span>
                                       <span className="flex items-center gap-1">
-                                        <BookOpen className="h-3 w-3" />
-                                        {subject.title}
+                                        <BookOpen className="h-3 w-3" /> {subject.title}
                                       </span>
                                     </div>
                                   )}
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <Button variant="ghost" size="sm">
+                                  {/* <Button variant="ghost" size="sm">
                                     <Edit className="h-4 w-4" />
-                                  </Button>
+                                  </Button> */}
                                   <Button variant="ghost" size="sm" onClick={() => {setRemoveModuleOpen(true), setModuleId(module.id)}}>
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
-                                  <Button variant="ghost" size="sm">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
+                                 
                                 </div>
                               </div>
                             </div>
@@ -456,14 +388,11 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                           <Layers className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
                           <h3 className="text-lg font-semibold mb-2">No modules found</h3>
                           <p className="text-muted-foreground mb-4">
-                            {searchQuery
-                              ? "Try adjusting your search terms"
-                              : "Create your first learning module to get started"}
+                            {searchQuery ? "Try adjusting your search terms" : "Create your first learning module to get started"}
                           </p>
                           {!searchQuery && (
                             <Button onClick={() => setShowAddForm(true)}>
-                              <Plus className="h-4 w-4 mr-2" />
-                              Add Module
+                              <Plus className="h-4 w-4 mr-2" />  Add Module
                             </Button>
                           )}
                         </div>
@@ -480,14 +409,12 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                     <div className="flex items-center justify-between">
                       <div>
                         <CardTitle className="flex items-center gap-2">
-                          <BookOpen className="h-5 w-5" />
-                          Academic Subjects
+                          <BookOpen className="h-5 w-5" /> Academic Subjects
                         </CardTitle>
                         <p className="text-sm text-muted-foreground mt-1">Organize your curriculum and course structure</p>
                       </div>
                       <Button onClick={() => setShowAddForm(!showAddForm)}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Subject
+                        <Plus className="h-4 w-4 mr-2" /> Add Subject
                       </Button>
                     </div>
                   </CardHeader>
@@ -504,38 +431,19 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <Label htmlFor="subject-code">Subject Code</Label>
-                              <Input
-                                id="subject-code"
-                                value={subjectData.code}
-                                onChange={(e) => setSubjectData("code", e.target.value)}
-                                placeholder="e.g. CS101, MATH201"
-                              />
+                              <Input id="subject-code" value={subjectData.code} onChange={(e) => setSubjectData("code", e.target.value)} placeholder="e.g. CS101, MATH201"/>
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="subject-title">Subject Title</Label>
-                              <Input
-                                id="subject-title"
-                                value={subjectData.title}
-                                onChange={(e) => setSubjectData("title", e.target.value)}
-                                placeholder="Enter subject title"
-                              />
+                              <Input id="subject-title" value={subjectData.title} onChange={(e) => setSubjectData("title", e.target.value)} placeholder="Enter subject title" />
                             </div>
                             <div className="space-y-2 md:col-span-2">
                               <Label htmlFor="subject-description">Description</Label>
-                              <Textarea
-                                id="subject-description"
-                                value={subjectData.description}
-                                onChange={(e) => setSubjectData("description", e.target.value)}
-                                placeholder="Describe the subject objectives and content"
-                                rows={3}
-                              />
+                              <Textarea id="subject-description" value={subjectData.description} onChange={(e) => setSubjectData("description", e.target.value)} placeholder="Describe the subject objectives and content" rows={3} />
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="subject-year">Year Level</Label>
-                              <Select
-                                value={subjectData.year_level}
-                                onValueChange={(value) => setSubjectData("year_level", value)}
-                              >
+                              <Select value={subjectData.year_level} onValueChange={(value) => setSubjectData("year_level", value)} >
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select year" />
                                 </SelectTrigger>
@@ -549,10 +457,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="subject-semester">Semester</Label>
-                              <Select
-                                value={subjectData.semester}
-                                onValueChange={(value) => setSubjectData("semester", value)}
-                              >
+                              <Select value={subjectData.semester} onValueChange={(value) => setSubjectData("semester", value)} >
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select semester" />
                                 </SelectTrigger>
@@ -565,10 +470,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                             </div>
                             <div className="space-y-2 md:col-span-2">
                               <Label htmlFor="subject-status">Status</Label>
-                              <Select
-                                value={subjectData.isActive}
-                                onValueChange={(value) => setSubjectData("isActive", value)}
-                              >
+                              <Select value={subjectData.isActive} onValueChange={(value) => setSubjectData("isActive", value)} >
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select status" />
                                 </SelectTrigger>
@@ -583,9 +485,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                             <Button onClick={handleAddSubject} disabled={subjectProcessing}>
                               {subjectProcessing ? "Creating..." : "Create Subject"}
                             </Button>
-                            <Button variant="outline" onClick={() => setShowAddForm(false)}>
-                              Cancel
-                            </Button>
+                            <Button variant="outline" onClick={() => setShowAddForm(false)}> Cancel </Button>
                             {subjectErrors.code && (
                               <p className="text-sm font-medium text-destructive">{subjectErrors.code}</p>
                             )}
@@ -633,9 +533,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                                   {(subject.modules || []).length} modules
                                 </div>
                               </div>
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer">
-                                View all
-                              </div>
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer"> View all </div>
                             </div>
                           </CardContent>
                         </Card>
@@ -647,14 +545,11 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                         <BookOpen className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
                         <h3 className="text-lg font-semibold mb-2">No subjects found</h3>
                         <p className="text-muted-foreground mb-4">
-                          {searchQuery
-                            ? "Try adjusting your search terms"
-                            : "Create your first subject to start building your curriculum"}
+                          {searchQuery ? "Try adjusting your search terms" : "Create your first subject to start building your curriculum"}
                         </p>
                         {!searchQuery && (
                           <Button onClick={() => setShowAddForm(true)}>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Subject
+                            <Plus className="h-4 w-4 mr-2" /> Add Subject
                           </Button>
                         )}
                       </div>
@@ -669,9 +564,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Remove module from subject?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will remove the module from a subject. 
-              </AlertDialogDescription>
+              <AlertDialogDescription> This will remove the module from a subject.  </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -684,9 +577,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Are you sure you want to delete this subject?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will affect other data. Delete it anyway? 
-              </AlertDialogDescription>
+              <AlertDialogDescription> This will affect other data. Delete it anyway?  </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>

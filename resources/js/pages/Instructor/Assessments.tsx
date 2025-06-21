@@ -122,6 +122,7 @@ export default function Assessments({ classInstructor, assessments, assignments 
   const [routeLink, setRouteLink] = useState('');
   const handleDeleteAssigned = (assignment: AssessmentAssignment) => {
     setDeleteId(assignment.id)
+    setAssessmentAssignments(assignments);
     setRouteLink('instructor.removeAssignedAssessment')
    
     setDeleteDialogOpen(true);

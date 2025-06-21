@@ -260,7 +260,7 @@ export default function Modules({ modules, classInstructor, assessments, assignm
                                   {moduleAccess.is_available ? "Available" : "Unavailable"}
                                 </Badge>
                               </div>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"><MoreHorizontal className="h-4 w-4" /></Button>
+ 
                             </div>
                             <CardTitle className="text-lg text-slate-900 dark:text-slate-100">{moduleAccess.module.title}</CardTitle>
                           </CardHeader>
@@ -286,9 +286,9 @@ export default function Modules({ modules, classInstructor, assessments, assignm
                           <div className="mx-auto w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center"><BookOpen className="w-8 h-8 text-slate-400" /></div>
                           <div className="space-y-2">
                             <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">No modules found</h3>
-                            <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto">{hasActiveFilters ? "No modules match your current filters." : "Get started by creating your first module."}</p>
+                            <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto">{hasActiveFilters ? "No modules match your current filters." : "No modules match your current filters.."}</p>
                           </div>
-                          {!hasActiveFilters && <Button className="bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"><Plus className="w-4 h-4 mr-2" />Create Module</Button>}
+                        
                         </div>
                       </CardContent>
                     </Card>

@@ -12,12 +12,22 @@ export function NavMain({ groups = [] }: { groups: Array<{title: string, items: 
             <SidebarMenu>
               {group.items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={page.url.startsWith(item.href)} tooltip={{ children: item.title }}>
-                    <Link href={item.href} prefetch className='h-10'>
-                      {item.icon && <item.icon />}
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
+               <SidebarMenuButton
+                  asChild
+                  isActive={page.url.startsWith(item.href)}
+                  tooltip={{ children: item.title }}
+                  className={`h-10 flex items-center gap-2 px-3 rounded transition-colors ${
+                    page.url.startsWith(item.href)
+                      ? 'bg-muted text-primary'
+                      : 'hover:bg-muted text-muted-foreground'
+                  }`}
+                >
+                  <Link href={item.href} prefetch className="w-full h-full flex items-center gap-2">
+                    {item.icon && <item.icon className="w-5 h-5" />}
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

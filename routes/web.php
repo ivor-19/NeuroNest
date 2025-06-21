@@ -64,8 +64,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/contactus', [ContactController::class, 'index'])->name('admin.contactus');
         // Add these lines in your admin middleware group
-Route::delete('/contacts/{id}', [ContactController::class, 'destroy'])->name('admin.contacts.destroy');
-Route::delete('/contacts', [ContactController::class, 'destroyMultiple'])->name('admin.contacts.destroyMultiple');
+        Route::delete('/contacts/concern/{id}', [ContactController::class, 'deleteConcern'])->name('admin.deleteConcern');
+        Route::delete('/contacts', [ContactController::class, 'destroyMultiple'])->name('admin.contacts.destroyMultiple');
 
         Route::post('/add-user', [AdminController::class, 'store'])->name('admin.addUser');
         Route::post('/add-course', [AdminController::class, 'addCourse'])->name('admin.addCourse');

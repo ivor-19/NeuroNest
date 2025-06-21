@@ -34,16 +34,12 @@ class ContactController extends Controller
         ]);
     }
 
-    public function destroy($id)
+    public function deleteConcern($id)
     {
-        try {
-            $contact = Contact::findOrFail($id);
-            $contact->delete();
+        $concern = Contact::findOrFail($id);
+        $concern->delete();
 
-            return redirect()->back()->with('success', 'Contact deleted successfully!');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to delete contact.');
-        }
+        return back()->with('success', 'Concern deleted successfully.');
     }
 
     public function destroyMultiple(Request $request)

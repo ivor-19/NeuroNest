@@ -188,16 +188,10 @@ export default function ManageStudents({ users, students, courses } : ManageStud
                 <div className="flex items-center gap-2">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      placeholder="Search students..." 
-                      className="pl-8 w-64" 
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                    <Input placeholder="Search students..."  className="pl-8 w-64" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
                   </div>
                   <Button onClick={() => setActiveTab("assign-sections")}>
-                    <UserCheck className="h-4 w-4 mr-2" />
-                    Assign Sections
+                    <UserCheck className="h-4 w-4 mr-2" /> Assign Sections
                   </Button>
                 </div>
               </div>
@@ -236,9 +230,7 @@ export default function ManageStudents({ users, students, courses } : ManageStud
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant={student.student_status === "active" ? "default" : "secondary"}>
-                          {student.student_status}
-                        </Badge>
+                        <Badge variant={student.student_status === "active" ? "default" : "secondary"}> {student.student_status} </Badge>
                         <Button variant="outline" size="sm">
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -250,9 +242,7 @@ export default function ManageStudents({ users, students, courses } : ManageStud
                   ))
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-muted-foreground">
-                      {searchTerm ? "No students match your search" : "No students found"}
-                    </p>
+                    <p className="text-muted-foreground"> {searchTerm ? "No students match your search" : "No students found"} </p>
                   </div>
                 )}
               </div>
@@ -269,10 +259,7 @@ export default function ManageStudents({ users, students, courses } : ManageStud
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="student">Select Student</Label>
-                  <Select
-                    value={data.student_id}
-                    onValueChange={(value) => setData("student_id", value)}
-                  >
+                  <Select value={data.student_id} onValueChange={(value) => setData("student_id", value)} >
                     <SelectTrigger>
                       <SelectValue placeholder="Choose a student" />
                     </SelectTrigger>
@@ -300,10 +287,7 @@ export default function ManageStudents({ users, students, courses } : ManageStud
                 )}
                 <div className="space-y-2">
                   <Label htmlFor="course">Course Program</Label>
-                  <Select
-                    value={data.course_id}
-                    onValueChange={(value) => setData("course_id", value)}
-                  >
+                  <Select value={data.course_id} onValueChange={(value) => setData("course_id", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Choose a course" />
                     </SelectTrigger>
@@ -322,10 +306,7 @@ export default function ManageStudents({ users, students, courses } : ManageStud
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="yearLevel">Year Level</Label>
-                    <Select
-                      value={data.year_level}
-                      onValueChange={(value) => setData("year_level", value)}
-                    >
+                    <Select value={data.year_level} onValueChange={(value) => setData("year_level", value)} >
                       <SelectTrigger>
                         <SelectValue placeholder="Year" />
                       </SelectTrigger>
@@ -343,10 +324,7 @@ export default function ManageStudents({ users, students, courses } : ManageStud
 
                   <div className="space-y-2">
                     <Label htmlFor="section">Section</Label>
-                    <Select
-                      value={data.section}
-                      onValueChange={(value) => setData("section", value)}
-                    >
+                    <Select value={data.section} onValueChange={(value) => setData("section", value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Section" />
                       </SelectTrigger>
@@ -364,10 +342,7 @@ export default function ManageStudents({ users, students, courses } : ManageStud
 
                   <div className="space-y-2">
                     <Label htmlFor="academicYear">Academic Year</Label>
-                    <Select
-                      value={data.academic_year}
-                      onValueChange={(value) => setData("academic_year", value)}
-                    >
+                    <Select value={data.academic_year} onValueChange={(value) => setData("academic_year", value)} >
                       <SelectTrigger>
                         <SelectValue placeholder="Year" />
                       </SelectTrigger>
