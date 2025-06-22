@@ -7,11 +7,12 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Edit, Trash2, Search, UserCheck, Plus, MapPin, Clock, GraduationCap, BookOpen, Users, Calendar, UserPlus, Mail, Phone, Trash } from "lucide-react"
+import { Edit, Trash2, Search, UserCheck, Plus, MapPin, Clock, GraduationCap, BookOpen, Users, Calendar, UserPlus, Mail, Phone, Trash, UserRoundX } from "lucide-react"
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { useEffect } from "react"
+import DeleteModal from "@/components/modal/delete-modal"
 
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -147,6 +148,13 @@ export default function ManageInstructors({ instructors, courseSubjects  } : Ins
     setSelectedInstructorForAssignment(instructorId)
     setData((prev) => ({ ...prev, instructor_id: instructorId.toString() }))
     setActiveTab("assign-instructor")
+  }
+
+  const [deleteId, setDeleteId] = useState(0)
+  const [deleteUnassignedOpen, setDeleteUnassignedOpen] = useState(false)
+  const handleUnassigned = async (id: number) => {
+    setDeleteUnassignedOpen(true)
+    setDeleteId(id)
   }
 
   return (
@@ -505,9 +513,9 @@ export default function ManageInstructors({ instructors, courseSubjects  } : Ins
                                 </div>
                               </div>
 
-                              <Button variant="ghost" size="sm" className="gap-2 text-destructive text-xs">
-                                <Trash2 className="h-4 w-4"/>
-                                Remove
+                              <Button variant="ghost" size="sm" className="gap-2 text-destructive text-xs cursor-pointer" onClick={() =>handleUnassigned(assignment.id)}>
+                                <UserRoundX className="h-4 w-4"/>
+                                Unassigned
                               </Button>
                             </div>
                           ))}
@@ -541,6 +549,15 @@ export default function ManageInstructors({ instructors, courseSubjects  } : Ins
         </TabsContent>
 
       </Tabs>
+      <DeleteModal 
+        open={deleteUnassignedOpen}
+        onOpenChange={setDeleteUnassignedOpen}
+        id={deleteId}
+        routeLink={'admin.unassignedInstructor'}
+        description={"This will permanently revoke the instructor’s assignment to this section"}
+        toastMessage="Unassigned successfully"
+        buttonTitle="Confirm"
+      />
     </div>
          
     </AppLayout>

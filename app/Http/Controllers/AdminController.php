@@ -364,4 +364,20 @@ class AdminController extends Controller
         return back()->with('success', 'Successfully assigned');
     }
 
+    public function removeFromSection($id)
+    {
+        $student = StudentProfile::findOrFail($id);
+        $student->delete();
+
+        return back()->with('success', 'Student removed successfully.');
+    }
+
+    public function unassignedInstructor($id)
+    {
+        $section = ClassInstructor::findOrFail($id);
+        $section->delete();
+
+        return back()->with('success', 'Unassigned successfully.');
+    }
+
 }

@@ -129,11 +129,9 @@ export default function Assessments({ classInstructor, assessments, assignments 
   }
 
   const [deleteId, setDeleteId] = useState(0)
-  const [routeLink, setRouteLink] = useState("")
   const handleDeleteAssigned = (assignment: AssessmentAssignment) => {
     setDeleteId(assignment.id)
     setAssessmentAssignments(assignments)
-    setRouteLink("instructor.removeAssignedAssessment")
     setDeleteDialogOpen(true)
   }
 
@@ -922,7 +920,15 @@ export default function Assessments({ classInstructor, assessments, assignments 
           setActiveTab("assessment-management")
         }}
       />
-      <DeleteModal open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} id={deleteId} routeLink={routeLink} />
+      <DeleteModal 
+        open={deleteDialogOpen} 
+        onOpenChange={setDeleteDialogOpen} 
+        id={deleteId}
+        routeLink={"instructor.removeAssignedAssessment"}
+        description={'This will permanently delete the assessment and remove all associated data'}
+        toastMessage="Delete successfully"
+        buttonTitle="Delete Assessment"
+      />
     </HeaderLayout>
   )
 }

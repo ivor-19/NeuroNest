@@ -84,7 +84,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/delete-course/{id}', [AdminController::class, 'deleteCourse'])->name('admin.deleteCourse');
         Route::delete('/remove-subject/{id}', [AdminController::class, 'removeSubjectFromACourse'])->name('admin.removeSubject');
         Route::delete('/delete-subject/{id}', [AdminController::class, 'deleteSubject'])->name('admin.deleteSubject');
+        Route::delete('/remove-from-section/{id}', [AdminController::class, 'removeFromSection'])->name('admin.removeFromSection');
+        Route::delete('/unassigned-instructor/{id}', [AdminController::class, 'unassignedInstructor'])->name('admin.unassignedInstructor');
+        
         Route::delete('/delete-module/{id}', [ModuleController::class, 'deleteModule'])->name('admin.deleteModule');
+        
+        
     });
 });
 

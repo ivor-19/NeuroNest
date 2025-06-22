@@ -86,7 +86,6 @@ export default function ContactDashboard({ contacts }: { contacts: Contact[] }) 
 
   const handleDeleteSingle = (contactId: number) => {
     setDeleteDialogOpen(true)
-    setRouteLink('admin.deleteConcern')
     setDeleteId(contactId)
   }
 
@@ -346,8 +345,10 @@ export default function ContactDashboard({ contacts }: { contacts: Contact[] }) 
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         id={deleteId}
-        routeLink={routeLink}
-
+        routeLink={'admin.deleteConcern'}
+        description={"This will permanently delete the concern and remove all associated data"}
+        toastMessage="Delete successfully"
+        buttonTitle="Delete Concern"
       />
     </AppLayout>
   )

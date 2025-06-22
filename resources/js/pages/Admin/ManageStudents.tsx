@@ -20,8 +20,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { useEffect } from "react"
+import { toast } from "sonner"
+import DeleteModal from "@/components/modal/delete-modal"
 
 type UserProps = {
   id: number;
@@ -30,13 +32,14 @@ type UserProps = {
 }
 
 type StudentProps = {
-  id: number;
+  user_id: number;
   student_id: string;
   student_name: string;
   student_email: string;
   contact_number: string;
   student_status: string;
   student_remarks: string;
+  profile_id: number;
   course_id: number;
   course_code: string;
   year_level: number;
@@ -71,7 +74,7 @@ export default function ManageStudents({ users, students, courses }: ManageStude
   const [courseFilter, setCourseFilter] = useState("all")
   const [yearFilter, setYearFilter] = useState("all")
   const [sectionFilter, setSectionFilter] = useState("all")
-
+ 
   const { data, setData, post, processing, errors, reset } = useForm({
     student_id: '',
     course_id: '',
@@ -125,6 +128,14 @@ export default function ManageStudents({ users, students, courses }: ManageStude
     return matchesSearch && matchesStatus && matchesCourse && matchesYear && matchesSection;
   });
 
+  const [deleteId, setDeleteId] = useState(0);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const handleRemoveFromSection = async (id : number) => {
+    setDeleteDialogOpen(true)
+    setDeleteId(id)
+
+  }
+
   // Statistics calculations
   const totalStudents = students.length;
   const activeStudents = students.filter(s => s.student_status === 'active').length;
@@ -144,7 +155,7 @@ export default function ManageStudents({ users, students, courses }: ManageStude
               Comprehensive student enrollment and section management platform
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          {/* <div className="flex items-center gap-3">
             <Button variant="outline" size="sm">
               <Download className="h-4 w-4 mr-2" />
               Export Data
@@ -153,7 +164,7 @@ export default function ManageStudents({ users, students, courses }: ManageStude
               <Plus className="h-4 w-4 mr-2" />
               Add Student
             </Button>
-          </div>
+          </div> */}
         </div>
 
         {/* Statistics Cards */}
@@ -219,7 +230,7 @@ export default function ManageStudents({ users, students, courses }: ManageStude
 
            <TabsList className="grid w-full grid-cols-4 lg:max-w-[60%]">
             <TabsTrigger value="overview" className="text-sm">Student Directory</TabsTrigger>
-            <TabsTrigger value="assignments" className="text-sm">Section Assignments</TabsTrigger>
+            <TabsTrigger value="assignments" className="text-sm">Assign Sections</TabsTrigger>
             <TabsTrigger value="sections" className="text-sm">Section Overview</TabsTrigger>
             <TabsTrigger value="analytics" className="text-sm">Analytics</TabsTrigger>
           </TabsList>
@@ -342,14 +353,14 @@ export default function ManageStudents({ users, students, courses }: ManageStude
                     <TableBody>
                       {filteredStudents.length > 0 ? (
                         filteredStudents.map((student, index) => (
-                          <TableRow key={student.id} className="hover:bg-muted/50">
+                          <TableRow key={student.user_id} className="hover:bg-muted/50">
                             <TableCell className="font-medium text-muted-foreground">
                               {index + 1}
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-10 w-10">
-                                  <AvatarImage src="/placeholder.svg" alt={student.student_name} />
+                                  <AvatarImage src="" alt={student.student_name} />
                                   <AvatarFallback className="text-xs">
                                     {getInitials(student.student_name)}
                                   </AvatarFallback>
@@ -385,9 +396,23 @@ export default function ManageStudents({ users, students, courses }: ManageStude
                                   </p>
                                 </div>
                               ) : (
-                                <Badge variant="secondary" className="text-xs">
-                                  Not Assigned
-                                </Badge>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-6 px-2 text-xs cursor-pointer" 
+                                  onClick={() => {
+                                    if (student.user_id) {
+                                      setActiveTab("assignments");
+                                      setData("student_id", student.user_id.toString());
+                                    } else {
+                                      toast.error("This student doesn't have a valid profile ID");
+                                      console.log(student.user_id)
+                                    }
+                                  }}
+                                >
+                                  <Badge> Not Assigned </Badge>
+                              
+                                </Button>
                               )}
                             </TableCell>
                             <TableCell>
@@ -407,19 +432,33 @@ export default function ManageStudents({ users, students, courses }: ManageStude
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                  <DropdownMenuItem>
+                                  {/* <DropdownMenuItem>
                                     <Edit className="h-4 w-4 mr-2" />
                                     Edit Student
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem>
+                                  </DropdownMenuItem> */}
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      if (student.user_id) {
+                                        setActiveTab("assignments");
+                                        setData("student_id", student.user_id.toString());
+                                      } else {
+                                        toast.error("This student doesn't have a valid profile ID");
+                                        console.log(student.user_id)
+                                      }
+                                    }}
+                                  >
                                     <UserCheck className="h-4 w-4 mr-2" />
                                     Assign Section
                                   </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem className="text-destructive">
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Remove Student
-                                  </DropdownMenuItem>
+                                  {student.section && 
+                                    <>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem className="text-destructive" onClick={() => handleRemoveFromSection(student.profile_id)}>
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Remove from section
+                                      </DropdownMenuItem>
+                                    </>
+                                  }
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </TableCell>
@@ -450,10 +489,24 @@ export default function ManageStudents({ users, students, courses }: ManageStude
           <TabsContent value="assignments" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-xl">Section Assignment Center</CardTitle>
+                <CardTitle className="text-xl">Assign Sections Center</CardTitle>
                 <p className="text-sm text-muted-foreground">
                   Assign students to their respective course sections and academic years
                 </p>
+                {data.student_id && (
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="w-fit">
+                      Assigning section for: {users.find(u => u.id.toString() === data.student_id)?.name || "Unknown Student"}
+                    </Badge>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setData("student_id", "")}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                )}
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid gap-6 lg:grid-cols-2">
@@ -638,7 +691,7 @@ export default function ManageStudents({ users, students, courses }: ManageStude
                                           <div className="space-y-2 max-h-32 overflow-y-auto">
                                             {sectionStudents.length > 0 ? (
                                               sectionStudents.map((student) => (
-                                                <div key={student.id} className="flex items-center gap-2 p-2 bg-muted/50 rounded text-xs">
+                                                <div key={student.user_id} className="flex items-center gap-2 p-2 bg-muted/50 rounded text-xs">
                                                   <Avatar className="h-6 w-6">
                                                     <AvatarFallback className="text-xs">
                                                       {getInitials(student.student_name)}
@@ -736,6 +789,15 @@ export default function ManageStudents({ users, students, courses }: ManageStude
             </div>
           </TabsContent>
         </Tabs>
+        <DeleteModal 
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          id={deleteId}
+          routeLink={'admin.removeFromSection'}
+          description={"Removing this student from the section is permanent. To add them back, you will need to assign them again."}
+          toastMessage="Removal complete"
+          buttonTitle="Remove"
+        />
       </div>
     </AppLayout>
   );
