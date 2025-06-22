@@ -82,6 +82,20 @@ export default function Modules({ subject, modules }: Props) {
     })
   }
 
+  const handleDownloadPdf = async (id: number) => {
+    try {
+      window.location.href = route('student.moduleDownload', { id: id });
+
+      setTimeout(() => {
+        toast('Module download started');
+      }, 500);
+      
+    } catch (error) {
+      console.error('Download failed', error);
+      toast('Download failed. Please try again.');
+    }
+  };
+
   return (
     <HeaderLayout>
       <Head title={subject.title} />
@@ -273,7 +287,7 @@ export default function Modules({ subject, modules }: Props) {
                                     size="default"
                                     variant={module.isDone ? "outline" : "default"}
                                     className="min-w-[100px] cursor-pointer"
-                                    onClick={() => console.log(module.pdf)}
+                                    onClick={() => handleDownloadPdf(module.id)}
                                   >
                                     <Download />
                                   </Button>

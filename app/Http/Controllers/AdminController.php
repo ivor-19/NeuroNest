@@ -43,7 +43,11 @@ class AdminController extends Controller
 
 //************************************************FOR USERS**************************************************
     public function manageUsers() {
-        return Inertia::render('Admin/ManageUsers', []);
+
+        $allUsers = User::all();
+        return Inertia::render('Admin/ManageUsers', [
+            'users' => $allUsers,
+        ]);
     }
 
     public function store(Request $request){

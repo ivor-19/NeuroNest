@@ -23,6 +23,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 type ProfileForm = {
     name: string;
     email: string;
+    account_id: string;
 };
 
 export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
@@ -31,6 +32,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<Required<ProfileForm>>({
         name: auth.user.name,
         email: auth.user.email,
+        account_id: auth.user.account_id,
     });
 
     const submit: FormEventHandler = (e) => {
@@ -50,6 +52,23 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                  <SettingsLayout>
                      <div className="space-y-6">
                          <HeadingSmall title="Profile information" description="Update your name and email address" />
+
+                         <div className="grid gap-2">
+                                <Label htmlFor="name">Account ID</Label>
+    
+                                <Input
+                                    id="account_id"
+                                    className="mt-1 block w-full"
+                                    value={data.account_id}
+                                    onChange={(e) => setData('account_id', e.target.value)}
+                                    required
+                                    autoComplete="account_id"
+                                    placeholder="Account ID"
+                                    disabled
+                                />
+    
+                                <InputError className="mt-2" message={errors.name} />
+                            </div>
      
                          <form onSubmit={submit} className="space-y-6">
                              <div className="grid gap-2">
@@ -123,7 +142,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                          </form>
                      </div>
      
-                     <DeleteUser />
+                     {/* <DeleteUser /> */}
                  </SettingsLayout>
                 </AppLayout>
             ):(
@@ -135,6 +154,23 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                         <HeadingSmall title="Profile information" description="Update your name and email address" />
     
                         <form onSubmit={submit} className="space-y-6">
+                            <div className="grid gap-2">
+                                <Label htmlFor="name">Account ID</Label>
+    
+                                <Input
+                                    id="account_id"
+                                    className="mt-1 block w-full"
+                                    value={data.account_id}
+                                    onChange={(e) => setData('account_id', e.target.value)}
+                                    required
+                                    autoComplete="account_id"
+                                    placeholder="Account ID"
+                                    disabled
+                                />
+    
+                                <InputError className="mt-2" message={errors.name} />
+                            </div>
+
                             <div className="grid gap-2">
                                 <Label htmlFor="name">Name</Label>
     
@@ -150,6 +186,8 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
     
                                 <InputError className="mt-2" message={errors.name} />
                             </div>
+
+                           
     
                             <div className="grid gap-2">
                                 <Label htmlFor="email">Email address</Label>
@@ -206,7 +244,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                         </form>
                     </div>
     
-                    <DeleteUser />
+                    {/* <DeleteUser /> */}
                 </SettingsLayout>
                 </HeaderLayout>
             )}

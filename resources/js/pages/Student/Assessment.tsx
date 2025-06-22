@@ -12,7 +12,6 @@ import { Separator } from "@/components/ui/separator"
 import { Progress } from "@/components/ui/progress"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-  Clock,
   FileText,
   ArrowLeft,
   CheckCircle,
@@ -21,7 +20,6 @@ import {
   BookOpen,
   Search,
   Filter,
-  MoreHorizontal,
   Play,
   Timer,
   AlertTriangle,
@@ -43,10 +41,9 @@ import {
 } from "@/components/ui/alert-dialog"
 import HeaderLayout from "@/layouts/header-layout"
 import { Head, router } from "@inertiajs/react"
-import { AssessmentAssignment, Question, StudentAssessmentProps } from "@/types/utils/student-assessment-types"
+import type { AssessmentAssignment, Question, StudentAssessmentProps } from "@/types/utils/student-assessment-types"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { toast } from "sonner"
-
 
 export default function Assessment({ assessments, studentProfile }: StudentAssessmentProps) {
   const [selectedAssessment, setSelectedAssessment] = useState<AssessmentAssignment | null>(null)
@@ -61,22 +58,26 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
 
   // Get status for each assessment
   const getAssessmentStatus = (assessment: AssessmentAssignment) => {
-    if (isSubmitted) return "completed";
-  
-    const now = new Date();
-    const openedAt = assessment.opened_at ? new Date(assessment.opened_at) : null;
-    const closedAt = assessment.closed_at ? new Date(assessment.closed_at) : null;
-  
-    if (assessment.is_available === 0) return "upcoming";
-    if (closedAt && now > closedAt) return "overdue";
-    if (openedAt && now < openedAt) return "upcoming";
-  
+    if (isSubmitted) return "completed"
+
+    const now = new Date()
+    const openedAt = assessment.opened_at ? new Date(assessment.opened_at) : null
+    const closedAt = assessment.closed_at ? new Date(assessment.closed_at) : null
+
+    if (assessment.is_available === 0) return "upcoming"
+    if (closedAt && now > closedAt) return "overdue"
+    if (openedAt && now < openedAt) return "upcoming"
+
     // If there's no openedAt or now is after it
-    return "available";
-  };
+    return "available"
+  }
 
   // Get unique courses and statuses for filter options
-  const uniqueCourses = [...new Set(assessments.map((assessment) => assessment.assessment.subject?.code ||  assessment.assessment.subject?.title))]
+  const uniqueCourses = [
+    ...new Set(
+      assessments.map((assessment) => assessment.assessment.subject?.code || assessment.assessment.subject?.title),
+    ),
+  ]
   const uniqueStatuses = ["available", "completed", "overdue", "upcoming"]
 
   // Filter assessments based on search and filters
@@ -90,7 +91,9 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
       assessment.assessment.subject?.title.toLowerCase().includes(searchTermLower)
 
     const matchesCourse =
-      courseFilter === "all" ||assessment.assessment.subject?.code === courseFilter || assessment.assessment.subject?.title === courseFilter
+      courseFilter === "all" ||
+      assessment.assessment.subject?.code === courseFilter ||
+      assessment.assessment.subject?.title === courseFilter
 
     const status = getAssessmentStatus(assessment)
     const matchesStatus = statusFilter === "all" || status === statusFilter
@@ -105,33 +108,32 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
     }))
   }
 
- 
   const handleSubmitAssessment = () => {
     // Prepare individual answer records for each question
     const answerRecords = selectedAssessment?.assessment?.questions?.map((question: any) => {
-      const userAnswer = answers[question.id] || null;
-      
+      const userAnswer = answers[question.id] || null
+
       // For multiple choice, convert selected option to index
-      let answerToSave: string | number | null = userAnswer;
-      if (question.type === 'multiple_choice' && userAnswer !== null) {
+      let answerToSave: string | number | null = userAnswer
+      if (question.type === "multiple_choice" && userAnswer !== null) {
         // If userAnswer is the actual option text, find its index
-        const optionIndex = question.options?.findIndex((option: string) => option === userAnswer);
-        answerToSave = optionIndex !== -1 ? optionIndex : userAnswer;
+        const optionIndex = question.options?.findIndex((option: string) => option === userAnswer)
+        answerToSave = optionIndex !== -1 ? optionIndex : userAnswer
       }
-      
+
       // For true/false, also save as index (0 or 1)
-      if (question.type === 'true_false' && userAnswer !== null) {
+      if (question.type === "true_false" && userAnswer !== null) {
         // If userAnswer is the actual option text, find its index
-        const optionIndex = question.options?.findIndex((option: string) => option === userAnswer);
-        answerToSave = optionIndex !== -1 ? optionIndex : userAnswer;
+        const optionIndex = question.options?.findIndex((option: string) => option === userAnswer)
+        answerToSave = optionIndex !== -1 ? optionIndex : userAnswer
       }
-      
+
       // Determine if answer is correct (you'll need your own logic here)
-      const isCorrect = checkIfAnswerIsCorrect(question, answerToSave);
-      
+      const isCorrect = checkIfAnswerIsCorrect(question, answerToSave)
+
       // Calculate points earned based on correctness
-      const pointsEarned = isCorrect ? question.points : 0;
-      
+      const pointsEarned = isCorrect ? question.points : 0
+
       return {
         assessment_id: selectedAssessment.assessment.id,
         question_correct_answer: question.correct_answer,
@@ -140,51 +142,53 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
         answer: answerToSave, // Save as index (0, 1, 2, 3) for multiple choice, (0, 1) for true/false
         is_correct: isCorrect ? 1 : 0, // Convert boolean to tinyint
         points_earned: pointsEarned,
-        feedback: null as string | null, 
-      };
-    });
-  
-    console.log("Assessment Answer Records:", answerRecords);
-    router.post(route('student.submitAssessment'), {
-      responses: answerRecords
-    }, {
+        feedback: null as string | null,
+      }
+    })
+
+    console.log("Assessment Answer Records:", answerRecords)
+    router.post(
+      route("student.submitAssessment"),
+      {
+        responses: answerRecords,
+      },
+      {
         onSuccess: () => {
-            toast('Assessment Complete.')
-            setIsSubmitted(true);
+          toast("Assessment Complete.")
+          setIsSubmitted(true)
         },
         onError: (errors) => {
-            toast('Error submitting. Please try again.')
-            console.error(errors)
-        }
-    })
-    
-  };
+          toast("Error submitting. Please try again.")
+          console.error(errors)
+        },
+      },
+    )
+  }
 
-  const checkIfAnswerIsCorrect = (question : any, userAnswer : any) => {
+  const checkIfAnswerIsCorrect = (question: any, userAnswer: any) => {
     // This depends on your question structure
     // For multiple choice:
-    if (question.type === 'multiple-choice') {
-      return userAnswer === question.correct_answer;
+    if (question.type === "multiple-choice") {
+      return userAnswer === question.correct_answer
     }
 
-    if (question.type === 'true-false') {
-      return userAnswer === question.correct_answer;
+    if (question.type === "true-false") {
+      return userAnswer === question.correct_answer
     }
-    
+
     // For text answers:
-    if (question.type === 'short-answer') {
-      return userAnswer?.toLowerCase().trim() === question.correct_answer?.toLowerCase().trim();
+    if (question.type === "short-answer") {
+      return userAnswer?.toLowerCase().trim() === question.correct_answer?.toLowerCase().trim()
     }
 
-     // For text answers:
-     if (question.type === 'essay') {
-      return userAnswer?.toLowerCase().trim() === question.correct_answer?.toLowerCase().trim();
+    // For text answers:
+    if (question.type === "essay") {
+      return userAnswer?.toLowerCase().trim() === question.correct_answer?.toLowerCase().trim()
     }
-    
+
     // Add more logic based on your question types
-    return false;
-  };
-  
+    return false
+  }
 
   const handleBackToList = () => {
     setSelectedAssessment(null)
@@ -245,9 +249,12 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
       case "multiple-choice":
         return (
           <div className="space-y-3">
-            <RadioGroup value={currentAnswer?.toString()} onValueChange={(value) => handleAnswerChange(question.id, value)}>
+            <RadioGroup
+              value={currentAnswer?.toString()}
+              onValueChange={(value) => handleAnswerChange(question.id, value)}
+            >
               {parsedOptions.map((option, index) => {
-                const isSelected = Number(currentAnswer) === index;
+                const isSelected = Number(currentAnswer) === index
                 return (
                   <div
                     key={index}
@@ -276,7 +283,10 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
       case "true-false":
         return (
           <div className="space-y-3">
-            <RadioGroup value={currentAnswer?.toString()} onValueChange={(value) => handleAnswerChange(question.id, value)}>
+            <RadioGroup
+              value={currentAnswer?.toString()}
+              onValueChange={(value) => handleAnswerChange(question.id, value)}
+            >
               <div
                 className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer ${
                   currentAnswer === "true"
@@ -391,7 +401,9 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm font-medium text-muted-foreground">Subject:</span>
-                  <span className="text-sm">{selectedAssessment?.assessment.subject?.code} - {selectedAssessment?.assessment.subject?.title}</span>
+                  <span className="text-sm">
+                    {selectedAssessment?.assessment.subject?.code} - {selectedAssessment?.assessment.subject?.title}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm font-medium text-muted-foreground">Submitted:</span>
@@ -419,9 +431,9 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
     }
 
     return (
-      <>
+      <HeaderLayout>
         <Head title={selectedAssessment.assessment.title} />
-        <div className="min-h-screen">
+        <div className="min-h-screen mt-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-10">
             {/* Combined Header with Progress */}
             <Card className="shadow-lg">
@@ -431,7 +443,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                   <div className="flex items-center gap-3">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="sm" className="flex items-center gap-2  h-8">
+                        <Button variant="ghost" size="sm" className="flex items-center gap-2  h-8 text-xs lg:text-lg">
                           <ArrowLeft className="h-3 w-3" />
                           Back
                         </Button>
@@ -442,9 +454,9 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                             <AlertTriangle className="w-5 h-5 text-amber-500" />
                             <AlertDialogTitle>Are you sure you want to go back?</AlertDialogTitle>
                           </div>
-                          <AlertDialogDescription>
-                            Your progress might get unsaved. Any changes you've made will be lost if you continue without
-                            saving.
+                          <AlertDialogDescription className="">
+                            Your progress might get unsaved. Any changes you've made will be lost if you continue
+                            without saving.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -457,7 +469,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                     </AlertDialog>
                     <Separator orientation="vertical" className="h-5" />
                     <div>
-                      <CardTitle className="text-xl leading-tight">{selectedAssessment.assessment.title}</CardTitle>
+                      <CardTitle className="text-xs lg:text-xl leading-tight">{selectedAssessment.assessment.title}</CardTitle>
                       <CardDescription className="text-xs mt-0.5">
                         {selectedAssessment.assessment.subject?.code} - {selectedAssessment.assessment.subject?.title}
                       </CardDescription>
@@ -465,24 +477,24 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                   </div>
 
                   {/* Compact Stats */}
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                     <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg border">
                       <FileText className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-sm font-medium">{questions.length}</span>
-                      <span className="text-xs text-muted-foreground">questions</span>
+                      <span className="text-xs lg:text-base font-medium">{questions.length}</span>
+                      <span className="text-xs lg:text-base text-muted-foreground">questions</span>
                     </div>
                     <div className="flex items-center gap-1  px-3 py-1.5 rounded-lg border">
                       <CheckCircle className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-sm font-medium">{selectedAssessment.assessment.total_points}</span>
-                      <span className="text-xs text-muted-foreground">points</span>
+                      <span className="text-xs lg:text-base font-medium">{selectedAssessment.assessment.total_points}</span>
+                      <span className="text-xs lg:text-base text-muted-foreground">points</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Compact Progress */}
                 <div className=" rounded-lg p-4 border">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 mb-3">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                       <div>
                         <div className="text-sm font-semibold">Progress</div>
                         <div className="text-xs text-muted-foreground">
@@ -522,11 +534,11 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                 </div>
               </CardHeader>
             </Card>
-    
+
             {/* Question */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="flex flex-col lg:grid lg:grid-cols-4 gap-6">
               {/* Question Navigation */}
-              <Card className="lg:col-span-1 h-96">
+              <Card className="lg:col-span-1 lg:h-96 order-2 lg:order-1">
                 <CardHeader className="pb-4">
                   <CardTitle className="text-lg flex items-center gap-2 mb-2">
                     <FileText className="h-5 w-5" />
@@ -537,11 +549,11 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 flex flex-col justify-between h-full">
-                  <div className="grid grid-cols-4 lg:grid-cols-5 gap-2">
+                  <div className="grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-5 gap-2">
                     {questions.map((question, index) => {
                       const isAnswered = answers[question.id]
                       const isCurrent = index === currentQuestionIndex
-    
+
                       return (
                         <Button
                           key={question.id}
@@ -566,11 +578,11 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                   </div>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button className="w-full rounded-xl" size="lg">
+                      <Button className="w-full rounded-xl mt-4" size="lg">
                         Submit Assessment
                       </Button>
                     </AlertDialogTrigger>
-                    <AlertDialogContent className="sm:max-w-md">
+                    <AlertDialogContent className="">
                       <AlertDialogHeader>
                         <AlertDialogTitle className="flex items-center gap-2 text-xl">
                           <FileText className="h-5 w-5 " />
@@ -580,14 +592,16 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                           Are you sure you want to submit your assessment?
                         </AlertDialogDescription>
                       </AlertDialogHeader>
-            
+
                       <div className="space-y-4 ">
                         <Alert className="bg-yellow-50 border-yellow-300 border dark:bg-yellow-900/20 dark:border-yellow-700/80 text-yellow-700 dark:text-yellow-300">
                           <AlertCircle className="h-4 w-4" />
-                          <AlertDescription className="text-yellow-700 dark:text-yellow-300">Warning: Once submitted, you cannot make any changes to your answers.</AlertDescription>
+                          <AlertDescription className="text-yellow-700 dark:text-yellow-300">
+                            Warning: Once submitted, you cannot make any changes to your answers.
+                          </AlertDescription>
                         </Alert>
-            
-                          {/* Progress Summary */}
+
+                        {/* Progress Summary */}
                         <div className="border p-4 rounded-lg space-y-3">
                           <h4 className="font-medium text-sm">Assessment Progress</h4>
 
@@ -601,7 +615,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                             <Progress value={progressPercentage} className="h-2" />
                           </div>
 
-                          <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-sm">
                             <div className="flex items-center gap-2">
                               <CheckCircle className="h-4 w-4 text-green-500" />
                               <span>
@@ -616,72 +630,89 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                             </div> */}
                           </div>
                         </div>
-            
+
                         {/* Unanswered Questions Warning */}
-                        {answeredCount != questions.length &&
+                        {answeredCount != questions.length && (
                           <Alert className="bg-yellow-50 border-yellow-300 border dark:bg-yellow-900/20 dark:border-yellow-700/80 text-yellow-700 dark:text-yellow-300">
                             <AlertTriangle className="h-4 w-4 text-yellow-700 dark:text-yellow-300" />
                             <AlertDescription className="text-yellow-700 dark:text-yellow-300">
-                              You have {questions.length - answeredCount} unanswered questions. These will be marked as incorrect if you submit now.
+                              You have {questions.length - answeredCount} unanswered questions. These will be marked as
+                              incorrect if you submit now.
                               {/* You have{0} unanswered question{0 > 1 ? "s" : ""}. These will be marked as incorrect if you submit now. */}
                             </AlertDescription>
                           </Alert>
-                        }
-                        
+                        )}
                       </div>
-            
+
                       <AlertDialogFooter className="flex gap-2">
                         <AlertDialogCancel>Continue Answering</AlertDialogCancel>
                         <AlertDialogAction className="rounded-xl cursor-pointer" onClick={handleSubmitAssessment}>
-                        Submit Assessment
+                          Submit Assessment
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
                 </CardContent>
               </Card>
-    
+
               {/* Add this right before the Question Content Card */}
-              <div className="lg:col-span-3">
+              <div className="lg:col-span-3 order-1 lg:order-2">
                 <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-4 dark:bg-blue-900/20 dark:border-blue-800/30">
                   <div className="flex items-start gap-3">
                     <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 dark:bg-blue-900/40">
                       <span className="text-blue-600 text-xs font-bold dark:text-blue-300">!</span>
                     </div>
-                    <div>
-                      <h4 className="font-medium text-blue-900 mb-1 dark:text-blue-100">Instructions</h4>
-                      <p className="text-sm text-blue-700 dark:text-blue-300/80">
-                        Read each question carefully and select your answer. You can navigate between questions using the
-                        buttons below or the question navigator on the left. Make sure to review all your answers before
-                        submitting.
+                    <div className="">
+                      <h4 className="font-medium text-blue-900 mb-1 dark:text-blue-100 text-xs lg:text-base">Instructions</h4>
+                      <p className="text-blue-700 dark:text-blue-300/80 text-xs lg:text-base">
+                        Read each question carefully and select your answer. You can navigate between questions using
+                        the buttons below or the question navigator on the left. Make sure to review all your answers
+                        before submitting.
                       </p>
                     </div>
                   </div>
                 </div>
-    
+
                 {/* Question Content Card starts here */}
                 <Card className="lg:col-span-3">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <Badge variant="outline"> Question {currentQuestionIndex + 1} of {questions.length}</Badge>
+                        <Badge variant="outline">
+                          {" "}
+                          Question {currentQuestionIndex + 1} of {questions.length}
+                        </Badge>
                         <Badge>{currentQuestion.points} points</Badge>
                       </div>
                     </div>
                     <CardTitle className="text-lg leading-relaxed">{currentQuestion.question}</CardTitle>
                   </CardHeader>
-                  
+
                   <CardContent className="space-y-6">
                     {renderQuestion(currentQuestion)}
-    
-                    <div className="flex justify-between items-center pt-6 border-t">
-                      <Button variant="outline" onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))} disabled={currentQuestionIndex === 0} className="rounded-xl" >
+
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0 pt-6 border-t">
+                      <Button
+                        variant="outline"
+                        onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
+                        disabled={currentQuestionIndex === 0}
+                        className="rounded-xl"
+                      >
                         <ArrowLeft className="h-4 w-4 mr-2" /> Previous
                       </Button>
-                       
-                      <div className="text-sm text-muted-foreground"> Question {currentQuestionIndex + 1} of {questions.length} </div>
-    
-                      <Button onClick={() => setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))} disabled={currentQuestionIndex === questions.length - 1} className="rounded-xl" >
+
+                      <div className="text-sm text-muted-foreground">
+                        {" "}
+                        Question {currentQuestionIndex + 1} of {questions.length}{" "}
+                      </div>
+
+                      <Button
+                        onClick={() =>
+                          setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))
+                        }
+                        disabled={currentQuestionIndex === questions.length - 1}
+                        className="rounded-xl"
+                      >
                         Next <ArrowLeft className="h-4 w-4 ml-2 rotate-180" />
                       </Button>
                     </div>
@@ -691,7 +722,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
             </div>
           </div>
         </div>
-      </>
+      </HeaderLayout>
     )
   }
 
@@ -703,7 +734,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
           {/* Header */}
           <Card>
             <CardContent className="px-8 py-4">
-              <div className="flex items-center gap-8">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8">
                 <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center">
                   <User className="h-10 w-10 text-primary" />
                 </div>
@@ -725,7 +756,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                     </span>
                   </div>
                 </div>
-                <div className="text-right bg-primary/5 p-6 rounded-2xl border border-primary/20">
+                <div className="text-center sm:text-right bg-primary/5 p-4 sm:p-6 rounded-2xl border border-primary/20 w-full sm:w-auto">
                   <div className="text-3xl font-bold text-primary mb-1">{filteredAssessments.length}</div>
                   <div className="text-sm text-muted-foreground">Available</div>
                   <div className="text-sm text-muted-foreground">Assessments</div>
@@ -753,7 +784,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Search */}
                 <div className="flex-1">
                   <Label htmlFor="search" className="text-sm font-medium mb-2 block">
@@ -772,7 +803,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                 </div>
 
                 {/* Course Filter */}
-                <div className="w-full sm:w-[220px]">
+                <div className="w-full">
                   <Label className="text-sm font-medium mb-2 block">Subject</Label>
                   <Select value={courseFilter} onValueChange={setCourseFilter}>
                     <SelectTrigger className="rounded-xl">
@@ -790,7 +821,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                 </div>
 
                 {/* Status Filter */}
-                <div className="w-full sm:w-[220px]">
+                <div className="w-full">
                   <Label className="text-sm font-medium mb-2 block">Status</Label>
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="rounded-xl">
@@ -817,7 +848,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
               <p className="text-sm text-muted-foreground">Showing {filteredAssessments.length} assessments</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {filteredAssessments.map((assessmentAssignment) => {
                 const { assessment, course } = assessmentAssignment
                 const status = getAssessmentStatus(assessmentAssignment)
@@ -827,25 +858,25 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
 
                 return (
                   <Card key={assessmentAssignment.id} className="hover:shadow-lg transition-all duration-200">
-                     <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <FileText className="h-4 w-4" />
-                      {assessment.subject?.code}
-                      <span className="text-base">- {assessment.subject?.title}</span>
-                    </CardTitle>
-                    <CardDescription className="flex flex-col gap-2">
-                      <div className="font-medium text-foreground">{assessment.title}</div>
-                      {assessment.status === 'completed' ? (
-                        <Badge variant="outline" className={'bg-blue-100 text-blue-800 border-blue-200'}>
-                          Completed
-                        </Badge>
-                      ):(
-                        <Badge variant="outline" className={getStatusColor(status)}>
-                          {status.charAt(0).toUpperCase() + status.slice(1)}
-                        </Badge>
-                      )}
-                    </CardDescription>
-                  </CardHeader>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        {assessment.subject?.code}
+                        <span className="text-base">- {assessment.subject?.title}</span>
+                      </CardTitle>
+                      <CardDescription className="flex flex-col gap-2">
+                        <div className="font-medium text-foreground">{assessment.title}</div>
+                        {assessment.status === "completed" ? (
+                          <Badge variant="outline" className={"bg-blue-100 text-blue-800 border-blue-200"}>
+                            Completed
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className={getStatusColor(status)}>
+                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                          </Badge>
+                        )}
+                      </CardDescription>
+                    </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
                         {assessment.description && (
@@ -854,7 +885,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                           </div>
                         )}
 
-                        <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-sm">
                           {/* <div className="flex items-center justify-between">
                             <span className="text-muted-foreground flex items-center gap-1">
                               <Clock className="h-3 w-3" />
@@ -887,8 +918,8 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                             <span className="font-medium capitalize">{assessment.type || "Assessment"}</span>
                           </div> */}
                         </div>
-                        
-                        {assessment.status === 'completed' ? (
+
+                        {assessment.status === "completed" ? (
                           <div className="bg-blue-50 border border-blue-300 p-3 rounded-lg dark:bg-blue-900/20 dark:border-blue-700/80">
                             <div className="flex items-center justify-between text-sm">
                               <span className="text-blue-700 font-medium flex items-center gap-1 dark:text-blue-300">
@@ -896,42 +927,46 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                                 Your Score
                               </span>
                               <span className="font-bold text-blue-700 dark:text-blue-300">
-                                {assessment.percentage}% (
-                                {parseInt(assessment.student_score, 10)}/
-                                {assessment.total_points}
-                                )
+                                {assessment.percentage}% ({Number.parseInt(assessment.student_score, 10)}/
+                                {assessment.total_points})
                               </span>
                             </div>
                           </div>
-                        ):(      
+                        ) : (
                           <div className="bg-orange-50 border border-orange-300 p-3 rounded-lg dark:bg-orange-900/20 dark:border-orange-700/80">
                             <div className="flex items-center justify-between text-sm">
-                              <span className={`font-medium flex items-center gap-1 ${isOverdue ? "text-red-600 dark:text-red-400" : "text-orange-700 dark:text-orange-300"}`}>
+                              <span
+                                className={`font-medium flex items-center gap-1 ${isOverdue ? "text-red-600 dark:text-red-400" : "text-orange-700 dark:text-orange-300"}`}
+                              >
                                 <Calendar className="h-3 w-3" />
                                 Due Date
                               </span>
-                              <span className={`font-medium ${isOverdue ? "text-red-600 dark:text-red-400" : "text-orange-700 dark:text-orange-300"}`}>
+                              <span
+                                className={`font-medium ${isOverdue ? "text-red-600 dark:text-red-400" : "text-orange-700 dark:text-orange-300"}`}
+                              >
                                 {closedAt ? (
                                   <>
                                     {closedAt.toLocaleDateString()} at{" "}
                                     {closedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                   </>
-                                ):(
+                                ) : (
                                   <>No assigned date</>
                                 )}
                               </span>
                             </div>
-                            {isOverdue && <p className="text-xs text-red-600 mt-1 dark:text-red-400">This assessment is overdue</p>}
+                            {isOverdue && (
+                              <p className="text-xs text-red-600 mt-1 dark:text-red-400">This assessment is overdue</p>
+                            )}
                           </div>
                         )}
-                                              
 
-                        <div className="flex space-x-2 pt-2">
-                          {assessment.status === 'completed' ? (
+                        <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                          {assessment.status === "completed" ? (
                             <Button size="sm" variant="outline" className="flex-1 rounded-xl cursor-pointer">
-                              <Eye className="h-3 w-3 mr-1" />View Results
+                              <Eye className="h-3 w-3 mr-1" />
+                              View Results
                             </Button>
-                          ):(               
+                          ) : (
                             <>
                               {assessmentAssignment.is_available && !isOverdue ? (
                                 <AlertDialog>
@@ -950,13 +985,16 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                                         Please review the information below before beginning.
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
-                          
+
                                     <div className="space-y-4 ">
                                       <Alert className="bg-blue-50 border-blue-300 border dark:bg-blue-900/20 dark:border-blue-700/80 text-blue-700 dark:text-blue-300">
                                         <AlertCircle className="h-4 w-4" />
-                                        <AlertDescription className="text-blue-700 dark:text-blue-300">Once you start, you cannot pause or restart the assessment. Leaving will cause your answers to not be saved.</AlertDescription>
+                                        <AlertDescription className="text-blue-700 dark:text-blue-300">
+                                          Once you start, you cannot pause or restart the assessment. Leaving will cause
+                                          your answers to not be saved.
+                                        </AlertDescription>
                                       </Alert>
-                          
+
                                       <div className="space-y-3">
                                         <div className="flex items-center gap-3 text-sm">
                                           <Star className="h-4 w-4 0" />
@@ -971,7 +1009,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                                           </span>
                                         </div>
                                       </div>
-                          
+
                                       <div className="bg-blue-50 border-blue-300 border dark:bg-blue-900/20 dark:border-blue-700/80 p-4 rounded-lg">
                                         <h4 className="font-medium text-sm mb-2">Before you begin:</h4>
                                         <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
@@ -982,26 +1020,29 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                                         </ul>
                                       </div>
                                     </div>
-                          
+
                                     <AlertDialogFooter className="flex gap-2">
                                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                      <AlertDialogAction className="rounded-xl cursor-pointer" 
+                                      <AlertDialogAction
+                                        className="rounded-xl cursor-pointer"
                                         onClick={(e) => {
                                           e.stopPropagation()
                                           if (assessmentAssignment.is_available) {
                                             setSelectedAssessment(assessmentAssignment)
                                           }
-                                      }}
+                                        }}
                                       >
                                         Start Assessment
                                       </AlertDialogAction>
                                     </AlertDialogFooter>
                                   </AlertDialogContent>
                                 </AlertDialog>
-                              ):(
-                                <Button size="sm" className="flex-1 rounded-xl" disabled>Unavailable</Button>
-                              )}                     
-                            </>                              
+                              ) : (
+                                <Button size="sm" className="flex-1 rounded-xl" disabled>
+                                  Unavailable
+                                </Button>
+                              )}
+                            </>
                           )}
                           {/* <Button size="sm" variant="outline" className="rounded-xl">
                             <FileText className="h-3 w-3 mr-1" />
@@ -1054,6 +1095,5 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
         </div>
       </div>
     </HeaderLayout>
-    
   )
 }

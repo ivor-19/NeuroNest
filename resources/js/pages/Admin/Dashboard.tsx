@@ -56,11 +56,11 @@ const getActionColor = (type: string) => {
 }
 
 const quickActions = [
-  { title: 'Add New User', description: 'Registrer a new user account', icon: UserPlus, action: "add-student", priority: "high"},
-  { title: 'Manage Course', description: 'Create and manage courses offered in the curriculum', icon: UserPlus, action: "add-student", priority: "medium"},
-  { title: 'Manage Subject', description: 'Create and manage subjects and their associated modules', icon: BookOpen, action: "add-student", priority: "medium"},
-  { title: 'Assign to Section', description: 'Assign students to their respective class sections', icon: User, action: "add-student", priority: "low"},
-  { title: 'Link Subject to Course', description: 'Map subjects to degree programs', icon: Settings, action: "add-student", priority: "low"},
+  { title: 'Add New User', description: 'Registrer a new user account', icon: UserPlus, action: "add", priority: "high"},
+  { title: 'Manage Course', description: 'Create and manage courses offered in the curriculum', icon: UserPlus, action: "add", priority: "medium"},
+  { title: 'Manage Subject', description: 'Create and manage subjects and their associated modules', icon: BookOpen, action: "add", priority: "medium"},
+  { title: 'Assign to Section', description: 'Assign students to their respective class sections', icon: User, action: "add", priority: "low"},
+  { title: 'Link Subject to Course', description: 'Map subjects to degree programs', icon: Settings, action: "add", priority: "low"},
   { title: 'Generate Reports', description: 'Progress reports', icon: FileText, action: "add-student", priority: "low"},
 ]
 

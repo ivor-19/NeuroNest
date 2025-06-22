@@ -25,6 +25,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('student.dashboard');
         Route::get('/subject/{subject_id}/modules', [StudentController::class, 'modules'])->name('student.modules');
         Route::get('/assessment', [StudentController::class, 'assessment'])->name('student.assessment');
+        Route::get('/modules/{id}/download', [ModuleController::class, 'download'])
+        ->name('student.moduleDownload');
 
         Route::post('/subject/module-complete', [ModuleController::class, 'moduleCompletion'])->name('student.moduleCompletion');
         Route::post('/assessment/submit-assessment', [AssessmentController::class, 'submitAssessment'])->name('student.submitAssessment');
@@ -38,6 +40,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/sections', [InstructorController::class, 'sections'])->name('instructor.sections');
         Route::get('/sections/subjects/modules', [InstructorController::class, 'modules'])->name('instructor.modules');
         Route::get('/sections/assessments', [InstructorController::class, 'assessments'])->name('instructor.assessments');
+        Route::get('/modules/{id}/download', [ModuleController::class, 'download'])
+        ->name('instructor.moduleDownload');
+
 
         Route::get('/sections/{assessment}/questions', [AssessmentController::class, 'getQuestions'])->name('instructor.getQuestions');
         Route::get('/assessments/respondents', [AssessmentController::class, 'getRespondents'])->name('assessments.respondents');

@@ -8,7 +8,9 @@ use App\Models\ModuleAccess;
 use App\Models\ModuleCompletion;
 use App\Models\ModuleControl;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ModuleController extends Controller
 {
@@ -82,5 +84,18 @@ class ModuleController extends Controller
         ]);
     
         return redirect()->back()->with('success', 'Successfully finish a module');
+    }
+
+    public function download($moduleId)
+    {
+        $module = Module::findOrFail($moduleId);
+        
+        if (!$module->pdf || !Storage::disk('public')->exists($module->pdf)) {
+            return redirect()->back()->with('error', 'PDF file not found');
+        }
+        
+        $fileName = $module->title . '.pdf';
+        
+        return Storage::disk('public')->download($module->pdf, $fileName);
     }
 }
