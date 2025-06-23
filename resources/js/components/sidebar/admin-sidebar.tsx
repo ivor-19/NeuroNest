@@ -44,7 +44,7 @@ const data = {
       title: "SETUP",
       items: [
         {
-          title: "Add Users",
+          title: "Manage Users",
           href: "/admin/manage-users",
           icon: UserPlus,
         },

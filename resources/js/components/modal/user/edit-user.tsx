@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { UserData } from "@/types/utils/user-types"
 import { Mail, User } from "lucide-react"
+import { toast } from "sonner"
+import { router } from "@inertiajs/react"
 
 interface EditUserModalProps {
   user: UserData | null
@@ -27,11 +29,26 @@ export function EditUserModal({ user, isOpen, onClose, onSave }: EditUserModalPr
 
   const handleSave = () => {
     if (formData) {
-      onSave({
-        ...formData,
-        updated_at: new Date().toISOString(),
+      router.put(route('admin.updateUser', {id: formData.id}), {
+        name: formData.name,
+        account_id: formData.account_id,
+        email: formData.email,
+        role: formData.role,
+        status: formData.status,
+      }, {
+        onSuccess: () => {
+          console.log('User updated successfully');
+          toast("User updated successfully");
+          onSave(formData); // Update parent component state
+          onClose();
+        },
+        onError: (errors) => {
+          console.error('Validation errors:', errors);
+          toast("Error updating user");
+        }
       })
-      onClose()
+     
+   
     }
   }
 

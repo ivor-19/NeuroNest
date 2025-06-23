@@ -81,6 +81,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/assign-subjects', [AdminController::class, 'assignSubjectsToCourse'])->name('admin.assignSubjects');
         Route::post('/assign-instructor', [AdminController::class, 'assignInstructor'])->name('admin.assignInstructor');
 
+        Route::put('/updateUser/{id}', [AdminController::class, 'updateUser'])->name('admin.updateUser');
+        Route::put('/updateCourse/{id}', [AdminController::class, 'updateCourse'])->name('admin.updateCourse');
+        
+        Route::delete('/delete-user/{id}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
         Route::delete('/delete-course/{id}', [AdminController::class, 'deleteCourse'])->name('admin.deleteCourse');
         Route::delete('/remove-subject/{id}', [AdminController::class, 'removeSubjectFromACourse'])->name('admin.removeSubject');
         Route::delete('/delete-subject/{id}', [AdminController::class, 'deleteSubject'])->name('admin.deleteSubject');

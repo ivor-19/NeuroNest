@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import type { UserData } from "@/types/utils/user-types"
 import { AlertTriangle, Trash2 } from "lucide-react"
 import { useState } from "react"
+import { router } from "@inertiajs/react"
+import { toast } from "sonner"
 
 interface DeleteUserModalProps {
   user: UserData | null
@@ -19,9 +21,21 @@ export function DeleteUserModal({ user, isOpen, onClose, onConfirm }: DeleteUser
   const handleConfirm = () => {
     setIsDeleting(true)
     if (user) {
-      onConfirm(user.id)
+      router.delete(route('admin.deleteUser', user.id), {
+        onSuccess: () => {
+          onConfirm(user.id)
+          console.log(user.id)
+          toast("User is deleted")
+        },
+        onError: (errors) => {
+          console.log('Error deleting user', errors)
+          toast("Error occured. Try again.")
+        }
+      })
+ 
       setIsDeleting(false)
       onClose()
+    
     }
   }
 

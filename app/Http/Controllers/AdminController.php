@@ -72,6 +72,30 @@ class AdminController extends Controller
         return redirect()->route('admin.manageUsers')->with('success', 'User added successfully!');
     }
 
+    public function deleteUser($id)
+    {
+        $user = User::findOrFail($id);
+        $user->delete();
+
+        return back()->with('success', 'User is deleted.');
+    }
+
+    public function updateUser(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'account_id' => 'required|string|max:50',
+            'email' => 'required|email|unique:users,email,'.$request->id,
+            'role' => 'required|in:admin,instructor,student',
+            'status' => 'required|in:active,inactive',
+        ]);
+        
+        $user = User::findOrFail($id);
+        $user->update($validated);
+        return redirect()->back()->with('success',`User updated successfully`);
+        
+    }
+
 
 
 //******************************************FOR STUDENTS*************************************************
@@ -198,6 +222,21 @@ class AdminController extends Controller
         $course->delete();
 
         return redirect()->back()->with('success',`Deleted a course`);
+    }
+
+    public function updateCourse(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'code' => 'required|string|max:255',
+            'name' => 'required|string|max:50',
+            'description' => 'nullable|string',
+            'isActive' => 'required|boolean',
+        ]);
+        
+        $course = Course::findOrFail($id);
+        $course->update($validated);
+        return redirect()->back()->with('success',`Course updated successfully`);
+        
     }
 
     public function assignSubjectsToCourse(Request $request) {
@@ -379,5 +418,7 @@ class AdminController extends Controller
 
         return back()->with('success', 'Unassigned successfully.');
     }
+
+
 
 }

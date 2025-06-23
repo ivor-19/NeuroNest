@@ -10,8 +10,9 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Edit, Trash2, Search, Minus, Save, X } from "lucide-react"
+import { Plus, Edit, Trash2, Search, Minus, Save, X, Book } from "lucide-react"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 type CourseProps = {
   courses: {
@@ -37,6 +38,22 @@ type CourseProps = {
     semester: number,
   }[]
 }
+
+type Course = {
+  id: number;
+  name: string;
+  code: string;
+  description: string;
+  isActive: number;
+  subjects?: {
+    pivotId: number;
+    id: number;
+    code: string;
+    title: string;
+    yearLevel: number;
+    semester: number;
+  }[];
+};
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -188,6 +205,34 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
     })
   }
 
+   const [editCourse, setEditCourse] = useState<Course | null>(null)
+   const [openEditModal, setOpenEditModal]  = useState(false)
+
+   const handleEditCourse = async (course: Course) => {
+    setEditCourse(course)
+    setOpenEditModal(true)
+  
+   }
+
+   const handleSaveChanges = async (id : number) => {
+    router.put(route('admin.updateCourse', id), {
+      code: editCourse?.code,
+      name: editCourse?.name,
+      description: editCourse?.description,
+      isActive: editCourse?.isActive
+    },{
+      onSuccess: () => {
+        setEditCourse(null)
+        toast("Edit successfully")
+        setOpenEditModal(false)
+      },
+      onError: (errors) => {
+        console.error('Error on editing course', errors)
+      }
+    })
+  
+   }
+
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Manage Students" />
@@ -241,7 +286,7 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
                             <Badge variant={course.isActive === 1 ? "default" : "secondary"}>
                               {course.isActive === 1 ? "active" : "inactive"}
                             </Badge>
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" onClick={() => handleEditCourse(course)}>
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button variant="outline" size="sm" onClick={() => {setDeleteCourseOpen(true), setSelectedCourseId(course.id)}}>
@@ -453,7 +498,7 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
                                   }`}
                                 >
                                   <div>
-                                    <p className="font-medium text-sm text-zinc-900">{subject.title}</p>
+                                    <p className="font-medium text-sm ">{subject.title}</p>
                                     <p className="text-xs text-muted-foreground">
                                       {subject.code} • Year {subject.yearLevel} • Semester {subject.semester}
                                       {isNewlyAdded && <span className="text-green-600 ml-2">(New)</span>}
@@ -523,6 +568,86 @@ export default function ManageCourses({ courses, allSubjects } : CourseProps) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        <AlertDialog open={openEditModal} onOpenChange={setOpenEditModal}>
+          <AlertDialogContent className="sm:max-w-[500px]">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <Book className="h-5 w-5" />
+                Edit Course
+              </AlertDialogTitle>
+            </AlertDialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div className='grid grid-cols-2 gap-6'>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-code">Code</Label>
+                  <Input
+                    id="courseCode"
+                    value={editCourse?.code || ''}
+                    onChange={(e) => setEditCourse({ ...editCourse!, code: e.target.value })}
+                    placeholder="Enter course code"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-name">Name</Label>
+                  <Input
+                    id="courseName"
+                    value={editCourse?.name || ''}
+                    onChange={(e) => setEditCourse({ ...editCourse!, name: e.target.value })}
+                    placeholder="Enter course name"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-description">Description</Label>
+                <Textarea
+                  id="courseDescription"
+                  value={editCourse?.description || ''}
+                  onChange={(e) => setEditCourse({ ...editCourse!, description: e.target.value })}
+                  placeholder="Enter course description"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-status">Status</Label>
+              <Select
+                value={editCourse?.isActive === 1 ? "active" : "inactive"}
+                onValueChange={(value) => {
+                  setEditCourse({
+                    ...editCourse!,
+                    isActive: value === "active" ? 1 : 0
+                  });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      Active
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="inactive">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                      Inactive
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setOpenEditModal(false)}>
+                Cancel
+              </Button>
+              <Button onClick={() => handleSaveChanges(editCourse!.id)}>Save Changes</Button>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog> 
       </div>
     </AppLayout>
   )
