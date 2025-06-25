@@ -1,8 +1,8 @@
 "use client"
 
 import AppLayout from "@/layouts/app-layout"
-import type { BreadcrumbItem } from "@/types"
-import { Head, useForm, router } from "@inertiajs/react"
+import { SharedData, type BreadcrumbItem } from "@/types"
+import { Head, useForm, router, usePage } from "@inertiajs/react"
 import type React from "react"
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
 import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
+import { Subject } from "@/types/utils/student-assessment-types"
 
 type CourseProps = {
   courses: {
@@ -76,6 +77,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ]
 
 export default function ManageCourses({ courses, allSubjects }: CourseProps) {
+  const { auth } = usePage<SharedData>().props
   const [activeTab, setActiveTab] = useState("view-courses")
   const [selectedCourse, setSelectedCourse] = useState<number | null>(null)
   const [subjectToRemove, setSubjectToRemove] = useState<number | null>(null)
@@ -136,11 +138,17 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
     setHasChanges(true)
   }
 
-  const [selectedSubject, setSelectedSubject] = useState(0)
+  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
   const confirmRemoveSubject = async () => {
-    router.delete(route("admin.removeSubject", selectedSubject), {
+    router.delete(route("admin.removeSubject", selectedSubject?.id), {
       onSuccess: () => {
-        setSelectedSubject(0)
+        router.post(route("admin.addActivity"), {
+          type: "delete",
+          user: auth.user.name,
+          action: `Remove a subject`,
+          details: `${selectedSubject?.title}`
+        }, {})
+        setSelectedSubject(null)
         setRemoveSubjectOpen(false)
       },
       onError: (errors) => {
@@ -165,9 +173,16 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
 
     router.post(route("admin.assignSubjects"), payload, {
       onSuccess: () => {
+        router.post(route("admin.addActivity"), {
+          type: "assign",
+          user: auth.user.name,
+          action: `Assign subjects`,
+          details: `${curriculumChanges?.toAdd}`
+        }, {})
         setCurriculumChanges({ toAdd: [], toRemove: [] })
         setHasChanges(false)
         console.log("Curriculum updated successfully!")
+        toast("Assign section successfully")
       },
       onError: (errors) => {
         console.error("Error saving curriculum changes:", errors)
@@ -196,6 +211,12 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
     e.preventDefault()
     post(route("admin.addCourse"), {
       onSuccess: () => {
+        router.post(route("admin.addActivity"), {
+          type: "create",
+          user: auth.user.name,
+          action: `Create new course`,
+          details: `${data?.name}`
+        }, {})
         reset()
       },
       onError: (errors) => {
@@ -204,12 +225,18 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
     })
   }
 
-  const [selectedCourseId, setSelectedCourseId] = useState(0)
+  const [selectedCourseType, setSelectedCourseType] = useState<Course | null>(null)
   const handleDeleteCourse = async () => {
-    router.delete(route("admin.deleteCourse", selectedCourseId), {
+    router.delete(route("admin.deleteCourse", selectedCourseType?.id), {
       onSuccess: () => {
-        setSelectedCourseId(0)
+        setSelectedCourseType(null)
         setDeleteCourseOpen(false)
+        router.post(route("admin.addActivity"), {
+          type: "delete",
+          user: auth.user.name,
+          action: `Delete a course`,
+          details: `${selectedCourseType?.name}`
+        }, {})
       },
       onError: (errors) => {
         console.error("Error occured", errors)
@@ -239,6 +266,12 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
           setEditCourse(null)
           toast("Edit successfully")
           setOpenEditModal(false)
+          router.post(route("admin.addActivity"), {
+            type: "edit",
+            user: auth.user.name,
+            action: `Updated course`,
+            details: `${editCourse?.name} modified`
+          }, {})
         },
         onError: (errors) => {
           console.error("Error on editing course", errors)
@@ -327,7 +360,7 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => {
-                                    setDeleteCourseOpen(true), setSelectedCourseId(course.id)
+                                    setDeleteCourseOpen(true), setSelectedCourseType(course)
                                   }}
                                 >
                                   <Trash2 className="h-4 w-4" />
@@ -556,7 +589,7 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
                                       size="sm"
                                       variant="outline"
                                       onClick={() => {
-                                        setRemoveSubjectOpen(true), setSelectedSubject(subject.pivotId)
+                                        setRemoveSubjectOpen(true), setSelectedSubject(subject)
                                       }}
                                       disabled={isMarkedForRemoval}
                                     >

@@ -4,9 +4,10 @@ import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { UserPlus, BookOpen, Users, GraduationCap, Settings, FileText, Users2, User, LibraryBig, TrendingUp, Calendar, Edit3, Trash2 } from "lucide-react"
+import { UserPlus, BookOpen, Users, GraduationCap, Settings, FileText, Users2, User, LibraryBig, TrendingUp, Calendar, Edit3, Trash2, PlusCircle, NotepadTextDashed } from "lucide-react"
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useEffect } from 'react';
 
 type DashboardProps = {
   authUser: {
@@ -28,6 +29,14 @@ type DashboardProps = {
   }
   subjectsCount: number;
   coursesCount: number;
+  activities: {
+    id: number,
+    user: string,
+    type: string,
+    action: string,
+    details: string,
+    created_at: string,
+  }[]
 }
 
 const recentActivity = [
@@ -71,7 +80,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Dashboard({ authUser, users, roleCounts, subjectsCount, coursesCount} : DashboardProps) {
+
+export default function Dashboard({ authUser, users, roleCounts, subjectsCount, coursesCount, activities} : DashboardProps) {
+ 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
           <Head title="Dashboard" />
@@ -133,15 +144,24 @@ export default function Dashboard({ authUser, users, roleCounts, subjectsCount, 
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {recentActivity.map((activity) => {
-                      const IconComponent = activity.icon
+                    {activities.map((activity) => {
                       return (
                         <div
                           key={activity.id}
                           className="flex items-start gap-4 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
                         >
                           <div className={`p-2 rounded-full ${getActionColor(activity.type)}`}>
-                            <IconComponent className="h-4 w-4" />
+                            {activity.type === 'create' ? (
+                              <PlusCircle className='h-4 w-4'/>
+                            ): activity.type === 'edit' ? (
+                              <Edit3 className='h-4 w-4'/>
+                            ): activity.type === 'delete' ? (
+                              <Trash2 className='h-4 w-4'/>
+                            ): activity.type === 'schedule' ? (
+                              <Calendar className='h-4 w-4'/>
+                            ) : (
+                              <NotepadTextDashed className='h-4 w-4'/>
+                            )}
                           </div>
                           <div className="flex-1 space-y-1">
                             <div className="flex items-center gap-2">
@@ -153,7 +173,7 @@ export default function Dashboard({ authUser, users, roleCounts, subjectsCount, 
                             <p className="text-sm text-foreground">{activity.action}</p>
                             <p className="text-xs text-muted-foreground">{activity.details}</p>
                           </div>
-                          <div className="text-xs text-muted-foreground whitespace-nowrap">{activity.time}</div>
+                          <div className="text-xs text-muted-foreground whitespace-nowrap">{activity.created_at}</div>
                         </div>
                       )
                     })}

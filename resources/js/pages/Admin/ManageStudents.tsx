@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { SharedData, type BreadcrumbItem } from '@/types';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { useEffect } from "react"
 import { toast } from "sonner"
@@ -68,6 +68,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function ManageStudents({ users, students, courses }: ManageStudentsProps) {
+  const { auth } = usePage<SharedData>().props
   const [activeTab, setActiveTab] = useState("overview")
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -88,6 +89,12 @@ export default function ManageStudents({ users, students, courses }: ManageStude
     e.preventDefault()
     post(route('admin.assignStudent'), {
       onSuccess: () => {
+        router.post(route("admin.addActivity"), {
+          type: "assign",
+          user: auth.user.name,
+          action: `Assign section`,
+          details: `${data.year_level} - ${data.section}`
+        }, {})
         reset();
       },
       onError: (errors) => {

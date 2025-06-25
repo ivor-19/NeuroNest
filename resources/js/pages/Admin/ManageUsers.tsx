@@ -32,8 +32,8 @@ import {
 
 import type { UserData } from "@/types/utils/user-types"
 import AppLayout from "@/layouts/app-layout"
-import type { BreadcrumbItem } from "@/types"
-import { Head, useForm } from "@inertiajs/react"
+import type { BreadcrumbItem, SharedData } from "@/types"
+import { Head, router, useForm, usePage } from "@inertiajs/react"
 import { EditUserModal } from "@/components/modal/user/edit-user"
 import { DeleteUserModal } from "@/components/modal/user/delete-user"
 
@@ -46,6 +46,7 @@ export default function ManageUsers({ users: initialUsers }: UserProps) {
   // Change this line:
   // const [users, setUsers] = useState<UserData[]>(mockUsers)
   // To this:
+  const { auth } = usePage<SharedData>().props
   const [users, setUsers] = useState<UserData[]>(initialUsers || [])
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState<string>("all")
@@ -95,14 +96,24 @@ export default function ManageUsers({ users: initialUsers }: UserProps) {
   // Update the handleAddUser function:
   const handleAddUser = (e: React.FormEvent) => {
     e.preventDefault()
+
+
     post(route("admin.addUser"), {
       ...data,
       onSuccess: () => {
+        
+        router.post(route("admin.addActivity"), {
+          type: "create",
+          user: auth.user.name,
+          action: `Added a new ${data.role}`,
+          details: `${data.name} as a new student`
+        }, {})
         reset()
-        // Optionally refresh the page or update local state
-        window.location.reload()
+        // window.location.reload()
       },
     })
+
+    
   }
 
   const handleEditUser = (user: UserData) => {

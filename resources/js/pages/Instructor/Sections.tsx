@@ -23,6 +23,7 @@ import {
 import HeaderLayout from "@/layouts/header-layout"
 import { Head, router, usePage } from "@inertiajs/react"
 import { SharedData } from "@/types"
+import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
 
 type Subject = {
   id: number;
@@ -32,6 +33,7 @@ type Subject = {
   year_level: string;
   semester: string;
   isActive: number;
+  image: string;
 }
 
 type Section = {
@@ -152,13 +154,28 @@ export default function Sections({ sections = [] }: InstructorProps) {
               {filteredSections.map(section => (
                 <Card key={`${section.id}-${section.subject.id}`}>
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">
+                    <div className="flex flex-col">
+                      <div className="w-full h-40">
+                        {section.subject.image ? (
+                          <img
+                            src={`/storage/${section.subject.image}`}
+                            alt={`${section.subject.title} subject title`}
+                            className="w-full h-full object-cover rounded-xl"
+                          />
+                        ):(
+                          <div className="relative h-full rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                            <PlaceholderPattern className="w-full h-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+                            
+                            <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                              No image available
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <CardTitle className="text-lg mt-2">
                         {section.course_code} - {section.year_level} {section.section}
                       </CardTitle>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
+                    
                     </div>
                     <CardDescription className="flex flex-col gap-2">
                       <div className="flex items-center">

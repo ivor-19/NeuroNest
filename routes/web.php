@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AssessmentController;
 use App\Http\Controllers\ModuleController;
@@ -94,7 +95,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
         Route::delete('/delete-module/{id}', [ModuleController::class, 'deleteModule'])->name('admin.deleteModule');
         
-        
+        Route::post('/add-activity', [ActivityController::class, 'addActivity'])->name('admin.addActivity');
     });
 });
 

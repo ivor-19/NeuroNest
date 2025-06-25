@@ -163,6 +163,12 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
         setShowAddForm(false);
         setPdfFile(null);
         console.log("Module added successfully!");
+        router.post(route("admin.addActivity"), {
+          type: "create",
+          user: auth.user.name,
+          action: `Created a new module`,
+          details: `${moduleData.title}`
+        }, {})
       },
       onError: (errors: any) => {
         console.error('Error occurred:', errors);
@@ -195,12 +201,18 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
   const [removeModuleOpen, setRemoveModuleOpen] = useState(false)
   const [deleteSubjectOpen, setDeleteSubjectOpen] = useState(false)
 
-  const [subjectId, setSubjectId] = useState(0)
+  const [subjectType, setSubjectType] = useState<Subject | null>(null)
   const handleDeleteSubject = async () => {
-    router.delete(route('admin.deleteSubject', subjectId), {
+    router.delete(route('admin.deleteSubject', subjectType?.id), {
       onSuccess: () => {
         setDeleteSubjectOpen(false)
         toast('Subject deleted')
+        router.post(route("admin.addActivity"), {
+          type: "delete",
+          user: auth.user.name,
+          action: `Delete a subject`,
+          details: `${subjectType?.title}`
+        }, {})
       },
       onError: (errors) => {
         console.error('Error occured', errors)
@@ -209,11 +221,17 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
     })
   }
 
-  const [moduleId, setModuleId] = useState(0)
+  const [moduleType, setModuleType] = useState<Module | null>(null)
   const confirmRemoveModule = async () => {
-    router.delete(route('admin.deleteModule', moduleId), {
+    router.delete(route('admin.deleteModule', moduleType?.id), {
       onSuccess: () => {
         setRemoveModuleOpen(false)
+        router.post(route("admin.addActivity"), {
+          type: "delete",
+          user: auth.user.name,
+          action: `Delete a module`,
+          details: `${moduleType?.title}`
+        }, {})
       },
       onError: (errors) => {
         console.error('Error occured', errors)
@@ -258,6 +276,12 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
         setEditSubjectLoading(false)
         setEditImagePreview(null)
         setEditImageFile(null)
+        router.post(route("admin.addActivity"), {
+          type: "edit",
+          user: auth.user.name,
+          action: `Updated subject`,
+          details: `${editSubject?.title} modified`
+        }, {})
       },
       onError: (errors) => {
         console.error(errors)
@@ -466,7 +490,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                                   {/* <Button variant="ghost" size="sm">
                                     <Edit className="h-4 w-4" />
                                   </Button> */}
-                                  <Button variant="ghost" size="sm" onClick={() => {setRemoveModuleOpen(true), setModuleId(module.id)}}>
+                                  <Button variant="ghost" size="sm" onClick={() => {setRemoveModuleOpen(true), setModuleType(module)}}>
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
                                  
@@ -698,7 +722,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                                   <Button variant="ghost" size="sm" onClick={() => handleEditSubject(subject)}>
                                     <Edit className="h-4 w-4" />
                                   </Button>
-                                  <Button variant="ghost" size="sm" onClick={() => {setDeleteSubjectOpen(true), setSubjectId(subject.id)}}>
+                                  <Button variant="ghost" size="sm" onClick={() => {setDeleteSubjectOpen(true), setSubjectType(subject)}}>
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
                                 </div>

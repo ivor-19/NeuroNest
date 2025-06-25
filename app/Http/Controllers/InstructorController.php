@@ -50,7 +50,8 @@ class InstructorController extends Controller
                     'description' => $section->subject->description,
                     'year_level' => $section->subject->year_level,
                     'semester' => $section->subject->semester,
-                    'isActive' => $section->subject->isActive
+                    'isActive' => $section->subject->isActive,
+                    'image' => $section->subject->image,
                 ];
     
                 return [
@@ -63,6 +64,7 @@ class InstructorController extends Controller
                     'course_code' => $section->course->code,
                     'course_name' => $section->course->name,
                     'student_count' => $studentCount,
+                    'image' => $section->image,
                     'subject' => $subject // Single subject, not array of subjects
                 ];
             });
@@ -107,7 +109,8 @@ class InstructorController extends Controller
                     'description' => $section->subject->description,
                     'year_level' => $section->subject->year_level,
                     'semester' => $section->subject->semester,
-                    'isActive' => $section->subject->isActive
+                    'isActive' => $section->subject->isActive,
+                    'image' => $section->subject->image,
                 ];
     
                 return [
@@ -119,6 +122,7 @@ class InstructorController extends Controller
                     'section' => $section->section,
                     'course_code' => $section->course->code,
                     'course_name' => $section->course->name,
+                    'image' => $section->image,
                     'student_count' => $studentCount,
                     'subject' => $subject // Single subject, not array of subjects
                 ];

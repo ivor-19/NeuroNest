@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Activity;
 use App\Models\ClassInstructor;
 use App\Models\Course;
 use App\Models\CourseSubject;
@@ -25,6 +26,7 @@ class AdminController extends Controller
         $allUsers = User::all(['id', 'name', 'email', 'role']);
         $subjectsCount = Subject::where('isActive', 1)->count();
         $coursesCount = Course::where('isActive', 1)->count();
+        $allActivities = Activity::all();
 
         // Count users by role
         $roleCounts = [
@@ -38,7 +40,8 @@ class AdminController extends Controller
             'users' => $allUsers,
             'roleCounts' => $roleCounts,
             'subjectsCount' => $subjectsCount,
-            'coursesCount' => $coursesCount
+            'coursesCount' => $coursesCount,
+            'activities' => $allActivities
         ]);
     }
 

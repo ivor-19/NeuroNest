@@ -9,10 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Edit, Trash2, Search, UserCheck, Plus, MapPin, Clock, GraduationCap, BookOpen, Users, Calendar, UserPlus, Mail, Phone, Trash, UserRoundX } from "lucide-react"
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/react';
+import { SharedData, type BreadcrumbItem } from '@/types';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { useEffect } from "react"
 import DeleteModal from "@/components/modal/delete-modal"
+import { toast } from "sonner"
 
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -59,6 +60,7 @@ type InstructorProps = {
 }
 
 export default function ManageInstructors({ instructors, courseSubjects  } : InstructorProps) {
+  const { auth } = usePage<SharedData>().props
   const [activeTab, setActiveTab] = useState("view-instructors")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedInstructorForAssignment, setSelectedInstructorForAssignment] = useState<number | null>(null)
@@ -87,7 +89,14 @@ export default function ManageInstructors({ instructors, courseSubjects  } : Ins
     console.log("Assigning instructor:", data)
     post(route('admin.assignInstructor'), {
       onSuccess: () => {
+        router.post(route("admin.addActivity"), {
+          type: "assign",
+          user: auth.user.name,
+          action: `Assign instructor`,
+          details: ``
+        }, {})
         reset()
+        toast("Assigned successfully")
         setAlreadyAssigned(false)
       },
       onError: (errors) => {
