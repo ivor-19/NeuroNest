@@ -4,7 +4,7 @@ import type React from "react"
 
 import type { BreadcrumbItem, SharedData } from "@/types"
 import { Head, router, useForm, usePage } from "@inertiajs/react"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -15,9 +15,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, Edit, Trash2, Layers, BookOpen, GraduationCap, Calendar, Search, Filter, FileText, Users, MoreHorizontal } from "lucide-react";
+import { Plus, Edit, Trash2, Layers, BookOpen, GraduationCap, Calendar, Search, Filter, FileText, Users, MoreHorizontal, PlusCircle, Upload, X, Book, Loader } from "lucide-react";
 import AppLayout from "@/layouts/app-layout"
 import { route } from "ziggy-js"
+import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
+import { toast } from "sonner"
 
 type Module = {
   id: number
@@ -35,9 +37,10 @@ type Subject = {
   code: string
   title: string
   description: string
-  year_level: number
+  year_level: string
   semester: string
   isActive: number
+  image: string
   modules?: Module[]
 }
 
@@ -54,10 +57,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function ManageSubjects({ subjects }: SubjectProps) {
   const {auth} = usePage<SharedData>().props
-  const [activeTab, setActiveTab] = useState("modules")
+  const [activeTab, setActiveTab] = useState("subjects")
   const [selectedSubject, setSelectedSubject] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [showAddForm, setShowAddForm] = useState(false)
+  const fileInputRef = useRef(null);
+  const editFileInputRef = useRef(null);
 
   const { data: subjectData, setData: setSubjectData, post: subjectPost, processing: subjectProcessing, errors: subjectErrors, reset: subjectReset,
   } = useForm({
@@ -67,6 +72,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
     year_level: "",
     semester: "",
     isActive: "",
+    image: null,
   })
 
   const { data: moduleData, setData: setModuleData, post: modulePost, processing: moduleProcessing, errors: moduleErrors, reset: moduleReset,
@@ -81,19 +87,58 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
 
   const allModules = subjects.flatMap((subject) => subject.modules || [])
 
+  const [imagePreview, setImagePreview] = useState(null) //image preview
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null) //edit image preview
+  const [editImageFile, setEditImageFile] = useState<File | null>(null) //edit image file
+
+  const handleImageSelect = (e : any) => {  // Handle image selection
+    const file = e.target.files[0];
+    if (file) {
+      setSubjectData('image', file); // Set the file in form data
+      const reader = new FileReader();
+      reader.onload = (e : any) => setImagePreview(e.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleEditImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setEditImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => setEditImagePreview(e.target?.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeEditImage = () => {
+    setEditImageFile(null);
+    setEditImagePreview(null);
+  };
+
+  const removeImage = () => { // Remove image
+    setSubjectData('image', null);
+    setImagePreview(null);
+  };
+
   const handleAddSubject = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
+    
     subjectPost(route("admin.addSubject"), {
+      forceFormData: true, // This is important for file uploads with Inertia
       onSuccess: () => {
-        subjectReset()
-        setShowAddForm(false)
-        console.log("Success: ", subjectData)
+        toast(`Subject added: ${ subjectData.code}`)
+        subjectReset();
+        setShowAddForm(false);
+        setImagePreview(null); // Reset preview
+        console.log("Success: ", subjectData);
+       
       },
       onError: (errors) => {
-        console.error('Error occured', errors)
+        console.error('Error occurred', errors);
       },
-    })
-  }
+    });
+  };
 
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const handleAddModule = async (e: React.FormEvent) => {
@@ -155,6 +200,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
     router.delete(route('admin.deleteSubject', subjectId), {
       onSuccess: () => {
         setDeleteSubjectOpen(false)
+        toast('Subject deleted')
       },
       onError: (errors) => {
         console.error('Error occured', errors)
@@ -172,6 +218,52 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
       onError: (errors) => {
         console.error('Error occured', errors)
         setRemoveModuleOpen(false)
+      }
+    })
+  }
+
+  const [openEditModal, setOpenEditModal] = useState(false)
+  const [editSubject, setEditSubject] = useState<Subject | null>(null)
+  const [editSubjectLoading, setEditSubjectLoading] = useState(false)
+
+  const handleEditSubject = async (subject: Subject) => {
+    setOpenEditModal(true)
+    setEditSubject(subject)
+    setEditImagePreview(subject.image ? `/storage/${subject.image}` : null)
+  }
+
+  const handleSubjectChanges = async (id: number) => {
+    setEditSubjectLoading(true)
+    
+    const formData = new FormData();
+    formData.append('code', editSubject?.code || '');
+    formData.append('title', editSubject?.title || '');
+    formData.append('description', editSubject?.description || '');
+    formData.append('year_level', editSubject?.year_level?.toString() || '');
+    formData.append('semester', editSubject?.semester || '');
+    
+    if (editImageFile) {
+      formData.append('image', editImageFile);
+    }
+  
+    // Use POST instead of PUT for file uploads
+    router.post(route('admin.updateSubject', id), formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onSuccess: () => {
+        toast('Subject updated successfully')
+        setEditSubject(null)
+        setOpenEditModal(false)
+        setEditSubjectLoading(false)
+        setEditImagePreview(null)
+        setEditImageFile(null)
+      },
+      onError: (errors) => {
+        console.error(errors)
+        setEditSubjectLoading(false)
+        toast('There is a problem updating the subject. Try again.')
+        setOpenEditModal(false)
       }
     })
   }
@@ -232,11 +324,11 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
             </div>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-2">
               <TabsList className="grid w-full grid-cols-2 bg-[var(--bg-main-2)]">
-                <TabsTrigger value="modules" className="flex items-center gap-2" onClick={() => setShowAddForm(false)}>
-                  <Layers className="h-4 w-4" />Modules
-                </TabsTrigger>
                 <TabsTrigger value="subjects" className="flex items-center gap-2" onClick={() => setShowAddForm(false)}>
                   <BookOpen className="h-4 w-4" /> Subjects
+                </TabsTrigger>
+                <TabsTrigger value="modules" className="flex items-center gap-2" onClick={() => setShowAddForm(false)}>
+                  <Layers className="h-4 w-4" />Modules
                 </TabsTrigger>
               </TabsList>
 
@@ -431,19 +523,87 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <Label htmlFor="subject-code">Subject Code</Label>
-                              <Input id="subject-code" value={subjectData.code} onChange={(e) => setSubjectData("code", e.target.value)} placeholder="e.g. CS101, MATH201"/>
+                              <Input 
+                                id="subject-code" 
+                                value={subjectData.code} 
+                                onChange={(e) => setSubjectData("code", e.target.value)} 
+                                placeholder="e.g. CS101, MATH201"
+                              />
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="subject-title">Subject Title</Label>
-                              <Input id="subject-title" value={subjectData.title} onChange={(e) => setSubjectData("title", e.target.value)} placeholder="Enter subject title" />
+                              <Input 
+                                id="subject-title" 
+                                value={subjectData.title} 
+                                onChange={(e) => setSubjectData("title", e.target.value)} 
+                                placeholder="Enter subject title" 
+                              />
                             </div>
                             <div className="space-y-2 md:col-span-2">
                               <Label htmlFor="subject-description">Description</Label>
-                              <Textarea id="subject-description" value={subjectData.description} onChange={(e) => setSubjectData("description", e.target.value)} placeholder="Describe the subject objectives and content" rows={3} />
+                              <Textarea 
+                                id="subject-description" 
+                                value={subjectData.description} 
+                                onChange={(e) => setSubjectData("description", e.target.value)} 
+                                placeholder="Describe the subject objectives and content" 
+                                rows={3} 
+                              />
                             </div>
+                            
+                            {/* Image Upload Section */}
+                            <div className="space-y-2 md:col-span-2">
+                              <Label htmlFor="subject-image">Subject Image</Label>
+                              <div className="flex items-center gap-4">
+                                <input
+                                  ref={fileInputRef}
+                                  type="file"
+                                  id="subject-image"
+                                  accept="image/*"
+                                  onChange={handleImageSelect}
+                                  className="hidden"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => fileInputRef.current?.click()}
+                                  className="flex items-center gap-2"
+                                >
+                                  <Upload className="h-4 w-4" />
+                                  Choose Image
+                                </Button>
+                                {imagePreview && (
+                                  <div className="relative">
+                                    <img
+                                      src={imagePreview}
+                                      alt="Preview"
+                                      className="h-16 w-16 object-cover rounded-md border"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={removeImage}
+                                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                              {subjectData.image && (
+                                <p className="text-sm text-muted-foreground">
+                                  Selected: {subjectData.image.name}
+                                </p>
+                              )}
+                              {subjectErrors.image && (
+                                <p className="text-sm font-medium text-destructive">{subjectErrors.image}</p>
+                              )}
+                            </div>
+                            
                             <div className="space-y-2">
                               <Label htmlFor="subject-year">Year Level</Label>
-                              <Select value={subjectData.year_level} onValueChange={(value) => setSubjectData("year_level", value)} >
+                              <Select 
+                                value={subjectData.year_level} 
+                                onValueChange={(value) => setSubjectData("year_level", value)}
+                              >
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select year" />
                                 </SelectTrigger>
@@ -457,20 +617,26 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="subject-semester">Semester</Label>
-                              <Select value={subjectData.semester} onValueChange={(value) => setSubjectData("semester", value)} >
+                              <Select 
+                                value={subjectData.semester} 
+                                onValueChange={(value) => setSubjectData("semester", value)}
+                              >
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select semester" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="1">1st Semester</SelectItem>
-                                  <SelectItem value="2">2nd Semester</SelectItem>
-                                  <SelectItem value="3">Summer</SelectItem>
+                                  <SelectItem value="1st">1st Semester</SelectItem>
+                                  <SelectItem value="2nd">2nd Semester</SelectItem>
+                                  <SelectItem value="Summer">Summer</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
                             <div className="space-y-2 md:col-span-2">
                               <Label htmlFor="subject-status">Status</Label>
-                              <Select value={subjectData.isActive} onValueChange={(value) => setSubjectData("isActive", value)} >
+                              <Select 
+                                value={subjectData.isActive} 
+                                onValueChange={(value) => setSubjectData("isActive", value)}
+                              >
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select status" />
                                 </SelectTrigger>
@@ -485,14 +651,15 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                             <Button onClick={handleAddSubject} disabled={subjectProcessing}>
                               {subjectProcessing ? "Creating..." : "Create Subject"}
                             </Button>
-                            <Button variant="outline" onClick={() => setShowAddForm(false)}> Cancel </Button>
+                            <Button variant="outline" onClick={() => setShowAddForm(false)}>
+                              Cancel
+                            </Button>
                             {subjectErrors.code && (
                               <p className="text-sm font-medium text-destructive">{subjectErrors.code}</p>
                             )}
                             {(subjectErrors.code || subjectErrors.title || subjectErrors.year_level || subjectErrors.semester || subjectErrors.isActive) && (
                               <p className="text-sm font-medium text-destructive">Complete all fields</p>
                             )}
-                          
                           </div>
                         </div>
                         <Separator />
@@ -503,37 +670,54 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {filteredSubjects.map((subject) => (
                         <Card key={subject.id} className="hover:bg-muted/50 transition-colors">
-                          <CardContent className="p-6">
-                            <div className="flex items-start justify-between mb-4">
-                              <div className="space-y-1">
-                                <h3 className="font-semibold">{subject.title}</h3>
-                                <p className="text-sm text-muted-foreground">{subject.code}</p>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Button variant="ghost" size="sm">
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="sm" onClick={() => {setDeleteSubjectOpen(true), setSubjectId(subject.id)}}>
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-
-                            <p className="text-sm text-muted-foreground mb-4">{subject.description}</p>
-
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <Badge variant="outline">Year {subject.year_level}</Badge>
-                                <Badge variant="outline">Sem {subject.semester}</Badge>
-                                <Badge variant={subject.isActive ? "default" : "secondary"}>
-                                  {subject.isActive ? "Active" : "Inactive"}
-                                </Badge>
-                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                  <BookOpen className="h-4 w-4" />
-                                  {(subject.modules || []).length} modules
+                          <CardContent className="p-2 flex flex-col gap-4">
+                           <div className="w-full h-48">
+                            {subject.image ? (
+                              <img
+                                src={`/storage/${subject.image}`}
+                                alt={`${subject.title} subject title`}
+                                className="w-full h-full object-cover"
+                              />
+                            ):(
+                              <div className="relative h-full rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                                <PlaceholderPattern className="w-full h-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+                                
+                                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                                  No image available
                                 </div>
                               </div>
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer"> View all </div>
+                            )}
+                            </div>
+                            <div>
+                              <div className="flex items-start justify-between">
+                                <div className="space-y-1">
+                                  <h3 className="font-semibold">{subject.title}</h3>
+                                  <p className="text-sm text-muted-foreground">{subject.code}</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Button variant="ghost" size="sm" onClick={() => handleEditSubject(subject)}>
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" onClick={() => {setDeleteSubjectOpen(true), setSubjectId(subject.id)}}>
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-4">{subject.description}</p>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline">Year {subject.year_level}</Badge>
+                                  <Badge variant="outline">Sem {subject.semester}</Badge>
+                                  <Badge variant={subject.isActive ? "default" : "secondary"}>
+                                    {subject.isActive ? "Active" : "Inactive"}
+                                  </Badge>
+                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                    <BookOpen className="h-4 w-4" />
+                                    {(subject.modules || []).length} modules
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer"> View all </div>
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
@@ -570,6 +754,156 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={confirmRemoveModule}>Remove</AlertDialogAction>
             </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={openEditModal} onOpenChange={setOpenEditModal}>
+          <AlertDialogContent className="sm:max-w-[500px]">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <Book className="h-5 w-5" />
+                Edit Subject
+              </AlertDialogTitle>
+            </AlertDialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-code">Code</Label>
+                <Input
+                  id="subjectCode"
+                  value={editSubject?.code || ""}
+                  onChange={(e) => setEditSubject({ ...editSubject!, code: e.target.value })}
+                  placeholder="Enter course code"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Title</Label>
+                <Input
+                  id="subjectTitle"
+                  value={editSubject?.title || ""}
+                  onChange={(e) => setEditSubject({ ...editSubject!, title: e.target.value })}
+                  placeholder="Enter course name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-description">Description</Label>
+                <Textarea
+                  id="subjectDescription"
+                  value={editSubject?.description || ""}
+                  onChange={(e) => setEditSubject({ ...editSubject!, description: e.target.value })}
+                  placeholder="Enter course description"
+                />
+              </div>
+            </div>
+            
+            {/* Image Upload Section for Edit */}
+            <div className="space-y-2">
+              <Label>Subject Image</Label>
+              <div className="flex items-center gap-4">
+                <input
+                  ref={editFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleEditImageSelect}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => editFileInputRef.current?.click()}
+                  className="flex items-center gap-2"
+                >
+                  <Upload className="h-4 w-4" />
+                  Change Image
+                </Button>
+                {editImagePreview && (
+                  <div className="relative">
+                    <img
+                      src={editImagePreview}
+                      alt="Preview"
+                      className="h-16 w-16 object-cover rounded-md border"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeEditImage}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
+              {!editImagePreview && editSubject?.image && (
+                <div className="relative mt-2">
+                  <img
+                    src={`/storage/${editSubject.image}`}
+                    alt="Current subject image"
+                    className="h-16 w-16 object-cover rounded-md border"
+                  />
+                </div>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="edit-status">Year Level</Label>
+                <Select
+                  value={editSubject?.year_level.toString()}
+                  onValueChange={(value) => {
+                    setEditSubject({
+                      ...editSubject!,
+                      year_level: value,
+                    })
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Year Level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1</SelectItem>
+                    <SelectItem value="2">2</SelectItem>
+                    <SelectItem value="3">3</SelectItem>
+                    <SelectItem value="4">4</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-status">Semester</Label>
+                <Select
+                  value={editSubject?.semester}
+                  onValueChange={(value) => {
+                    setEditSubject({
+                      ...editSubject!,
+                      semester: value,
+                    })
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Semester" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1st">1st</SelectItem>
+                    <SelectItem value="2nd">2nd</SelectItem>
+                    <SelectItem value="Summer">Summmer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setOpenEditModal(false)}>
+                Cancel
+              </Button>
+              <Button onClick={() => handleSubjectChanges(editSubject!.id)} disabled={editSubjectLoading}>
+                {editSubjectLoading ? (
+                  <div className="flex items-center gap-2">
+                    Saving <Loader className="animate-spin h-4 w-4"/>
+                  </div>
+                ) : (
+                  "Save Changes"
+                )}
+              </Button>
+            </div>
           </AlertDialogContent>
         </AlertDialog>
 

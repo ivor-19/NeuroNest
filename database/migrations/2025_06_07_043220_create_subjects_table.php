@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('year_level');
             $table->string('semester');
             $table->boolean('isActive')->default(true);
+            $table->string('image')->nullable(); // Add this line
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });

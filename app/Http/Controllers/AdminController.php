@@ -13,6 +13,7 @@ use App\Models\User;
 use Hash;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Illuminate\Validation\Rules;
 
@@ -277,6 +278,7 @@ class AdminController extends Controller
                 'semester' => $subject->semester,
                 'description' => $subject->description,
                 'isActive' => $subject->isActive,
+                'image' => $subject->image,
                 'modules' => $subject->modules->map(function($module) {
                     return [
                         'id' => $module->id,
@@ -305,12 +307,21 @@ class AdminController extends Controller
             'year_level' => 'required|string',
             'semester' => 'required|string|max:255',
             'isActive' => 'required|string',
-
-          
-           ]);
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Add validation for image
+        ]);
     
-        Subject::create($request->all());
-        return redirect()->back()->with('success',`Successfully added a subject`);
+        $data = $request->all();
+        
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $imagePath = $image->storeAs('subjects', $imageName, 'public');
+            $data['image'] = $imagePath;
+        }
+    
+        Subject::create($data);
+        return redirect()->back()->with('success', 'Successfully added a subject');
     }
 
     public function deleteSubject($id){
@@ -318,6 +329,36 @@ class AdminController extends Controller
         $subject->delete();
 
         return redirect()->back()->with('success','Deleted a subject');
+    }
+
+    public function updateSubject(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'code' => 'required|string|max:255',
+            'title' => 'required|string|max:50',
+            'description' => 'nullable|string',
+            'year_level' => 'required|string',
+            'semester' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+        
+        $subject = Subject::findOrFail($id);
+        
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($subject->image && Storage::disk('public')->exists($subject->image)) {
+                Storage::disk('public')->delete($subject->image);
+            }
+            
+            // Store new image
+            $imagePath = $request->file('image')->store('subjects', 'public');
+            $validated['image'] = $imagePath;
+        }
+        
+        $subject->update($validated);
+        
+        return redirect()->back()->with('success', 'Subject updated successfully');
     }
 
 //*******************************************FOR INSTRUCTORS*****************************************************
