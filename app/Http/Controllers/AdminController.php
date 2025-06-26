@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
+use App\Models\Calendar;
 use App\Models\ClassInstructor;
 use App\Models\Course;
 use App\Models\CourseSubject;
@@ -464,5 +465,24 @@ class AdminController extends Controller
     }
 
 
+    //---------------CALENDAR--------------------//
+    public function calendar() {
 
-}
+        return Inertia::render('Admin/Calendar', []);
+    }
+
+    public function addSchedule(Request $request){
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'date' => 'required|string',
+            'time' => 'nullable|string',
+            'type' => 'required',
+            'priority' => 'required',
+        ]);
+
+        Calendar::create($validated);
+
+        return redirect()->back()->with('success', 'Successfully set a schedule!');
+    }
+ }

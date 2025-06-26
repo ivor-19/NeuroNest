@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
             $table->foreignId('creator_id')->constrained('users')->onDelete('cascade');
             $table->string('title');
-            $table->text('description');
+            $table->text('description')->nullable();
             $table->enum('status', ['published', 'draft'])->default('draft');
             $table->integer('order'); 
             $table->json('materials')->nullable(); // Store multiple materials in a flexible format

@@ -74,8 +74,8 @@ const data = {
           icon: GraduationCap,
         },
         {
-          title: "Class Schedules",
-          href: "#",
+          title: "Calendar",
+          href: "/admin/calendar",
           icon: Calendar,
         },
       ],

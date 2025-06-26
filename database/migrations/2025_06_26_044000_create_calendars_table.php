@@ -11,15 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('subjects', function (Blueprint $table) {
+        Schema::create('calendars', function (Blueprint $table) {
             $table->id();
-            $table->string('code');
             $table->string('title');
-            $table->text('description')->nullable();
-            $table->string('year_level');
-            $table->string('semester');
-            $table->boolean('isActive')->default(true);
-            $table->string('image')->nullable(); // Add this line
+            $table->string('description')->nullable(); 
+            $table->string('date',); 
+            $table->string('time')->nullable();
+            $table->enum('type', ['schedule', 'deadline'])->default('schedule');
+            $table->enum('priority', ['low', 'medium', 'high'])->default('low');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('subjects');
+        Schema::dropIfExists('calendars');
     }
 };

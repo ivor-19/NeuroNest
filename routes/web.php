@@ -67,7 +67,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/manage-courses', [AdminController::class, 'manageCourses'])->name('admin.manageCourses');
         Route::get('/manage-subjects', [AdminController::class, 'manageSubjects'])->name('admin.manageSubjects');
         Route::get('/manage-instructors', [AdminController::class, 'manageInstructors'])->name('admin.manageInstructors');
-
+        Route::get('/calendar', [AdminController::class, 'calendar'])->name('admin.calendar');
+        
         Route::get('/contactus', [ContactController::class, 'index'])->name('admin.contactus');
         // Add these lines in your admin middleware group
         Route::delete('/contacts/concern/{id}', [ContactController::class, 'deleteConcern'])->name('admin.deleteConcern');
@@ -76,6 +77,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/add-user', [AdminController::class, 'store'])->name('admin.addUser');
         Route::post('/add-course', [AdminController::class, 'addCourse'])->name('admin.addCourse');
         Route::post('/add-subject', [AdminController::class, 'addSubject'])->name('admin.addSubject');
+        Route::post('/add-schedule', [AdminController::class, 'addSchedule'])->name('admin.addSchedule');
         Route::post('/add-module', [ModuleController::class, 'addModule'])->name('admin.addModule');
 
         Route::post('/assign-student', [AdminController::class, 'assignStudentToSection'])->name('admin.assignStudent');
