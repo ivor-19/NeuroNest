@@ -144,7 +144,7 @@ export default function Dashboard({ authUser, users, roleCounts, subjectsCount, 
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {activities.map((activity) => {
+                    {activities.reverse().map((activity) => {
                       return (
                         <div
                           key={activity.id}

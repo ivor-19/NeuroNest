@@ -27,8 +27,6 @@ export default function Welcome() {
           {/* Light background (always visible) */}
           <div className="absolute inset-0 bg-[#FFF5F0]" />
 
-          {/* Green background (visible only on desktop) */}
-          <div className="hidden md:block absolute top-0 right-0 w-[35%] h-full bg-[#006A62]" />
 
           <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">

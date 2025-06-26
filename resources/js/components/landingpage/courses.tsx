@@ -38,13 +38,13 @@ const Courses = () => {
   ];
 
   return (
-    <div className="min-h-full py-10 px-4">
+    <div className="min-h-full py-10 px-4 bg-white">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center mb-4">
             <img
-              src="/assets/LogoNeuroNest.jfif"
+              src="/assets/LogoNeuroNest.png"
               alt="NeuroNest Logo"
               className="w-40 h-20 object-contain"
             />

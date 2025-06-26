@@ -17,7 +17,7 @@ const Footer = () => {
           {/* Logo and Description Section */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <img src="/assets/LogoWhite.jfif" alt="NeuroNest Logo" className="h-12 w-auto" />
+              <img src="/assets/LogoNeuroNest.png" alt="NeuroNest Logo" className="h-12 w-auto" />
             </div>
             <p className="text-teal-100 text-sm leading-relaxed">
               Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum blandit nibh et commodo consequat.

@@ -21,6 +21,7 @@ interface Subject {
 	description: string;
 	isActive: boolean;
 	semester: string;
+	image: string;
 	instructor_name?: string;  // Added instructor info
 	instructor_email?: string; // Added instructor email
 }
@@ -37,6 +38,10 @@ export default function Dashboard({ user, subjects }: StudentDashboardProps) {
 	useEffect(() => {
 		setStudentSubjects(subjects || []);
 	}, [subjects]);
+
+	useEffect(() => {
+		console.log(subjects)
+	})
 
 	return (
 		<HeaderLayout>
@@ -114,9 +119,24 @@ export default function Dashboard({ user, subjects }: StudentDashboardProps) {
 												onClick={() => router.visit(route('student.modules', { subject_id: subject.id }))}
 												className="group hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden"
 											>
-												<div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+												 {subject.image ? (
+                            <img
+                              src={`/storage/${subject.image}`}
+                              alt={`${subject.title} subject title`}
+                              className="w-full h-full object-cover rounded-xl"
+                            />
+                          ):(
+                            <div className="relative h-full rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                              <PlaceholderPattern className="w-full h-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+                              
+                              <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                                No image available
+                              </div>
+                            </div>
+                          )}
+												{/* <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
 													<PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-												</div>
+												</div> */}
 												<CardHeader>
 													<div className="flex items-center justify-between">
 														<Badge variant="secondary" className="text-xs">{subject.code}</Badge>
