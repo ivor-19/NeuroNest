@@ -467,22 +467,40 @@ class AdminController extends Controller
 
     //---------------CALENDAR--------------------//
     public function calendar() {
-
-        return Inertia::render('Admin/Calendar', []);
+        $allEvent = Calendar::all();
+        return Inertia::render('Admin/Calendar', [
+            'eventsData' => $allEvent,
+        ]);
     }
 
-    public function addSchedule(Request $request){
+    public function addSchedule(Request $request)
+    {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'date' => 'required|string',
-            'time' => 'nullable|string',
-            'type' => 'required',
-            'priority' => 'required',
+            'date' => 'required|date_format:Y-m-d',  // Changed to date validation
+            'time' => 'nullable|date_format:H:i',  // Proper time format validation
+            'type' => 'required|in:schedule,deadline',
+            'priority' => 'required|in:low,medium,high',
         ]);
 
-        Calendar::create($validated);
+        Calendar::create([
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'date' => $validated['date'],  // Laravel will automatically cast to date
+            'time' => $validated['time'],   // Will be properly formatted
+            'type' => $validated['type'],
+            'priority' => $validated['priority'],
+        ]);
 
         return redirect()->back()->with('success', 'Successfully set a schedule!');
+    }
+
+    public function deleteSchedule($id)
+    {
+        $schedule = Calendar::findOrFail($id);
+        $schedule->delete();
+
+        return back()->with('success', 'Event removed successfully.');
     }
  }

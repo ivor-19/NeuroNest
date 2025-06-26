@@ -65,12 +65,12 @@ const getActionColor = (type: string) => {
 }
 
 const quickActions = [
-  { title: 'Add New User', description: 'Registrer a new user account', icon: UserPlus, action: "add", priority: "high"},
-  { title: 'Manage Course', description: 'Create and manage courses offered in the curriculum', icon: UserPlus, action: "add", priority: "medium"},
-  { title: 'Manage Subject', description: 'Create and manage subjects and their associated modules', icon: BookOpen, action: "add", priority: "medium"},
-  { title: 'Assign to Section', description: 'Assign students to their respective class sections', icon: User, action: "add", priority: "low"},
-  { title: 'Link Subject to Course', description: 'Map subjects to degree programs', icon: Settings, action: "add", priority: "low"},
-  { title: 'Generate Reports', description: 'Progress reports', icon: FileText, action: "add-student", priority: "low"},
+  { title: 'Add New User', description: 'Registrer a new user account', icon: UserPlus, action: "add-user", priority: "high", href: '/admin/manage-users'},
+  { title: 'Manage Course', description: 'Create and manage courses offered in the curriculum', icon: UserPlus, action: "manage-course", priority: "medium", href: '/admin/manage-courses'},
+  { title: 'Manage Subject', description: 'Create and manage subjects and their associated modules', icon: BookOpen, action: "manage-subject", priority: "medium", href: '/admin/manage-subjects'},
+  { title: 'Assign to Section', description: 'Assign students to their respective class sections', icon: User, action: "assign-section", priority: "low", href: '/admin/manage-students'},
+  { title: 'Link Subject to Course', description: 'Map subjects to degree programs', icon: Settings, action: "link-subject", priority: "low", href: '/admin/manage-courses'},
+  { title: 'Set Schedule', description: 'Create an event', icon: Calendar, action: "ge", priority: "low", href: '/admin/calendar'},
 ]
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -82,7 +82,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 
 export default function Dashboard({ authUser, users, roleCounts, subjectsCount, coursesCount, activities} : DashboardProps) {
- 
+    
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
           <Head title="Dashboard" />
@@ -173,7 +173,17 @@ export default function Dashboard({ authUser, users, roleCounts, subjectsCount, 
                             <p className="text-sm text-foreground">{activity.action}</p>
                             <p className="text-xs text-muted-foreground">{activity.details}</p>
                           </div>
-                          <div className="text-xs text-muted-foreground whitespace-nowrap">{activity.created_at}</div>
+                          <div className="text-xs text-muted-foreground whitespace-nowrap">
+                            {new Date(activity.created_at).toLocaleString('en-PH', {
+                              timeZone: 'Asia/Manila',
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              hour12: true
+                            })}
+                          </div>
                         </div>
                       )
                     })}
@@ -194,7 +204,7 @@ export default function Dashboard({ authUser, users, roleCounts, subjectsCount, 
                 <CardContent className="space-y-3">
                   <div className="grid gap-3">
                     {quickActions.map((action) => (
-                      <Button key={action.action} variant="outline" className="justify-start h-auto p-4 cursor-pointer">
+                      <Button key={action.action} variant="outline" className="justify-start h-auto p-4 cursor-pointer" onClick={() => window.location.href = action.href}>
                        <div className="flex items-center gap-3 w-full">
                           <div
                             className={`p-2 rounded-lg ${

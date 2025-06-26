@@ -17,7 +17,7 @@ import {
   endOfYear,
   isWithinInterval,
 } from "date-fns"
-import { ChevronLeft, ChevronRight, Plus, CalendarIcon, Clock, AlertTriangle } from "lucide-react"
+import { ChevronLeft, ChevronRight, Plus, CalendarIcon, Clock, AlertTriangle, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -29,10 +29,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { BreadcrumbItem } from "@/types"
+import { BreadcrumbItem, SharedData } from "@/types"
 import AppLayout from "@/layouts/app-layout"
-import { Head, router } from "@inertiajs/react"
+import { Head, router, usePage } from "@inertiajs/react"
 import { toast } from "sonner"
+import DeleteModal from "@/components/modal/delete-modal"
 
 interface Event {
   id: string
@@ -44,6 +45,10 @@ interface Event {
   priority: "low" | "medium" | "high"
 }
 
+interface EventProps {
+  eventsData: Event[]
+}
+
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Calendar',
@@ -51,82 +56,15 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function CalendarScheduler() {
+export default function CalendarScheduler({eventsData} : EventProps) {
+  const { auth } = usePage<SharedData>().props
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [events, setEvents] = useState<Event[]>([
-    {
-      id: "1",
-      title: "Team Meeting",
-      description: "Weekly team sync",
-      date: new Date(),
-      time: "10:00",
-      type: "schedule",
-      priority: "medium",
-    },
-    {
-      id: "2",
-      title: "Client Call",
-      description: "Discuss project requirements",
-      date: new Date(),
-      time: "14:30",
-      type: "schedule",
-      priority: "high",
-    },
-    {
-      id: "3",
-      title: "Code Review",
-      description: "Review pull requests",
-      date: new Date(),
-      time: "16:00",
-      type: "schedule",
-      priority: "medium",
-    },
-    {
-      id: "4",
-      title: "Project Deadline",
-      description: "Submit final project deliverables",
-      date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-      time: "17:00",
-      type: "deadline",
-      priority: "high",
-    },
-    {
-      id: "5",
-      title: "Doctor Appointment",
-      description: "Annual checkup",
-      date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-      time: "09:00",
-      type: "schedule",
-      priority: "medium",
-    },
-    {
-      id: "6",
-      title: "Gym Session",
-      description: "Leg day workout",
-      date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-      time: "18:30",
-      type: "schedule",
-      priority: "low",
-    },
-    {
-      id: "7",
-      title: "Presentation Prep",
-      description: "Prepare slides for tomorrow",
-      date: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
-      time: "11:00",
-      type: "schedule",
-      priority: "high",
-    },
-    {
-      id: "8",
-      title: "Lunch Meeting",
-      description: "Meet with potential client",
-      date: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
-      time: "12:30",
-      type: "schedule",
-      priority: "medium",
-    },
-  ])
+  const [events, setEvents] = useState<Event[]>(() => {
+    return eventsData.map(event => ({
+      ...event,
+      date: new Date(event.date) // Convert string date to Date object
+    }))
+  })
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [isAddEventOpen, setIsAddEventOpen] = useState(false)
   const [newEvent, setNewEvent] = useState({
@@ -135,7 +73,7 @@ export default function CalendarScheduler() {
     date: "",
     time: "",
     type: "schedule" as "schedule" | "deadline",
-    priority: "medium" as "low" | "medium" | "high",
+    priority: "low" as "low" | "medium" | "high",
   })
 
   const monthStart = startOfMonth(currentDate)
@@ -148,37 +86,54 @@ export default function CalendarScheduler() {
 
   const handleAddEvent = () => {
     if (!selectedDate || !newEvent.title) return
-
+  
+    const formatDateForBackend = (date : any) => {
+      // Use the date directly without timezone conversion
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    }
+  
     const event = {
       id: Date.now().toString(),
       title: newEvent.title,
       description: newEvent.description,
-      date: selectedDate, // This will use the date from the input field
+      date: selectedDate, // Keep as Date object for local state
       time: newEvent.time,
       type: newEvent.type,
       priority: newEvent.priority,
     }
+    
     console.log(event)
+    
     router.post(route('admin.addSchedule'), {
       title: newEvent.title,
       description: newEvent.description,
-      date: selectedDate, // This will use the date from the input field
-      time: newEvent.time || "",
+      date: formatDateForBackend(selectedDate), // Send formatted string to backend
+      time: newEvent.time || null,
       type: newEvent.type,
       priority: newEvent.priority,
-
     }, {
       onSuccess: () => {
-        toast('Success')
-        console.log('suiccess')
+        toast('Success creating an event')
+        console.log('Success creating an event')
+        router.post(route("admin.addActivity"), {
+          type: "schedule",
+          user: auth.user.name,
+          action: `Set ${newEvent.type === 'schedule' ? 'an event' : 'a deadline'} `,
+          details: `${newEvent?.title} ${formatDateForBackend(selectedDate)}`
+        }, {})
+        setEvents([...events, event])
+        setIsAddEventOpen(false)
       },
       onError: (errors) => {
-        console.error("Error creating a schedule", errors)
-        toast('Error creating schedule.')
+        console.error("Error creating an event", errors)
+        toast('Error creating an event.')
       }
     })
-
-    setEvents([...events, event])
+  
+    // Reset form
     setNewEvent({
       title: "",
       description: "",
@@ -187,7 +142,6 @@ export default function CalendarScheduler() {
       type: "schedule",
       priority: "medium",
     })
-    setIsAddEventOpen(false)
   }
 
   const getPriorityColor = (priority: string) => {
@@ -229,6 +183,16 @@ export default function CalendarScheduler() {
     return events
       .filter((event) => isWithinInterval(event.date, { start: yearStart, end: yearEnd }))
       .sort((a, b) => a.date.getTime() - b.date.getTime())
+  }
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteId, setDeleteId] = useState(0)
+  const [eventTitle, setEventTitle] = useState('')
+
+  const handleDeleteEvent = async (event:any) => {
+    setDeleteDialogOpen(true)
+    setEventTitle(event.title)
+    setDeleteId(event.id)
   }
 
   return (
@@ -405,6 +369,7 @@ export default function CalendarScheduler() {
                         {dayEvents.length > 2 && (
                           <div className="text-xs text-muted-foreground">+{dayEvents.length - 2} more</div>
                         )}
+                       
                       </div>
                     </div>
                   )
@@ -435,10 +400,14 @@ export default function CalendarScheduler() {
                                   {event.type}
                                 </Badge>
                                 <div className={cn("w-2 h-2 rounded-full", getPriorityColor(event.priority))} />
+                                <Button variant={'outline'} className="cursor-pointer" onClick={() => handleDeleteEvent(event)}>
+                                  <Trash2 className='text-red-600 h-4 w-4'/>
+                                </Button>
                               </div>
                             </div>
                             {event.description && <p className="text-sm text-muted-foreground">{event.description}</p>}
                             {event.time && <p className="text-sm font-medium">{event.time}</p>}
+                            
                           </div>
                         ))
                     )}
@@ -590,6 +559,15 @@ export default function CalendarScheduler() {
             </Card>
           </div>
         </div>
+        <DeleteModal 
+          open={deleteDialogOpen} 
+          onOpenChange={setDeleteDialogOpen} 
+          id={deleteId}
+          routeLink={"admin.deleteSchedule"}
+          description={`This will permanently delete the "${eventTitle}" event and remove all associated data`}
+          toastMessage="Delete successfully"
+          buttonTitle="Confirm"
+        />
       </div>
      </AppLayout>
   )

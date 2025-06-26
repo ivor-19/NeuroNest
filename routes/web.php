@@ -94,6 +94,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/delete-subject/{id}', [AdminController::class, 'deleteSubject'])->name('admin.deleteSubject');
         Route::delete('/remove-from-section/{id}', [AdminController::class, 'removeFromSection'])->name('admin.removeFromSection');
         Route::delete('/unassigned-instructor/{id}', [AdminController::class, 'unassignedInstructor'])->name('admin.unassignedInstructor');
+        Route::delete('/delete-schedule/{id}', [AdminController::class, 'deleteSchedule'])->name('admin.deleteSchedule');
         
         Route::delete('/delete-module/{id}', [ModuleController::class, 'deleteModule'])->name('admin.deleteModule');
         

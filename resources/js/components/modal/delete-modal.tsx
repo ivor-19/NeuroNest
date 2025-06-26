@@ -34,6 +34,7 @@ export default function DeleteModal ({ open, onOpenChange, id, routeLink, descri
                 preserveScroll: true,
                 onSuccess: () => {
                   router.reload();
+                  window.location.reload();
                 },
               })
               toast(toastMessage)

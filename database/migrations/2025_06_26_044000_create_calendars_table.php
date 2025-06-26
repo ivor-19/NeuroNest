@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->string('description')->nullable(); 
-            $table->string('date',); 
-            $table->string('time')->nullable();
+            $table->date('date',); 
+            $table->time('time')->nullable();
             $table->enum('type', ['schedule', 'deadline'])->default('schedule');
             $table->enum('priority', ['low', 'medium', 'high'])->default('low');
             $table->timestamp('created_at')->useCurrent();
