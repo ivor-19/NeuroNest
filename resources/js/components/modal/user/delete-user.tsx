@@ -25,11 +25,11 @@ export function DeleteUserModal({ user, isOpen, onClose, onConfirm }: DeleteUser
         onSuccess: () => {
           onConfirm(user.id)
           console.log(user.id)
-          toast("User is deleted")
+          toast.info("User is deleted from the system")
         },
         onError: (errors) => {
           console.log('Error deleting user', errors)
-          toast("Error occured. Try again.")
+          toast.error("Error occured. Try again.")
         }
       })
  

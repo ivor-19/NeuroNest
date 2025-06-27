@@ -37,7 +37,7 @@ export default function DeleteModal ({ open, onOpenChange, id, routeLink, descri
                   window.location.reload();
                 },
               })
-              toast(toastMessage)
+              toast.info(toastMessage)
               onOpenChange(false);
               
             }}

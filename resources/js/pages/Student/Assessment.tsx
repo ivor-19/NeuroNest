@@ -154,11 +154,11 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
       },
       {
         onSuccess: () => {
-          toast("Assessment Complete.")
+          toast.success("Assessment Complete.")
           setIsSubmitted(true)
         },
         onError: (errors) => {
-          toast("Error submitting. Please try again.")
+          toast.error("Error submitting. Please try again.")
           console.error(errors)
         },
       },
@@ -812,7 +812,7 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                     <SelectContent>
                       <SelectItem value="all">All Subjects</SelectItem>
                       {uniqueCourses.map((course) => (
-                        <SelectItem key={course} value={course}>
+                        <SelectItem key={course} value={course ?? ''}>
                           {course}
                         </SelectItem>
                       ))}
@@ -927,8 +927,9 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                                 Your Score
                               </span>
                               <span className="font-bold text-blue-700 dark:text-blue-300">
-                                {assessment.percentage}% ({Number.parseInt(assessment.student_score, 10)}/
-                                {assessment.total_points})
+                                {Math.round(assessment.percentage ?? 0)}% (
+                                {Number(assessment.student_score ?? 0)}/
+                                {assessment.total_points ?? 0})
                               </span>
                             </div>
                           </div>
@@ -956,16 +957,17 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
                             </div>
                             {isOverdue && (
                               <p className="text-xs text-red-600 mt-1 dark:text-red-400">This assessment is overdue</p>
-                            )}
+                            )}re
                           </div>
                         )}
 
                         <div className="flex flex-col sm:flex-row gap-2 pt-2">
                           {assessment.status === "completed" ? (
-                            <Button size="sm" variant="outline" className="flex-1 rounded-xl cursor-pointer">
-                              <Eye className="h-3 w-3 mr-1" />
-                              View Results
-                            </Button>
+                            <></>
+                            // <Button size="sm" variant="outline" className="flex-1 rounded-xl cursor-pointer">
+                            //   <Eye className="h-3 w-3 mr-1" />
+                            //   View Results
+                            // </Button>
                           ) : (
                             <>
                               {assessmentAssignment.is_available && !isOverdue ? (

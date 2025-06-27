@@ -38,13 +38,13 @@ export function EditUserModal({ user, isOpen, onClose, onSave }: EditUserModalPr
       }, {
         onSuccess: () => {
           console.log('User updated successfully');
-          toast("User updated successfully");
+          toast.success("User updated successfully");
           onSave(formData); // Update parent component state
           onClose();
         },
         onError: (errors) => {
           console.error('Validation errors:', errors);
-          toast("Error updating user");
+          toast.error("Error updating user");
         }
       })
      

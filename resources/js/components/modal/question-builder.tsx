@@ -140,18 +140,18 @@ export function QuestionBuilderModal({
 
   const handleSaveQuestion = () => {
     if (!currentQuestion.question.trim()) {
-      toast("Please enter a question");
+      toast.warning("A question is required to continue!");
       return;
     }
   
     if (currentQuestion.type === "multiple-choice" || currentQuestion.type === "true-false") {
       if (!currentQuestion.correctAnswer && currentQuestion.correctAnswer !== "0") {
-        toast("Please select the correct answer");
+        toast.warning("A correct answer is required to continue!");
         return;
       }
       
       if (currentQuestion.options?.some((opt) => !opt.trim())) {
-        toast("Please fill in all answer options");
+        toast.warning("Options are require to be filled up to continue!");
         return;
       }
       
@@ -159,7 +159,7 @@ export function QuestionBuilderModal({
       const correctIndex = parseInt(correctAnswerStr);
       
       if (isNaN(correctIndex)) {
-        toast("Invalid correct answer selection");
+        toast.warning("Invalid correct answer selection");
         return;
       }
     }
@@ -173,10 +173,10 @@ export function QuestionBuilderModal({
       const newQuestions = [...questions];
       newQuestions[editingQuestionIndex] = questionToSave;
       setQuestions(newQuestions);
-      toast("Question updated successfully");
+      toast.success("Question updated successfully");
     } else {
       setQuestions([...questions, questionToSave]);
-      toast("Question added successfully");
+      toast.success("Question added successfully");
     }
   
     resetCurrentQuestion();
@@ -189,12 +189,12 @@ export function QuestionBuilderModal({
 
   const handleDeleteQuestion = (index: number) => {
     setQuestions(questions.filter((_, i) => i !== index));
-    toast("Question deleted");
+    toast.info("Question is removed");
   };
 
   const handleSaveAssessment = async () => {
     if (questions.length === 0) {
-      toast("Please add at least one question");
+      toast.warning("Please add at least one question");
       return;
     }
   
@@ -209,7 +209,7 @@ export function QuestionBuilderModal({
       });
       
       if (invalidQuestions.length > 0) {
-        toast(`${invalidQuestions.length} question(s) are missing correct answers. Please review and fix them.`);
+        toast.warning(`${invalidQuestions.length} question(s) are missing correct answers. Please review and fix them.`);
         return;
       }
   
@@ -230,20 +230,20 @@ export function QuestionBuilderModal({
         {
           onSuccess: () => {
             console.log("Success! Formatted questions were:", formattedQuestions);
-            toast("Assessment saved successfully!", {
+            toast.success("Assessment created successfully!", {
               description: `${questions.length} questions have been added to your assessment.`,
             });
             onComplete();
           },
           onError: (error) => {
             console.error('Error saving assessment:', error);
-            toast("Error saving assessment. Please try again.");
+            toast.error("Error saving assessment. Please try again.");
           }
         }
       );
     } catch (error) {
       console.error('Error saving assessment:', error);
-      toast("Error saving assessment. Please try again.");
+      toast.error("Error saving assessment. Please try again.");
     }
   };
 
@@ -317,13 +317,13 @@ export function QuestionBuilderModal({
                         variant="outline"
                         size="sm"
                         onClick={handleAddOption}
-                        disabled={currentQuestion.options?.length >= 6}
+                        disabled={(currentQuestion.options?.length || 0) >= 6}
                       >
                         <Plus className="h-4 w-4 mr-1" /> Add Option
                       </Button>
                     </div>
                     <RadioGroup
-                      value={currentQuestion.correctAnswer}
+                      value={currentQuestion.correctAnswer as string | undefined}
                       onValueChange={(value) => setCurrentQuestion({ ...currentQuestion, correctAnswer: value })}
                     >
                       {currentQuestion.options?.map((option, index) => (
@@ -355,7 +355,7 @@ export function QuestionBuilderModal({
                   <div className="space-y-3">
                     <Label>Correct Answer</Label>
                     <RadioGroup
-                      value={currentQuestion.correctAnswer}
+                      value={currentQuestion.correctAnswer as string | undefined}
                       onValueChange={(value) => setCurrentQuestion({ ...currentQuestion, correctAnswer: value })}
                     >
                       <div className="flex items-center space-x-2">
@@ -415,9 +415,11 @@ export function QuestionBuilderModal({
                       </div>
                       <p className="text-sm font-medium mb-2 line-clamp-2">{question.question}</p>
                       {question.type === "multiple-choice" && (
-                        <div className="text-xs text-slate-500">
-                          Correct: {question.options?.[Number.parseInt(question.correctAnswer || "0")]}
-                        </div>
+                       <div className="text-xs text-slate-500">
+                       Correct: {typeof question.correctAnswer === 'string' 
+                         ? question.options?.[Number(question.correctAnswer)] 
+                         : 'Multiple answers'}
+                     </div>
                       )}
                       {question.type === "true-false" && (
                         <div className="text-xs text-slate-500">

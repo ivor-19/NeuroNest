@@ -163,3 +163,68 @@
     background-color: var(--muted);
   }
 }
+
+
+/* Custom Sonner Toast Colors */
+[data-sonner-toast][data-type="success"] {
+  background: #f0fdf4 !important;
+  border-color: #86efac !important;
+  color: #15803d !important;
+}
+
+[data-sonner-toast][data-type="error"] {
+  background: #fef2f2 !important;
+  border-color: #fca5a5 !important;
+  color: #b91c1c !important;
+}
+
+[data-sonner-toast][data-type="warning"] {
+  background: #fff7ed !important;
+  border-color: #fdba74 !important;
+  color: #c2410c !important;
+}
+
+[data-sonner-toast][data-type="info"] {
+  background: #eff6ff !important;
+  border-color: #93c5fd !important;
+  color: #1d4ed8 !important;
+}
+
+[data-sonner-toast][data-type="loading"] {
+  background: #6b7280 !important;
+  border-color: #93c5fd !important;
+  color: #1d4ed8 !important;
+}
+
+/* Default toast (no specific type) */
+[data-sonner-toast]:not([data-type]) {
+  background: #374151 !important;
+  border-color: #4b5563 !important;
+  color: white !important;
+}
+
+/* Dark mode adjustments */
+.dark [data-sonner-toast][data-type="success"] {
+  background: rgba(20, 83, 45, 0.8) !important; /* 80% opacity */
+  border-color: #15803d !important;
+  color: #86efac !important
+}
+
+.dark [data-sonner-toast][data-type="error"] {
+  background: rgb(127,29,29,0.8) !important;
+  border-color: #b91c1c !important;
+  color: #fca5a5 !important
+}
+
+.dark [data-sonner-toast][data-type="warning"] {
+  background: rgb(124,45,18,0.8) !important;
+  border-color: #c2410c !important;
+  color: #fdba74 !important
+}
+
+.dark [data-sonner-toast][data-type="info"] {
+  background: rgb(30,58,138,0.8) !important;
+  border-color: #1d4ed8 !important;
+  color: #93c5fd !important
+}
+

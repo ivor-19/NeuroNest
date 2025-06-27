@@ -182,7 +182,7 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
         setCurriculumChanges({ toAdd: [], toRemove: [] })
         setHasChanges(false)
         console.log("Curriculum updated successfully!")
-        toast("Assign section successfully")
+        toast.success("Curriculum updated successfully!")
       },
       onError: (errors) => {
         console.error("Error saving curriculum changes:", errors)
@@ -218,6 +218,7 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
           details: `${data?.name}`
         }, {})
         reset()
+        toast.success("New course has been added.")
       },
       onError: (errors) => {
         console.error("Error occured", errors)
@@ -229,6 +230,7 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
   const handleDeleteCourse = async () => {
     router.delete(route("admin.deleteCourse", selectedCourseType?.id), {
       onSuccess: () => {
+        toast.info(`${selectedCourseType?.name} course has been deleted.`)
         setSelectedCourseType(null)
         setDeleteCourseOpen(false)
         router.post(route("admin.addActivity"), {
@@ -237,6 +239,7 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
           action: `Delete a course`,
           details: `${selectedCourseType?.name}`
         }, {})
+      
       },
       onError: (errors) => {
         console.error("Error occured", errors)
@@ -294,10 +297,10 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid w-full grid-cols-3 bg-[var(--bg-main-2)]">
-              <TabsTrigger value="view-courses">View Courses</TabsTrigger>
-              <TabsTrigger value="add-course">Add New Course</TabsTrigger>
-              <TabsTrigger value="manage-curriculum">Manage Curriculum</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 ">
+              <TabsTrigger value="view-courses" className="cursor-pointer">View Courses</TabsTrigger>
+              <TabsTrigger value="add-course" className="cursor-pointer">Add New Course</TabsTrigger>
+              <TabsTrigger value="manage-curriculum" className="cursor-pointer">Manage Curriculum</TabsTrigger>
             </TabsList>
 
             <TabsContent value="view-courses" className="space-y-4">
@@ -322,21 +325,7 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
                     {courses.map((course) => (
                       <div key={course.id} className="border rounded-lg overflow-hidden">
                         <div className="flex flex-col">
-                          {/* Course Image Placeholder */}
-                          {/* <div className="w-full h-48">
-                            <img
-                              src="/assets/Educator.jfif"
-                              alt={`${course.name} course image`}
-                              className="w-full h-full object-cover"
-                            /> 
-                            <div className="relative h-full rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                              <PlaceholderPattern className="w-full h-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                              
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <PlusCircle className="opacity-20 h-14 w-14 hover:opacity-50 cursor-pointer transition-all" />
-                              </div>
-                            </div>
-                          </div> */}
+                       
 
                           {/* Course Content */}
                           <div className="flex-1 p-4">

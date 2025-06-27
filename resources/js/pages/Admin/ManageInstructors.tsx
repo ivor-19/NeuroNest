@@ -177,15 +177,15 @@ export default function ManageInstructors({ instructors, courseSubjects  } : Ins
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
-          <TabsTrigger value="view-instructors" className="flex items-center gap-2">
+          <TabsTrigger value="view-instructors" className="flex items-center gap-2 cursor-pointer">
             <Users className="h-4 w-4" />
             All Instructors
           </TabsTrigger>
-          <TabsTrigger value="assign-instructor" className="flex items-center gap-2">
+          <TabsTrigger value="assign-instructor" className="flex items-center gap-2 cursor-pointer">
             <UserPlus className="h-4 w-4" />
             Assign
           </TabsTrigger>
-          <TabsTrigger value="by-instructor" className="flex items-center gap-2">
+          <TabsTrigger value="by-instructor" className="flex items-center gap-2 cursor-pointer">
             <BookOpen className="h-4 w-4" />
             Assignments
           </TabsTrigger>

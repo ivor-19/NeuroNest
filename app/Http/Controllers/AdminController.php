@@ -365,6 +365,17 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Subject updated successfully');
     }
 
+    public function subjectAvailability($id)
+    {
+        $subject = Subject::findOrFail($id);
+        
+        // Toggle the is_available status
+        $subject->isActive = !$subject->isActive;
+        $subject->save();
+        
+        return redirect()->back();
+    }
+
 //*******************************************FOR INSTRUCTORS*****************************************************
     public function manageInstructors() {
         $allInstructorUser = User::where('role', 'instructor')

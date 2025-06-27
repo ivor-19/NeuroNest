@@ -68,7 +68,7 @@ export function CreateAssessmentTab({
           }
         );
         setQuestions([]);
-        toast("Assessment created successfully!", {
+        toast.success("Assessment created successfully!", {
           description: "You can now add questions to your assessment.",
         });
       },

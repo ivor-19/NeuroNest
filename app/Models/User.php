@@ -90,20 +90,20 @@ class User extends Authenticatable
             return collect();
         }
     
-        return Subject::with(['classInstructors' => function($query) {
-                $query->where('course_id', $this->studentSection->course_id)    // Added course_id
+        return Subject::where('isActive', 1)  // Added isActive condition for Subject
+            ->with(['classInstructors' => function($query) {
+                $query->where('course_id', $this->studentSection->course_id)
                       ->where('year_level', $this->studentSection->year_level)
                       ->where('section', $this->studentSection->section)
-                      ->with('instructor'); // Load the instructor relationship
+                      ->with('instructor');
             }])
             ->whereHas('classInstructors', function($query) {
-                $query->where('course_id', $this->studentSection->course_id)    // Added course_id
+                $query->where('course_id', $this->studentSection->course_id)
                       ->where('year_level', $this->studentSection->year_level)
                       ->where('section', $this->studentSection->section);
             })
             ->get()
             ->map(function($subject) {
-                // Add instructor info directly to the subject
                 $classInstructor = $subject->classInstructors->first();
                 $subject->instructor_name = $classInstructor ? $classInstructor->instructor->name : 'TBA';
                 $subject->instructor_email = $classInstructor ? $classInstructor->instructor->email : null;

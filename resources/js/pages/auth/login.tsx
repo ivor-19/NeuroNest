@@ -1,6 +1,6 @@
 "use client"
 
-import { useForm } from "@inertiajs/react"
+import { Head, useForm } from "@inertiajs/react"
 import { GalleryVerticalEnd, LoaderCircle } from "lucide-react"
 import type { FormEventHandler } from "react"
 
@@ -40,7 +40,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
   return (
     <div className="min-h-screen w-full lg:grid lg:grid-cols-2">
-      
+      <Head title={'Login'}/>
       <div className="relative hidden bg-muted lg:block">
         <img
           src="/assets/sample_bg.jpg"
@@ -58,7 +58,21 @@ export default function Login({ status, canResetPassword }: LoginProps) {
       <div className="flex flex-1 items-center justify-center p-6 lg:p-10">
         <div className="w-full max-w-sm space-y-6">
           {/* Title Section */}
-          <div className="space-y-2 text-center">
+          <div className="space-y-2 text-center flex flex-col items-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 48 48"
+              width="2em"
+              height="2em"
+            
+            >
+              <path fill="#006A62" d="M40 40c-6.9 0-16 4-16 4V22s9-4 18-4z"></path>
+              <path fill="#006A62" d="M8 40c6.9 0 16 4 16 4V22s-9-4-18-4z"></path>
+              <g fill="#FF834A">
+                <circle cx="24" cy="12" r="8"></circle>
+                <path d="M41 32h1c.6 0 1-.4 1-1v-4c0-.6-.4-1-1-1h-1c-1.7 0-3 1.3-3 3s1.3 3 3 3M7 26H6c-.6 0-1 .4-1 1v4c0 .6.4 1 1 1h1c1.7 0 3-1.3 3-3s-1.3-3-3-3"></path>
+              </g>
+            </svg>
             <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
             <p className="text-sm text-muted-foreground">Enter your credentials to access your account</p>
           </div>
@@ -135,7 +149,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
             {/* Submit Button */}
             <Button type="submit" className="w-full" tabIndex={4} disabled={processing}>
               {processing && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-              {processing ? "Signing in..." : "Sign in"}
+              {processing ? "Logging in..." : "Log in"}
             </Button>
           </form>
 

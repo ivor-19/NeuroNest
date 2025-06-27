@@ -18,16 +18,16 @@ export default function Welcome() {
           rel="stylesheet"
         />
       </Head>
-
+      
       <div className="min-h-screen bg-[#FDFDFC] dark:bg-[#0a0a0a]">
         <Header />
-
+        
         {/* Hero Section */}
         <section className="w-full relative overflow-hidden">
           {/* Light background (always visible) */}
           <div className="absolute inset-0 bg-[#FFF5F0]" />
 
-
+          <div className="hidden lg:block absolute top-0 right-0 w-[35%] h-full bg-[#006A62] shadow-2xl"></div>
           <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 

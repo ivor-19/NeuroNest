@@ -185,6 +185,7 @@ export default function Dashboard({ sections = [] }: InstructorProps) {
                         </div>
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-muted-foreground">Subject Status</span>
+                     
                           <span className="font-medium capitalize">
                             {section.subject.isActive === 1 ? 'Active' : 'Inactive'}
                           </span>

@@ -87,6 +87,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/updateUser/{id}', [AdminController::class, 'updateUser'])->name('admin.updateUser');
         Route::put('/updateCourse/{id}', [AdminController::class, 'updateCourse'])->name('admin.updateCourse');
         Route::post('/updateSubject/{id}', [AdminController::class, 'updateSubject'])->name('admin.updateSubject'); 
+        Route::post('/subject-availability/{id}', [AdminController::class, 'subjectAvailability'])->name('admin.subjectAvailability');
        
         Route::delete('/delete-user/{id}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
         Route::delete('/delete-course/{id}', [AdminController::class, 'deleteCourse'])->name('admin.deleteCourse');

@@ -236,10 +236,10 @@ export default function ManageStudents({ users, students, courses }: ManageStude
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
 
            <TabsList className="grid w-full grid-cols-4 lg:max-w-[60%]">
-            <TabsTrigger value="overview" className="text-sm">Student Directory</TabsTrigger>
-            <TabsTrigger value="assignments" className="text-sm">Assign Sections</TabsTrigger>
-            <TabsTrigger value="sections" className="text-sm">Section Overview</TabsTrigger>
-            <TabsTrigger value="analytics" className="text-sm">Analytics</TabsTrigger>
+            <TabsTrigger value="overview" className="text-sm cursor-pointer">Student Directory</TabsTrigger>
+            <TabsTrigger value="assignments" className="text-sm cursor-pointer">Assign Sections</TabsTrigger>
+            <TabsTrigger value="sections" className="text-sm cursor-pointer">Section Overview</TabsTrigger>
+            <TabsTrigger value="analytics" className="text-sm cursor-pointer">Analytics</TabsTrigger>
           </TabsList>
 
           {/* Student Directory Tab */}

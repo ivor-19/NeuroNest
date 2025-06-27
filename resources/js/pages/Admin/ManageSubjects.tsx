@@ -15,11 +15,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, Edit, Trash2, Layers, BookOpen, GraduationCap, Calendar, Search, Filter, FileText, Users, MoreHorizontal, PlusCircle, Upload, X, Book, Loader } from "lucide-react";
+import { Plus, Edit, Trash2, Layers, BookOpen, GraduationCap, Calendar, Search, Filter, FileText, Users, MoreHorizontal, PlusCircle, Upload, X, Book, Loader } from 'lucide-react';
 import AppLayout from "@/layouts/app-layout"
 import { route } from "ziggy-js"
 import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
 import { toast } from "sonner"
+import { Switch } from "@/components/ui/switch"
 
 type Module = {
   id: number
@@ -39,7 +40,7 @@ type Subject = {
   description: string
   year_level: string
   semester: string
-  isActive: number
+  isActive: boolean
   image: string
   modules?: Module[]
 }
@@ -127,7 +128,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
     subjectPost(route("admin.addSubject"), {
       forceFormData: true, // This is important for file uploads with Inertia
       onSuccess: () => {
-        toast(`Subject added: ${ subjectData.code}`)
+        toast.success(`Subject added: ${ subjectData.code}`)
         subjectReset();
         setShowAddForm(false);
         setImagePreview(null); // Reset preview
@@ -206,7 +207,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
     router.delete(route('admin.deleteSubject', subjectType?.id), {
       onSuccess: () => {
         setDeleteSubjectOpen(false)
-        toast('Subject deleted')
+        toast.info(`Subject: ${subjectType?.code} is deleted.`)
         router.post(route("admin.addActivity"), {
           type: "delete",
           user: auth.user.name,
@@ -270,7 +271,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
         'Content-Type': 'multipart/form-data',
       },
       onSuccess: () => {
-        toast('Subject updated successfully')
+        toast.success('Subject updated successfully')
         setEditSubject(null)
         setOpenEditModal(false)
         setEditSubjectLoading(false)
@@ -286,11 +287,20 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
       onError: (errors) => {
         console.error(errors)
         setEditSubjectLoading(false)
-        toast('There is a problem updating the subject. Try again.')
+        toast.success('There is a problem updating the subject. Try again.')
         setOpenEditModal(false)
       }
     })
   }
+
+  const handleViewAllModules = (subjectCode: string) => {
+    setActiveTab("modules")
+    setSelectedSubject(subjectCode)
+    setSearchQuery("")
+  }
+
+ 
+  
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
@@ -347,11 +357,11 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
               <Input placeholder="Search subjects and modules..." className="pl-10" value={searchQuery}  onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-2">
-              <TabsList className="grid w-full grid-cols-2 bg-[var(--bg-main-2)]">
-                <TabsTrigger value="subjects" className="flex items-center gap-2" onClick={() => setShowAddForm(false)}>
+              <TabsList className="grid w-full grid-cols-2 ">
+                <TabsTrigger value="subjects" className="flex items-center gap-2 cursor-pointer" onClick={() => setShowAddForm(false)}>
                   <BookOpen className="h-4 w-4" /> Subjects
                 </TabsTrigger>
-                <TabsTrigger value="modules" className="flex items-center gap-2" onClick={() => setShowAddForm(false)}>
+                <TabsTrigger value="modules" className="flex items-center gap-2 cursor-pointer" onClick={() => setShowAddForm(false)}>
                   <Layers className="h-4 w-4" />Modules
                 </TabsTrigger>
               </TabsList>
@@ -374,7 +384,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                             <SelectValue placeholder="Filter by subject" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="all">All Subjects</SelectItem>
+                            <SelectItem value="all">All</SelectItem>
                             {subjects.map((subject) => (
                               <SelectItem key={subject.code} value={subject.code}>
                                 {subject.code} - {subject.title}
@@ -598,7 +608,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                                 {imagePreview && (
                                   <div className="relative">
                                     <img
-                                      src={imagePreview}
+                                      src={imagePreview || "/placeholder.svg"}
                                       alt="Preview"
                                       className="h-16 w-16 object-cover rounded-md border"
                                     />
@@ -717,8 +727,25 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                                 <div className="space-y-1">
                                   <h3 className="font-semibold">{subject.title}</h3>
                                   <p className="text-sm text-muted-foreground">{subject.code}</p>
-                                </div>
+                                </div>                            
                                 <div className="flex items-center gap-2">
+                                  <Switch
+                                    checked={subject.isActive}
+                                    onCheckedChange={(checked) => {
+                                      router.post(route('admin.subjectAvailability', subject.id), {
+                                        isActive: checked
+                                      }, {
+                                        onSuccess: () => {
+                                          toast.success(`Subject status updated`);
+                                        },
+                                        onError: (errors) => {
+                                          console.error('Error updating status', errors);
+                                        }
+                                      });
+                                    }}
+                                    className="data-[state=checked]:bg-emerald-600 dark:data-[state=checked]:bg-emerald-500 cursor-pointer"
+                                  />
+                                 
                                   <Button variant="ghost" size="sm" onClick={() => handleEditSubject(subject)}>
                                     <Edit className="h-4 w-4" />
                                   </Button>
@@ -740,7 +767,12 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                                     {(subject.modules || []).length} modules
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer"> View all </div>
+                                <div 
+                                  className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors" 
+                                  onClick={() => handleViewAllModules(subject.code)}
+                                > 
+                                  View all 
+                                </div>
                               </div>
                             </div>
                           </CardContent>
@@ -844,7 +876,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                 {editImagePreview && (
                   <div className="relative">
                     <img
-                      src={editImagePreview}
+                      src={editImagePreview || "/placeholder.svg"}
                       alt="Preview"
                       className="h-16 w-16 object-cover rounded-md border"
                     />

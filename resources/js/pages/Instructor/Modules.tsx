@@ -84,11 +84,11 @@ export default function Modules({ modules, classInstructor, assessments, assignm
       window.location.href = route("instructor.moduleDownload", { id: id })
 
       setTimeout(() => {
-        toast("Module download started")
+        toast.success("Module download started")
       }, 500)
     } catch (error) {
       console.error("Download failed", error)
-      toast("Download failed. Please try again.")
+      toast.error("Download failed. Please try again.")
     }
   }
 
@@ -475,7 +475,7 @@ export default function Modules({ modules, classInstructor, assessments, assignm
                                         changeAccess(moduleAccess.id)
                                         handleToggleAvailability(moduleAccess.id, moduleAccess.is_available)
                                       }}
-                                      className="data-[state=checked]:bg-emerald-600 dark:data-[state=checked]:bg-emerald-500"
+                                      className="data-[state=checked]:bg-emerald-600 dark:data-[state=checked]:bg-emerald-500 cursor-pointer"
                                     />
                                     <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                                       {moduleAccess.is_available ? "Available" : "Unavailable"}

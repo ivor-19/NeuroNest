@@ -17,11 +17,18 @@ createInertiaApp({
         root.render(
             <>
                 <App {...props} />
-                <Toaster 
+                <Toaster
                     position="bottom-right"
+                    expand={true}
+                    richColors={true}
                     toastOptions={{
-                        duration: 3000,
-                        // Add other options as needed
+                    style: {
+                        background: "hsl(var(--background))",
+                        color: "hsl(var(--foreground))",
+                        border: "1px solid hsl(var(--border))",
+                    },
+                    className: "my-toast",
+                    descriptionClassName: "my-toast-description",
                     }}
                 />
             </>

@@ -45,13 +45,9 @@ import DeleteModal from "@/components/modal/delete-modal"
 
 export default function Assessments({ classInstructor, assessments, assignments }: InstructorAccessabilityProps) {
   const [activeTab, setActiveTab] = useState("section-assessments")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [assignModalOpen, setAssignModalOpen] = useState(false)
   const [questionBuilderOpen, setQuestionBuilderOpen] = useState(false)
   const [selectedAssessment, setSelectedAssessment] = useState<AssessmentList | null>(null)
-  const [assignmentData, setAssignmentData] = useState({ is_available: false, opened_at: "", closed_at: "" })
   const [assignmentSearchTerm, setAssignmentSearchTerm] = useState("")
   const [assignmentSectionFilter, setAssignmentSectionFilter] = useState(
     `${classInstructor.course.code}-${classInstructor.year_level}-${classInstructor.section}`,

@@ -194,11 +194,11 @@ export default function ManageUsers({ users: initialUsers }: UserProps) {
         {/* Main Content */}
         <Tabs defaultValue="list" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="list" className="flex items-center gap-2">
+            <TabsTrigger value="list" className="flex items-center gap-2 cursor-pointer">
               <Users className="h-4 w-4" />
               User List
             </TabsTrigger>
-            <TabsTrigger value="add" className="flex items-center gap-2">
+            <TabsTrigger value="add" className="flex items-center gap-2 cursor-pointer">
               <UserPlus className="h-4 w-4" />
               Add User
             </TabsTrigger>

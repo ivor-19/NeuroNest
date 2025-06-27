@@ -95,14 +95,14 @@ export function AssessmentManagementTab({
         setAssignModalOpen(false);
         setSelectedAssessment(null);
         setAssignmentData({ is_available: false, opened_at: "", closed_at: "" });
-        toast("Assessment has been assigned", {
+        toast.success("Assessment has been assigned", {
           description: `New assessment for ${newAssignment.course.code} ${newAssignment.year_level} ${newAssignment.section}`,
           action: { label: "Close", onClick: () => console.log("Close") },
         });
       },
       onError: (errors) => {
         console.error("Assignment failed:", errors);
-        toast("There has been some problem", {
+        toast.error("There has been some problem", {
           description: "There is already an assessment dedicated for this section.",
           action: { label: "Close", onClick: () => console.log("Close") },
         });

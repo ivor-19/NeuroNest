@@ -116,7 +116,7 @@ export default function CalendarScheduler({eventsData} : EventProps) {
       priority: newEvent.priority,
     }, {
       onSuccess: () => {
-        toast('Success creating an event')
+        toast.success('Success creating an event')
         console.log('Success creating an event')
         router.post(route("admin.addActivity"), {
           type: "schedule",
@@ -129,7 +129,7 @@ export default function CalendarScheduler({eventsData} : EventProps) {
       },
       onError: (errors) => {
         console.error("Error creating an event", errors)
-        toast('Error creating an event.')
+        toast.error('Error creating an event.')
       }
     })
   

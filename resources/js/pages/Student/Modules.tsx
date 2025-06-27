@@ -74,10 +74,10 @@ export default function Modules({ subject, modules }: Props) {
   const handleModuleDone = async (moduleId : number) => {
     router.post(route('student.moduleCompletion'), {student_id: auth.user.id, module_id: moduleId}, {
       onSuccess: () => {
-        toast('Module Completed')
+        toast.success('Module Completed')
       },
       onError: () => {
-        toast('Error has occured. Try again.')
+        toast.error('Error has occured. Try again.')
       }
     })
   }
@@ -87,12 +87,12 @@ export default function Modules({ subject, modules }: Props) {
       window.location.href = route('student.moduleDownload', { id: id });
 
       setTimeout(() => {
-        toast('Module download started');
+        toast.success('Module download started');
       }, 500);
       
     } catch (error) {
       console.error('Download failed', error);
-      toast('Download failed. Please try again.');
+      toast.error('Download failed. Please try again.');
     }
   };
 
