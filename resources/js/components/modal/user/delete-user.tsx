@@ -41,7 +41,7 @@ export function DeleteUserModal({ user, isOpen, onClose, onConfirm }: DeleteUser
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[400px]">
+      <DialogContent className="">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/30">

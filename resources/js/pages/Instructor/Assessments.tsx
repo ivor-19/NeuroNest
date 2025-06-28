@@ -546,11 +546,12 @@ export default function Assessments({ classInstructor, assessments, assignments 
                                                   <DropdownMenuItem onClick={() => handleViewRespondents(assignment)}>
                                                     <Users className="h-4 w-4 mr-2" /> View Respondents
                                                   </DropdownMenuItem>
+                                                  <Separator />
                                                   <DropdownMenuItem
-                                                    className="text-red-600 focus:text-red-600"
+                                                    className="text-amber-600 focus:text-amber-600"
                                                     onClick={() => handleDeleteAssigned(assignment)}
                                                   >
-                                                    <Trash2 className="h-4 w-4 mr-2" />
+                                                    <Trash2 className="h-4 w-4 mr-2 text-amber-600" />
                                                     Remove Assignment
                                                   </DropdownMenuItem>
                                                 </DropdownMenuContent>
@@ -808,7 +809,7 @@ export default function Assessments({ classInstructor, assessments, assignments 
                                                 <Users className="h-4 w-4 mr-2" /> View Respondents
                                               </DropdownMenuItem>
                                               <DropdownMenuItem
-                                                className="text-red-600 focus:text-red-600"
+                                                className="text-amber-600 focus:text-amber-600"
                                                 onClick={() => handleDeleteAssigned(assignment)}
                                               >
                                                 <Trash2 className="h-4 w-4 mr-2" />
@@ -920,10 +921,16 @@ export default function Assessments({ classInstructor, assessments, assignments 
         open={deleteDialogOpen} 
         onOpenChange={setDeleteDialogOpen} 
         id={deleteId}
+        title="Remove assessment"
         routeLink={"instructor.removeAssignedAssessment"}
-        description={'This will permanently delete the assessment and remove all associated data'}
-        toastMessage="Delete successfully"
-        buttonTitle="Delete Assessment"
+        description={'This will permanently remove the assessment assigned to the section'}
+        toastMessage="Remove successfully"
+        buttonTitle="Remove Assessment"
+        type='remove'
+        additionalInfo={[
+          `Assessment will get unassigned to the section`,
+          "You can re-assign the assessment to this section later if needed"
+        ]}
       />
     </HeaderLayout>
   )

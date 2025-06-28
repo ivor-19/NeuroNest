@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from "react"
 import {
   format,
@@ -15,23 +17,16 @@ import {
   endOfYear,
   isWithinInterval,
 } from "date-fns"
-import { ChevronLeft, ChevronRight, Plus, CalendarIcon, Clock, AlertTriangle, Trash2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, CalendarIcon, Clock, AlertTriangle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { BreadcrumbItem, SharedData } from "@/types"
-import AppLayout from "@/layouts/app-layout"
-import { Head, router, usePage } from "@inertiajs/react"
-import { toast } from "sonner"
-import DeleteModal from "@/components/modal/delete-modal"
+import { BreadcrumbItem } from "@/types"
+import { Head } from "@inertiajs/react"
+import HeaderLayout from "@/layouts/header-layout"
 
 interface Event {
   id: string
@@ -54,8 +49,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function CalendarScheduler({eventsData} : EventProps) {
-  const { auth } = usePage<SharedData>().props
+export default function Calendar({eventsData} : EventProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [events, setEvents] = useState<Event[]>(() => {
     return eventsData.map(event => ({
@@ -64,7 +58,6 @@ export default function CalendarScheduler({eventsData} : EventProps) {
     }))
   })
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [isAddEventOpen, setIsAddEventOpen] = useState(false)
   const [newEvent, setNewEvent] = useState({
     title: "",
     description: "",
@@ -80,66 +73,6 @@ export default function CalendarScheduler({eventsData} : EventProps) {
 
   const getEventsForDate = (date: Date) => {
     return events.filter((event) => isSameDay(event.date, date))
-  }
-
-  const handleAddEvent = () => {
-    if (!selectedDate || !newEvent.title) return
-  
-    const formatDateForBackend = (date : any) => {
-      // Use the date directly without timezone conversion
-      const year = date.getFullYear()
-      const month = String(date.getMonth() + 1).padStart(2, '0')
-      const day = String(date.getDate()).padStart(2, '0')
-      return `${year}-${month}-${day}`
-    }
-  
-    const event = {
-      id: Date.now().toString(),
-      title: newEvent.title,
-      description: newEvent.description,
-      date: selectedDate, // Keep as Date object for local state
-      time: newEvent.time,
-      type: newEvent.type,
-      priority: newEvent.priority,
-    }
-    
-    console.log(event)
-    
-    router.post(route('admin.addSchedule'), {
-      title: newEvent.title,
-      description: newEvent.description,
-      date: formatDateForBackend(selectedDate), // Send formatted string to backend
-      time: newEvent.time || null,
-      type: newEvent.type,
-      priority: newEvent.priority,
-    }, {
-      onSuccess: () => {
-        toast.success('Success creating an event')
-        console.log('Success creating an event')
-        router.post(route("admin.addActivity"), {
-          type: "schedule",
-          user: auth.user.name,
-          action: `Set ${newEvent.type === 'schedule' ? 'an event' : 'a deadline'} `,
-          details: `${newEvent?.title} ${formatDateForBackend(selectedDate)}`
-        }, {})
-        setEvents([...events, event])
-        setIsAddEventOpen(false)
-      },
-      onError: (errors) => {
-        console.error("Error creating an event", errors)
-        toast.error('Error creating an event.')
-      }
-    })
-  
-    // Reset form
-    setNewEvent({
-      title: "",
-      description: "",
-      time: "",
-      date: "",
-      type: "schedule",
-      priority: "medium",
-    })
   }
 
   const getPriorityColor = (priority: string) => {
@@ -183,120 +116,13 @@ export default function CalendarScheduler({eventsData} : EventProps) {
       .sort((a, b) => a.date.getTime() - b.date.getTime())
   }
 
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [deleteId, setDeleteId] = useState(0)
-  const [eventTitle, setEventTitle] = useState('')
-
-  const handleDeleteEvent = async (event:any) => {
-    setDeleteDialogOpen(true)
-    setEventTitle(event.title)
-    setDeleteId(event.id)
-  }
 
   return (
-     <AppLayout breadcrumbs={breadcrumbs}>
+     <HeaderLayout>
       <Head title={'Calendar'}/>
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Calendar Scheduler</h1>
-          <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
-            <DialogTrigger asChild>
-              <Button
-                onClick={() => {
-                  if (!selectedDate) {
-                    setSelectedDate(new Date()) // Default to today if no date selected
-                  }
-                }}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Event
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add New Event</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="title">Title</Label>
-                  <Input
-                    id="title"
-                    value={newEvent.title}
-                    onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-                    placeholder="Event title"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={newEvent.description}
-                    onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
-                    placeholder="Event description"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="date">Date</Label>
-                  <Input
-                    id="date"
-                    type="date"
-                    value={selectedDate ? format(selectedDate, "yyyy-MM-dd") : ""}
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        setSelectedDate(new Date(e.target.value))
-                      }
-                    }}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="time">Time</Label>
-                  <Input
-                    id="time"
-                    type="time"
-                    value={newEvent.time}
-                    onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="type">Type</Label>
-                  <Select
-                    value={newEvent.type}
-                    onValueChange={(value: "schedule" | "deadline") => setNewEvent({ ...newEvent, type: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="schedule">Schedule</SelectItem>
-                      <SelectItem value="deadline">Deadline</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="priority">Priority</Label>
-                  <Select
-                    value={newEvent.priority}
-                    onValueChange={(value: "low" | "medium" | "high") => setNewEvent({ ...newEvent, priority: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setIsAddEventOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleAddEvent}>Add Event</Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -398,9 +224,7 @@ export default function CalendarScheduler({eventsData} : EventProps) {
                                   {event.type}
                                 </Badge>
                                 <div className={cn("w-2 h-2 rounded-full", getPriorityColor(event.priority))} />
-                                <Button variant={'outline'} className="cursor-pointer" onClick={() => handleDeleteEvent(event)}>
-                                  <Trash2 className='text-red-600 h-4 w-4'/>
-                                </Button>
+                                
                               </div>
                             </div>
                             {event.description && <p className="text-sm text-muted-foreground">{event.description}</p>}
@@ -557,24 +381,7 @@ export default function CalendarScheduler({eventsData} : EventProps) {
             </Card>
           </div>
         </div>
-        <DeleteModal 
-          open={deleteDialogOpen} 
-          onOpenChange={setDeleteDialogOpen} 
-          id={deleteId}
-          title="Delete event"
-          routeLink={"admin.deleteSchedule"}
-          description={`This will permanently delete the "${eventTitle}" event`}
-          toastMessage="Event deleted"
-          buttonTitle="Confirm"
-          type='delete'
-          additionalInfo={[
-            `Scheduled event will get deleted`,
-            "You can re-create the event later if needed",
-            `All data associated with the event will also get deleted`
-          ]}
-
-        />
       </div>
-     </AppLayout>
+     </HeaderLayout>
   )
 }

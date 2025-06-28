@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AssessmentAssignment;
+use App\Models\Calendar;
 use App\Models\Module;
 use App\Models\Question;
 use App\Models\StudentResponse;
@@ -142,5 +143,14 @@ class StudentController extends Controller
         return StudentResponse::where('assessment_id', $assessmentId)
             ->where('student_id', $studentId)
             ->sum('points_earned');
+    }
+
+    //------------------
+
+    public function calendar() {
+        $allEvent = Calendar::all();
+        return Inertia::render('Student/Calendar', [
+            'eventsData' => $allEvent,
+        ]);
     }
 }

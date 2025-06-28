@@ -345,10 +345,15 @@ export default function ContactDashboard({ contacts }: { contacts: Contact[] }) 
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         id={deleteId}
+        title="Delete concern"
         routeLink={'admin.deleteConcern'}
         description={"This will permanently delete the concern and remove all associated data"}
         toastMessage="Delete successfully"
-        buttonTitle="Delete Concern"
+        buttonTitle="Confirm"
+        type='delete'
+        additionalInfo={[
+          `Concern will get deleted`,
+        ]}
       />
     </AppLayout>
   )

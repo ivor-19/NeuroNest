@@ -3,6 +3,7 @@ import { useState } from "react"
 import { Mail, Phone, MessageSquare, Send, CheckCircle } from "lucide-react"
 import Header from "@/components/landingpage/header"
 import Footer from "@/components/landingpage/footer"
+import { Head, router } from "@inertiajs/react"
 
 interface FormData {
   firstName: string
@@ -64,6 +65,18 @@ export default function ContactUs() {
     e.preventDefault()
     setProcessing(true)
 
+    router.post(route('add.concern'), {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      contactNumber: data.contactNumber,
+      emailAddress: data.emailAddress,
+      message: data.message,
+    }, {
+      onSuccess: () => {
+        console.log('success')
+      }
+    })
+
     // Simulate API call
     setTimeout(() => {
       setProcessing(false)
@@ -85,7 +98,7 @@ export default function ContactUs() {
 
   return (
     <div className="min-h-screen bg-[#FFF5F0]">
-        
+      <Head title={'Contact Us'}/>
       <Header />
 
 
@@ -183,6 +196,7 @@ export default function ContactUs() {
                           name="contactNumber"
                           value={data.contactNumber}
                           onChange={handleInputChange}
+                          maxLength={11}
                           placeholder="Enter your phone number"
                           className="text-gray-700 w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-teal-100 focus:border-teal-500 outline-none transition-all duration-200 group-hover:border-gray-300"
                           required

@@ -64,10 +64,8 @@ export function AssessmentManagementTab({
   };
 
   const [deleteId, setDeleteId] = useState(0);
-  const [routeLink, setRouteLink] = useState('');
   const handleDeleteAssessment = (assessment: AssessmentList) => {
     setDeleteId(assessment.id)
-    setRouteLink('instructor.deleteAssessment')
     setSelectedAssessment(assessment);
     setDeleteDialogOpen(true);
   };
@@ -242,10 +240,10 @@ export function AssessmentManagementTab({
                             </DropdownMenuItem>
                             <Separator />
                             <DropdownMenuItem
-                              className="text-red-600"
+                              className="text-destructive"
                               onClick={() => handleDeleteAssessment(assessment)}
                             >
-                              <Trash2 className="h-4 w-4 mr-2" /> Delete Assessment
+                              <Trash2 className="h-4 w-4 mr-2 text-destructive" /> Delete Assessment
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -393,7 +391,17 @@ export function AssessmentManagementTab({
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         id={deleteId}
-        routeLink={routeLink}
+        title="Delete assessment"
+        routeLink={"instructor.deleteAssessment"}
+        description={'This will permanently delete the assessment'}
+        toastMessage="Delete successfully"
+        buttonTitle="Delete Assessment"
+        type='delete'
+        additionalInfo={[
+          `Assessment will get deleted`,
+          "You can create a new assessment later if needed"
+        ]}
+        
 
       />
     

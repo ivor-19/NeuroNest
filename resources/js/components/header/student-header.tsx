@@ -11,7 +11,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
+import { BookOpen, Calendar, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
 import AppLogo from '../built-in-shadcn/app-logo';
 import AppLogoIcon from '../built-in-shadcn/app-logo-icon';
 
@@ -25,6 +25,11 @@ const mainNavItems: NavItem[] = [
         title: 'Assessment',
         href: '/student/assessment',
         icon: BookOpen,
+    },
+    {
+        title: 'Calendar',
+        href: '/student/calendar',
+        icon: Calendar,
     },
 ];
 

@@ -281,7 +281,7 @@ export default function AssessmentManager({ modules, classInstructor, assessment
 
   const handleSaveQuestion = () => {
     if (!currentQuestion.question.trim()) {
-      toast("Please enter a question")
+      toast.warning("Please enter a question")
       return
     }
   

@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, Edit, Trash2, Layers, BookOpen, GraduationCap, Calendar, Search, Filter, FileText, Users, MoreHorizontal, PlusCircle, Upload, X, Book, Loader } from 'lucide-react';
+import { Plus, Edit, Trash2, Layers, BookOpen, GraduationCap, Calendar, Search, Filter, FileText, Users, MoreHorizontal, PlusCircle, Upload, X, Book, Loader, AlertTriangle, Unlink, Minus } from 'lucide-react';
 import AppLayout from "@/layouts/app-layout"
 import { route } from "ziggy-js"
 import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
@@ -62,8 +62,8 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
   const [selectedSubject, setSelectedSubject] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [showAddForm, setShowAddForm] = useState(false)
-  const fileInputRef = useRef(null);
-  const editFileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: subjectData, setData: setSubjectData, post: subjectPost, processing: subjectProcessing, errors: subjectErrors, reset: subjectReset,
   } = useForm({
@@ -115,6 +115,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
   const removeEditImage = () => {
     setEditImageFile(null);
     setEditImagePreview(null);
+    setEditSubject({ ...editSubject!, image: '' });
   };
 
   const removeImage = () => { // Remove image
@@ -227,6 +228,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
     router.delete(route('admin.deleteModule', moduleType?.id), {
       onSuccess: () => {
         setRemoveModuleOpen(false)
+        toast.info(`Removed ${moduleType?.title}`)
         router.post(route("admin.addActivity"), {
           type: "delete",
           user: auth.user.name,
@@ -263,6 +265,9 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
     
     if (editImageFile) {
       formData.append('image', editImageFile);
+    } else if (editSubject?.image === '') {
+      // Explicitly send null if image was removed
+      formData.append('image', '');
     }
   
     // Use POST instead of PUT for file uploads
@@ -624,7 +629,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                               </div>
                               {subjectData.image && (
                                 <p className="text-sm text-muted-foreground">
-                                  Selected: {subjectData.image.name}
+                                  Selected: {subjectData.image}
                                 </p>
                               )}
                               {subjectErrors.image && (
@@ -800,19 +805,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
             </Tabs>
           </CardContent>
         </Card>
-        <AlertDialog open={removeModuleOpen} onOpenChange={setRemoveModuleOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Remove module from subject?</AlertDialogTitle>
-              <AlertDialogDescription> This will remove the module from a subject.  </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmRemoveModule}>Remove</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
+       
         <AlertDialog open={openEditModal} onOpenChange={setOpenEditModal}>
           <AlertDialogContent className="sm:max-w-[500px]">
             <AlertDialogHeader>
@@ -962,16 +955,119 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
             </div>
           </AlertDialogContent>
         </AlertDialog>
-
+        
         <AlertDialog open={deleteSubjectOpen} onOpenChange={setDeleteSubjectOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure you want to delete this subject?</AlertDialogTitle>
-              <AlertDialogDescription> This will affect other data. Delete it anyway?  </AlertDialogDescription>
+          <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader className="space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full dark:bg-red-900/20 flex-shrink-0">
+                <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+              </div>
+              <div className="flex-1">
+                <AlertDialogTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Delete Subject
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-sm text-gray-600 dark:text-gray-400">
+                  Are you absolutely sure you want to delete this subject?
+                </AlertDialogDescription>
+              </div>
+            </div>
+          </AlertDialogHeader>
+          <div className="my-4">
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800/30 dark:bg-red-900/10">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                  </div>
+                  <p className="text-sm font-medium text-red-800 dark:text-red-200">This action cannot be undone</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                  </div>
+                  <p className="text-sm text-red-700 dark:text-red-300">
+                    This will permanently remove all associated data and relationships
+                  </p>
+                  
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                  </div>
+                  <p className="text-sm text-red-700 dark:text-red-300">
+                    All modules associated with this subject will also get deleted
+                  </p>
+                  
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <AlertDialogFooter className="gap-2 sm:gap-2">
+            <AlertDialogCancel className="flex-1 sm:flex-none">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteSubject}
+              className="flex-1 sm:flex-none bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:bg-red-600 dark:hover:bg-red-700 gap-2 font-medium"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete Subject
+            </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={removeModuleOpen} onOpenChange={setRemoveModuleOpen}>
+          <AlertDialogContent className="max-w-md">
+            <AlertDialogHeader className="space-y-4">
+              <div className="flex items-start gap-4">
+                <div className="flex items-center justify-center w-12 h-12 bg-amber-100 rounded-full dark:bg-amber-900/20 flex-shrink-0">
+                  <Unlink className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                </div>
+
+                <div className=" flex-1">
+                  <AlertDialogTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    {`Remove module from a subject?`}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-sm text-gray-600 dark:text-gray-400">
+                    This will remove the module from the subject. The module itself will not be deleted.
+                  </AlertDialogDescription>
+                </div>
+              </div>
             </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteSubject}>Remove</AlertDialogAction>
+
+            <div className="my-4">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/30 dark:bg-amber-900/10">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
+                      <div className="w-2 h-2 bg-amber-500 rounded-full mt-2"></div>
+                    </div>
+                    <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                     {`${moduleType?.title} will be unlinked from this subject`}
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
+                      <div className="w-2 h-2 bg-amber-500 rounded-full mt-2"></div>
+                    </div>
+                    <p className="text-sm text-amber-700 dark:text-amber-300">
+                      You can re-add the module to this subject later if needed
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <AlertDialogFooter className="gap-2 sm:gap-2">
+              <AlertDialogCancel className="flex-1 sm:flex-none">Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmRemoveModule}
+                className="flex-1 sm:flex-none bg-amber-600 text-white hover:bg-amber-700 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:bg-amber-600 dark:hover:bg-amber-700 gap-2 font-medium"
+              >
+                <Unlink className="h-4 w-4" />
+                Remove Module
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

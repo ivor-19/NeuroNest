@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Separator } from "@/components/ui/separator"
-import { Edit, Trash2, Search, UserCheck, User, Filter, Download, Plus, MoreHorizontal, Users, GraduationCap, Building2, Calendar } from 'lucide-react'
+import { Edit, Trash2, Search, UserCheck, User, Filter, Download, Plus, MoreHorizontal, Users, GraduationCap, Building2, Calendar, IdCard, Mail, Book, UserPlus, UserRoundX } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -245,106 +245,170 @@ export default function ManageStudents({ users, students, courses }: ManageStude
           {/* Student Directory Tab */}
           <TabsContent value="overview" className="space-y-6">
             <Card>
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
+              <CardHeader>
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                   <div>
-                    <CardTitle className="text-xl">Student Directory</CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      Student Directory
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground">
                       Manage and view all registered students
                     </p>
                   </div>
-                  <Badge variant="secondary" className="text-sm">
-                    {filteredStudents.length} of {totalStudents} students
-                  </Badge>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <User className="h-4 w-4" />
+                    <span>
+                      {filteredStudents.length} student
+                      {filteredStudents.length !== 1 ? "s" : ""} shown
+                    </span>
+                  </div>
                 </div>
               </CardHeader>
-              
-              <CardContent className="space-y-4">
-                {/* Advanced Filters */}
-                <div className="flex flex-wrap items-center gap-4 p-4 bg-muted/50 rounded-lg">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <Search className="h-4 w-4 text-muted-foreground" />
+              <CardContent className="space-y-6">
+                {/* Search and Filters */}
+                <div className="space-y-4">
+                  {/* Search Bar */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder="Search by name, ID, or email..."
+                      className="pl-9"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
                   </div>
-                  
-                  <Separator orientation="vertical" className="h-6" />
-                  
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
 
-                  <Select value={courseFilter} onValueChange={setCourseFilter}>
-                    <SelectTrigger className="w-40">
-                      <SelectValue placeholder="Course" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Courses</SelectItem>
-                      {courses.map((course) => (
-                        <SelectItem key={course.id} value={course.id.toString()}>
-                          {course.code}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {/* Filters */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Status</Label>
+                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Status</SelectItem>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="inactive">Inactive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <Select value={yearFilter} onValueChange={setYearFilter}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue placeholder="Year" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Years</SelectItem>
-                      <SelectItem value="1">1st Year</SelectItem>
-                      <SelectItem value="2">2nd Year</SelectItem>
-                      <SelectItem value="3">3rd Year</SelectItem>
-                      <SelectItem value="4">4th Year</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Course</Label>
+                      <Select value={courseFilter} onValueChange={setCourseFilter}>
+                        <SelectTrigger className="h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Courses</SelectItem>
+                          {courses.map((course) => (
+                            <SelectItem key={course.id} value={course.id.toString()}>
+                              {course.code}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <Select value={sectionFilter} onValueChange={setSectionFilter}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue placeholder="Section" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Sections</SelectItem>
-                      <SelectItem value="A">Section A</SelectItem>
-                      <SelectItem value="B">Section B</SelectItem>
-                      <SelectItem value="C">Section C</SelectItem>
-                      <SelectItem value="D">Section D</SelectItem>
-                      <SelectItem value="E">Section E</SelectItem>
-                      <SelectItem value="F">Section F</SelectItem>
-                      <SelectItem value="G">Section G</SelectItem>
-                      <SelectItem value="H">Section H</SelectItem>
-                      <SelectItem value="I">Section I</SelectItem>
-                      <SelectItem value="J">Section J</SelectItem>
-                      <SelectItem value="K">Section K</SelectItem>
-                      <SelectItem value="L">Section L</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Year</Label>
+                      <Select value={yearFilter} onValueChange={setYearFilter}>
+                        <SelectTrigger className="h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Years</SelectItem>
+                          <SelectItem value="1">1st Year</SelectItem>
+                          <SelectItem value="2">2nd Year</SelectItem>
+                          <SelectItem value="3">3rd Year</SelectItem>
+                          <SelectItem value="4">4th Year</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <Button variant="outline" size="sm" onClick={() => {
-                    setSearchTerm("");
-                    setStatusFilter("all");
-                    setCourseFilter("all");
-                    setYearFilter("all");
-                    setSectionFilter("all");
-                  }}>
-                    Clear Filters
-                  </Button>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Section</Label>
+                      <Select value={sectionFilter} onValueChange={setSectionFilter}>
+                        <SelectTrigger className="h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Sections</SelectItem>
+                          <SelectItem value="A">Section A</SelectItem>
+                          <SelectItem value="B">Section B</SelectItem>
+                          <SelectItem value="C">Section C</SelectItem>
+                          <SelectItem value="D">Section D</SelectItem>
+                          <SelectItem value="E">Section E</SelectItem>
+                          <SelectItem value="F">Section F</SelectItem>
+                          <SelectItem value="G">Section G</SelectItem>
+                          <SelectItem value="H">Section H</SelectItem>
+                          <SelectItem value="I">Section I</SelectItem>
+                          <SelectItem value="J">Section J</SelectItem>
+                          <SelectItem value="K">Section K</SelectItem>
+                          <SelectItem value="L">Section L</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Actions</Label>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSearchTerm("");
+                          setStatusFilter("all");
+                          setCourseFilter("all");
+                          setYearFilter("all");
+                          setSectionFilter("all");
+                        }}
+                        className="h-8 w-full text-xs bg-transparent"
+                      >
+                        Clear Filters
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Active Filters Display */}
+                  {(searchTerm ||
+                    statusFilter !== "all" ||
+                    courseFilter !== "all" ||
+                    yearFilter !== "all" ||
+                    sectionFilter !== "all") && (
+                    <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg">
+                      <span className="text-xs text-muted-foreground">Active filters:</span>
+                      {searchTerm && (
+                        <Badge variant="secondary" className="text-xs">
+                          Search: "{searchTerm}"
+                        </Badge>
+                      )}
+                      {statusFilter !== "all" && (
+                        <Badge variant="secondary" className="text-xs">
+                          Status: {statusFilter}
+                        </Badge>
+                      )}
+                      {courseFilter !== "all" && (
+                        <Badge variant="secondary" className="text-xs">
+                          Course: {courses.find(c => c.id.toString() === courseFilter)?.code}
+                        </Badge>
+                      )}
+                      {yearFilter !== "all" && (
+                        <Badge variant="secondary" className="text-xs">
+                          Year: {yearFilter}
+                        </Badge>
+                      )}
+                      {sectionFilter !== "all" && (
+                        <Badge variant="secondary" className="text-xs">
+                          Section: {sectionFilter}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                {/* Data Table */}
+                {/* Students Table */}
                 <div className="border rounded-lg">
                   <Table>
                     <TableHeader>
@@ -418,7 +482,6 @@ export default function ManageStudents({ users, students, courses }: ManageStude
                                   }}
                                 >
                                   <Badge> Not Assigned </Badge>
-                              
                                 </Button>
                               )}
                             </TableCell>
@@ -439,10 +502,6 @@ export default function ManageStudents({ users, students, courses }: ManageStude
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                  {/* <DropdownMenuItem>
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Edit Student
-                                  </DropdownMenuItem> */}
                                   <DropdownMenuItem
                                     onClick={() => {
                                       if (student.user_id) {
@@ -800,11 +859,18 @@ export default function ManageStudents({ users, students, courses }: ManageStude
           open={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}
           id={deleteId}
+          title='Remove Student'
           routeLink={'admin.removeFromSection'}
-          description={"Removing this student from the section is permanent. To add them back, you will need to assign them again."}
+          description={"This will permanently remove the student to this section"}
           toastMessage="Removal complete"
-          buttonTitle="Remove"
+          buttonTitle="Confirm"
+          type='remove'
+          additionalInfo={[
+            `Student will be remove from this section`,
+            "You can re-add the student to this section later if needed"
+          ]}
         />
+
       </div>
     </AppLayout>
   );

@@ -18,7 +18,7 @@ Route::get('/contactus', function () {
     return Inertia::render('contactus');
 })->name('contactus');
 
-Route::post('/contact', [ContactController::class, 'store']);
+Route::post('/contact', [ContactController::class, 'store'])->name('add.concern');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Student routes
@@ -28,6 +28,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/assessment', [StudentController::class, 'assessment'])->name('student.assessment');
         Route::get('/modules/{id}/download', [ModuleController::class, 'download'])
         ->name('student.moduleDownload');
+        Route::get('/calendar', [StudentController::class, 'calendar'])->name('student.calendar');
 
         Route::post('/subject/module-complete', [ModuleController::class, 'moduleCompletion'])->name('student.moduleCompletion');
         Route::post('/assessment/submit-assessment', [AssessmentController::class, 'submitAssessment'])->name('student.submitAssessment');
@@ -43,6 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/sections/assessments', [InstructorController::class, 'assessments'])->name('instructor.assessments');
         Route::get('/modules/{id}/download', [ModuleController::class, 'download'])
         ->name('instructor.moduleDownload');
+        Route::get('/calendar', [InstructorController::class, 'calendar'])->name('instructor.calendar');
 
 
         Route::get('/sections/{assessment}/questions', [AssessmentController::class, 'getQuestions'])->name('instructor.getQuestions');

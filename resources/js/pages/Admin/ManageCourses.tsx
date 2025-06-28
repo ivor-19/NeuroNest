@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
 import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
-import { Subject } from "@/types/utils/student-assessment-types"
+import DeleteModal from "@/components/modal/delete-modal"
 
 type CourseProps = {
   courses: {
@@ -75,6 +75,15 @@ const breadcrumbs: BreadcrumbItem[] = [
     href: "admin/manageCourses",
   },
 ]
+
+interface Subject {
+  pivotId: number
+  id: number;
+  title: string;
+  code?: string;
+  description?: string;
+
+}
 
 export default function ManageCourses({ courses, allSubjects }: CourseProps) {
   const { auth } = usePage<SharedData>().props
@@ -139,25 +148,21 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
   }
 
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
-  const confirmRemoveSubject = async () => {
-    router.delete(route("admin.removeSubject", selectedSubject?.id), {
-      onSuccess: () => {
-        router.post(route("admin.addActivity"), {
-          type: "delete",
-          user: auth.user.name,
-          action: `Remove a subject`,
-          details: `${selectedSubject?.title}`
-        }, {})
-        setSelectedSubject(null)
-        setRemoveSubjectOpen(false)
-      },
-      onError: (errors) => {
-        console.error("Error occured", errors)
-        setRemoveSubjectOpen(false)
-      },
-    })
-    console.log(selectedSubject)
+  const [subjectId, setSubjectId] = useState(0)
+
+  const handleRemoveSubject = async (subject : Subject) => {
+    setRemoveSubjectOpen(true) 
+    setSelectedSubject(subject)
+    setSubjectId(subject.pivotId)
+    console.log(subject.pivotId)
+    router.post(route("admin.addActivity"), {
+      type: "remove",
+      user: auth.user.name,
+      action: `Remove a subject`,
+      details: `${selectedSubject?.title}`
+    }, {})
   }
+
 
   const saveCurriculumChanges = () => {
     if (!selectedCourse || (curriculumChanges.toAdd.length === 0 && curriculumChanges.toRemove.length === 0)) {
@@ -227,24 +232,19 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
   }
 
   const [selectedCourseType, setSelectedCourseType] = useState<Course | null>(null)
-  const handleDeleteCourse = async () => {
-    router.delete(route("admin.deleteCourse", selectedCourseType?.id), {
-      onSuccess: () => {
-        toast.info(`${selectedCourseType?.name} course has been deleted.`)
-        setSelectedCourseType(null)
-        setDeleteCourseOpen(false)
-        router.post(route("admin.addActivity"), {
-          type: "delete",
-          user: auth.user.name,
-          action: `Delete a course`,
-          details: `${selectedCourseType?.name}`
-        }, {})
-      
-      },
-      onError: (errors) => {
-        console.error("Error occured", errors)
-      },
-    })
+  const [deleteId, setDeleteId] = useState(0)
+  const handleDeleteCourse = async (course: Course) => {
+    setDeleteCourseOpen(true)
+    setSelectedCourseType(course)
+    setDeleteId(course.id)
+    router.post(route("admin.addActivity"), {
+      type: "delete",
+      user: auth.user.name,
+      action: `Delete a course`,
+      details: `${course?.name}`
+    }, {})
+    console.log(course)
+     
   }
 
   const [editCourse, setEditCourse] = useState<Course | null>(null)
@@ -349,7 +349,8 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => {
-                                    setDeleteCourseOpen(true), setSelectedCourseType(course)
+                                    handleDeleteCourse(course)
+                                    
                                   }}
                                 >
                                   <Trash2 className="h-4 w-4" />
@@ -495,8 +496,8 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
                   </div>
 
                   {hasChanges && (
-                    <div className="mb-4 p-3 bg-green-100 border border-green-200 rounded-lg">
-                      <p className="text-sm text-green-800">
+                    <div className="mb-4 bg-green-50 border border-green-300 p-3 dark:bg-green-900/20 dark:border-green-700/80 rounded-lg">
+                      <p className="text-sm text-green-700 dark:text-green-300">
                         You have unsaved changes.
                         {curriculumChanges.toAdd.length > 0 && ` ${curriculumChanges.toAdd.length} subject(s) to add.`}
                         {curriculumChanges.toRemove.length > 0 &&
@@ -558,7 +559,7 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
                                     key={`${subject.id}-${subject.pivotId}`} // Better key for React
                                     className={`flex items-center justify-between p-3 border rounded ${
                                       isNewlyAdded
-                                        ? "border-green-200 bg-green-100"
+                                        ? "border-green-300 bg-green-50 border dark:bg-green-900/20 dark:border-green-700/80"
                                         : isMarkedForRemoval
                                           ? "border-red-300 bg-red-50 opacity-50"
                                           : ""
@@ -566,7 +567,7 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
                                   >
                                     <div>
                                       <p className="font-medium text-sm ">{subject.title}</p>
-                                      <p className="text-xs text-muted-foreground">
+                                      <p className="text-xs ">
                                         {subject.code} • Year {subject.yearLevel} • Semester {subject.semester}
                                         {isNewlyAdded && <span className="text-green-600 ml-2">(New)</span>}
                                         {isMarkedForRemoval && (
@@ -578,7 +579,8 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
                                       size="sm"
                                       variant="outline"
                                       onClick={() => {
-                                        setRemoveSubjectOpen(true), setSelectedSubject(subject)
+                                        handleRemoveSubject(subject)
+                                        
                                       }}
                                       disabled={isMarkedForRemoval}
                                     >
@@ -600,41 +602,42 @@ export default function ManageCourses({ courses, allSubjects }: CourseProps) {
             </TabsContent>
           </Tabs>
         </div>
-        <AlertDialog open={removeSubjectOpen} onOpenChange={setRemoveSubjectOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Remove subject from curriculum?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will remove the subject from this course's curriculum.
-                {subjectToRemove && (
-                  <>
-                    <br />
-                    <span className="font-medium">
-                      Subject: {allSubjects.find((s) => s.id === subjectToRemove)?.title}
-                    </span>
-                  </>
-                )}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmRemoveSubject}>Remove</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+      
 
-        <AlertDialog open={deleteCourseOpen} onOpenChange={setDeleteCourseOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure you want to delete this course?</AlertDialogTitle>
-              <AlertDialogDescription>This will affect other data. Delete it anyway?</AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteCourse}>Remove</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <DeleteModal 
+          open={deleteCourseOpen}
+          onOpenChange={setDeleteCourseOpen}
+          id={deleteId}
+          title={`Delete ${selectedCourseType?.name}`}
+          routeLink={'admin.deleteCourse'}
+          description={"This will permanently delete the course"}
+          toastMessage={`Course "${selectedCourseType?.name}" deleted successfully`}
+          buttonTitle="Confirm"
+          type='delete'
+          additionalInfo={[
+            `Course "${selectedCourseType?.name}" will be deleted`,
+            'All of the data associated with this course will also be deleted',
+            "You can re-create the course if needed"
+          ]}
+        />
+
+        <DeleteModal 
+          open={removeSubjectOpen}
+          onOpenChange={setRemoveSubjectOpen}
+          id={subjectId}
+          title={`Remove ${selectedSubject?.title}`}
+          routeLink="admin.removeSubject"  // Pass route name instead of path
+          description={"This will permanently remove the subject from this course"}
+          toastMessage="Removal complete"
+          buttonTitle="Confirm"
+          type='remove'
+          additionalInfo={[
+            `Subject "${selectedSubject?.title}" will be remove from this course`,
+            "You can re-add the subject to this course later if needed"
+          ]}
+        />
+
+       
 
         <AlertDialog open={openEditModal} onOpenChange={setOpenEditModal}>
           <AlertDialogContent className="sm:max-w-[500px]">

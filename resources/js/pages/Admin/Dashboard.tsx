@@ -4,7 +4,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { UserPlus, BookOpen, Users, GraduationCap, Settings, FileText, Users2, User, LibraryBig, TrendingUp, Calendar, Edit3, Trash2, PlusCircle, NotepadTextDashed } from "lucide-react"
+import { UserPlus, BookOpen, Users, GraduationCap, Settings, FileText, Users2, User, LibraryBig, TrendingUp, Calendar, Edit3, Trash2, PlusCircle, NotepadTextDashed, Unlink } from "lucide-react"
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useEffect } from 'react';
@@ -59,6 +59,8 @@ const getActionColor = (type: string) => {
       return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
     case "schedule":
       return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"
+    case "remove":
+      return "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300"
     default:
       return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
   }
@@ -155,6 +157,8 @@ export default function Dashboard({ authUser, users, roleCounts, subjectsCount, 
                               <PlusCircle className='h-4 w-4'/>
                             ): activity.type === 'edit' ? (
                               <Edit3 className='h-4 w-4'/>
+                            ): activity.type === 'remove' ? (
+                              <Unlink className='h-4 w-4'/>
                             ): activity.type === 'delete' ? (
                               <Trash2 className='h-4 w-4'/>
                             ): activity.type === 'schedule' ? (

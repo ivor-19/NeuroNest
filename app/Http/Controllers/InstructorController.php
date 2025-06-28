@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Assessment;
 use App\Models\AssessmentAssignment;
+use App\Models\Calendar;
 use App\Models\ClassInstructor;
 use App\Models\Module;
 use App\Models\ModuleAccess;
@@ -186,5 +187,10 @@ class InstructorController extends Controller
         return Inertia::render('Instructor/Assessments', $data);
     }
 
-  
+    public function calendar() {
+        $allEvent = Calendar::all();
+        return Inertia::render('Instructor/Calendar', [
+            'eventsData' => $allEvent,
+        ]);
+    }
 }
