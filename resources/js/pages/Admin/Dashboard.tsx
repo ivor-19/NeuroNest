@@ -144,9 +144,9 @@ export default function Dashboard({ authUser, users, roleCounts, subjectsCount, 
                   <CardTitle>Recent Activity</CardTitle>
                   <CardDescription>Latest user actions on your platform</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className='h-[480px] overflow-auto'>
                   <div className="space-y-4">
-                    {activities.reverse().map((activity) => {
+                    {activities.slice().reverse().map((activity) => {
                       return (
                         <div
                           key={activity.id}
@@ -191,11 +191,6 @@ export default function Dashboard({ authUser, users, roleCounts, subjectsCount, 
                         </div>
                       )
                     })}
-                  </div>
-                  <div className="mt-4 pt-4 border-t">
-                    <button className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      View all activity →
-                    </button>
                   </div>
                 </CardContent>
               </Card>

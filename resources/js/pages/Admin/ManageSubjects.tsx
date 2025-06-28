@@ -727,7 +727,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                               </div>
                             )}
                             </div>
-                            <div>
+                            <div className="px-2">
                               <div className="flex items-start justify-between">
                                 <div className="space-y-1">
                                   <h3 className="font-semibold">{subject.title}</h3>
