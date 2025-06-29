@@ -193,4 +193,11 @@ class InstructorController extends Controller
             'eventsData' => $allEvent,
         ]);
     }
+
+    public function grades() {
+       
+        return Inertia::render('Instructor/Grades', [
+            
+        ]);
+    }
 }

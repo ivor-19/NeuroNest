@@ -42,10 +42,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/sections', [InstructorController::class, 'sections'])->name('instructor.sections');
         Route::get('/sections/subjects/modules', [InstructorController::class, 'modules'])->name('instructor.modules');
         Route::get('/sections/assessments', [InstructorController::class, 'assessments'])->name('instructor.assessments');
-        Route::get('/modules/{id}/download', [ModuleController::class, 'download'])
-        ->name('instructor.moduleDownload');
+        Route::get('/modules/{id}/download', [ModuleController::class, 'download'])->name('instructor.moduleDownload');
         Route::get('/calendar', [InstructorController::class, 'calendar'])->name('instructor.calendar');
-
+        Route::get('/grades', [InstructorController::class, 'grades'])->name('instructor.grades');
 
         Route::get('/sections/{assessment}/questions', [AssessmentController::class, 'getQuestions'])->name('instructor.getQuestions');
         Route::get('/assessments/respondents', [AssessmentController::class, 'getRespondents'])->name('assessments.respondents');

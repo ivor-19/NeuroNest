@@ -38,6 +38,7 @@ interface Subject {
   id: number
   title: string
   description: string
+  image: string
   modules: Module[]
 }
 
@@ -46,7 +47,7 @@ interface Props {
   modules: Module[]
 }
 
-export default function Modules({ subject, modules }: Props) {
+export default function Component({ subject, modules }: Props) {
   const { auth } = usePage<SharedData>().props
   const [isEnrolled, setIsEnrolled] = useState(true)
 
@@ -71,7 +72,7 @@ export default function Modules({ subject, modules }: Props) {
     }
   }
 
-  const handleModuleDone = async (moduleId : number) => {
+  const handleModuleDone = async (moduleId: number) => {
     router.post(route('student.moduleCompletion'), {student_id: auth.user.id, module_id: moduleId}, {
       onSuccess: () => {
         toast.success('Module Completed')
@@ -111,21 +112,56 @@ export default function Modules({ subject, modules }: Props) {
             Back to Dashboard
           </Button>
 
-          {/* Course Header */}
+          {/* Course Header with Image */}
           <div className="mb-10">
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-foreground">{subject.title}</h1>
-              <p className="text-sm text-muted-foreground max-w-4xl leading-relaxed">{subject.description}</p>
+              <div className="flex flex-col lg:flex-row gap-8 items-start">
+                {/* Course Image */}
+                <div className="flex-shrink-0">
+                  <div className="relative overflow-hidden rounded-xl border border-border bg-muted">
+                    <img
+                      src={`/storage/${subject.image}`}
+                      alt={`${subject.title} subject title`}
+                      className="w-full lg:w-80 h-48 object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                  </div>
+                </div>
+
+                {/* Course Info */}
+                <div className="flex-1 space-y-4">
+                  <div>
+                    <h1 className="text-3xl font-bold text-foreground mb-3">{subject.title}</h1>
+                    <p className="text-base text-muted-foreground max-w-4xl leading-relaxed">{subject.description}</p>
+                  </div>
+
+                  {/* Quick Stats */}
+                  <div className="flex flex-wrap gap-4 pt-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <BookOpen className="h-4 w-4" />
+                      <span>{modules.length} Modules</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>{completedModules} Completed</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Award className="h-4 w-4" />
+                      <span>Certificate Available</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Progress Section */}
             {isEnrolled && availableModules.length > 0 && (
-              <Card className="border border-border bg-card shadow-sm font-geist">
+              <Card className="border border-border bg-card shadow-sm">
                 <CardContent className="py-4 px-8">
                   <div className="flex justify-between items-center mb-8">
                     <div className="space-y-2">
                       <h3 className="text-lg font-semibold text-card-foreground">Course Progress</h3>
-                      <p className="text-muted-foreground text-sm font-geist">
+                      <p className="text-muted-foreground text-sm">
                         {completedModules} of {availableModules.length} available modules completed
                       </p>
                       {disabledCount > 0 && (
@@ -177,7 +213,6 @@ export default function Modules({ subject, modules }: Props) {
               <div className="space-y-4">
                 {modules.map((module, index) => {
                   const isDisabled = !module.isActive
-
                   return (
                     <Card
                       key={module.id}
@@ -185,13 +220,13 @@ export default function Modules({ subject, modules }: Props) {
                         isDisabled
                           ? "border-border bg-muted/30 opacity-70"
                           : module.isDone
-                            ? "border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/20 hover:shadow-lg "
+                            ? "border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/20 hover:shadow-lg"
                             : isEnrolled
-                              ? "border-border bg-card hover:border-primary/20 hover:shadow-lg "
+                              ? "border-border bg-card hover:border-primary/20 hover:shadow-lg"
                               : "border-border bg-card"
                       }`}
                     >
-                      <CardContent className="px-6 py-2">
+                      <CardContent className="px-6 py-4">
                         <div className="flex items-start gap-6">
                           {/* Module Status Icon */}
                           <div className="flex-shrink-0">
@@ -223,30 +258,40 @@ export default function Modules({ subject, modules }: Props) {
                             <div className="flex items-start justify-between gap-4">
                               <div className="flex-1 space-y-3">
                                 <div className="flex items-center gap-2">
-                                  <h3 className={` font-semibold ${isDisabled ? "text-muted-foreground" : "text-card-foreground"}`}>
+                                  <h3
+                                    className={`font-semibold ${isDisabled ? "text-muted-foreground" : "text-card-foreground"}`}
+                                  >
                                     {module.title}
                                   </h3>
                                   {isDisabled && (
-                                    <Badge variant="outline" className="border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300">
+                                    <Badge
+                                      variant="outline"
+                                      className="border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300"
+                                    >
                                       <AlertCircle className="h-3 w-3 mr-1" />
                                       Disabled
                                     </Badge>
                                   )}
                                   {module.isDone && (
-                                    <Badge variant="outline" className="border-green-200 dark:border-green-800 text-green-700 dark:text-green-300">
+                                    <Badge
+                                      variant="outline"
+                                      className="border-green-200 dark:border-green-800 text-green-700 dark:text-green-300"
+                                    >
                                       <CheckCircle className="h-3 w-3 mr-1" />
                                       Completed
                                     </Badge>
                                   )}
                                 </div>
-                                <p className={`text-sm leading-relaxed ${isDisabled ? "text-muted-foreground/70" : "text-muted-foreground" }`}>
+
+                                <p
+                                  className={`text-sm leading-relaxed ${isDisabled ? "text-muted-foreground/70" : "text-muted-foreground"}`}
+                                >
                                   {module.description}
                                 </p>
+
                                 {/* Module Meta */}
                                 <div
-                                  className={`flex items-center gap-6 text-sm ${
-                                    isDisabled ? "text-muted-foreground/70" : "text-muted-foreground"
-                                  }`}
+                                  className={`flex items-center gap-6 text-sm ${isDisabled ? "text-muted-foreground/70" : "text-muted-foreground"}`}
                                 >
                                   {module.type && (
                                     <div className="flex items-center gap-2">
@@ -254,12 +299,6 @@ export default function Modules({ subject, modules }: Props) {
                                       <span className="capitalize font-medium">{module.type}</span>
                                     </div>
                                   )}
-                                  {/* {module.duration && (
-                                    <div className="flex items-center gap-2">
-                                      <Clock className="h-3 w-3" />
-                                      <span>{module.duration}</span>
-                                    </div>
-                                  )} */}
                                   {module.lessons && (
                                     <div className="flex items-center gap-2">
                                       <BookOpen className="h-3 w-3" />
@@ -280,28 +319,32 @@ export default function Modules({ subject, modules }: Props) {
                                 )}
                               </div>
 
-                              {/* Action Button */}
-                              <div className="flex items-center gap-6 flex-shrink-0 flex-col justify-between">
+                              {/* Action Buttons */}
+                              <div className="flex items-center gap-2 flex-shrink-0 flex-col">
                                 {isEnrolled && !isDisabled && (
                                   <Button
                                     size="default"
                                     variant={module.isDone ? "outline" : "default"}
-                                    className="min-w-[100px] cursor-pointer"
+                                    className="min-w-[100px]"
                                     onClick={() => handleDownloadPdf(module.id)}
                                   >
-                                    <Download />
+                                    <Download className="h-4 w-4" />
                                   </Button>
-                                  
                                 )}
                                 {isDisabled && (
                                   <Button size="default" variant="ghost" disabled className="min-w-[100px]">
                                     Unavailable
                                   </Button>
                                 )}
-                                {!module.isDone && !isDisabled && 
-                                  <Button variant={"ghost"} className="text-xs text-muted-foreground cursor-pointer" onClick={() => handleModuleDone(module.id)}>mark as complete</Button>
-                                }
-                                
+                                {!module.isDone && !isDisabled && (
+                                  <Button 
+                                    variant="ghost" 
+                                    className="text-xs text-muted-foreground"
+                                    onClick={() => handleModuleDone(module.id)}
+                                  >
+                                    mark as complete
+                                  </Button>
+                                )}
                               </div>
                             </div>
                           </div>

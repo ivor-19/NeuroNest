@@ -710,7 +710,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                       {filteredSubjects.map((subject) => (
                         <Card key={subject.id} className="hover:bg-muted/50 transition-colors">
                           <CardContent className="p-2 flex flex-col gap-4">
-                           <div className="w-full h-48">
+                           <div className="w-full h-48 relative">
                             {subject.image ? (
                               <img
                                 src={`/storage/${subject.image}`}
@@ -726,6 +726,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                                 </div>
                               </div>
                             )}
+                             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                             </div>
                             <div className="px-2">
                               <div className="flex items-start justify-between">
