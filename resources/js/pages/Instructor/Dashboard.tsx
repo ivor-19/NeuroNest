@@ -208,7 +208,7 @@ export default function Dashboard({ sections = [] }: InstructorProps) {
                           <div className="w-full h-40 relative">
                             {section.subject.image ? (
                               <img
-                                src={`/storage/${section.subject.image}`}
+                                src={`/public/storage/${section.subject.image}`}
                                 alt={`${section.subject.title} subject title`}
                                 className="w-full h-full object-cover rounded-xl"
                               />

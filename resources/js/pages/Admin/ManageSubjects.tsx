@@ -710,7 +710,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                            <div className="w-full h-48 relative">
                             {subject.image ? (
                               <img
-                                src={`/storage/${subject.image}`}
+                                src={`/public/storage/${subject.image}`}
                                 alt={`${subject.title} subject title`}
                                 className="w-full h-full object-cover"
                               />
@@ -884,7 +884,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
               {!editImagePreview && editSubject?.image && (
                 <div className="relative mt-2">
                   <img
-                    src={`/storage/${editSubject.image}`}
+                    src={`/public/storage/${editSubject.image}`}
                     alt="Current subject image"
                     className="h-16 w-16 object-cover rounded-md border"
                   />

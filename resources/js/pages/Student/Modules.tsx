@@ -120,7 +120,7 @@ export default function Component({ subject, modules }: Props) {
                 <div className="flex-shrink-0">
                   <div className="relative overflow-hidden rounded-xl border border-border bg-muted">
                     <img
-                      src={`/storage/${subject.image}`}
+                      src={`/public/storage/${subject.image}`}
                       alt={`${subject.title} subject title`}
                       className="w-full lg:w-80 h-48 object-cover"
                     />
