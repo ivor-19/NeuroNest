@@ -245,7 +245,7 @@ export default function Dashboard({ user, subjects }: StudentDashboardProps) {
                     >
                       <CardContent className="p-2 flex flex-col gap-4">
                         <div className="w-full h-48 relative">
-                          {subject.image ? (
+                          {/* {subject.image ? (
                             <img
                               src={`/storage/${subject.image}`}
                               alt={`${subject.title} subject title`}
@@ -258,7 +258,7 @@ export default function Dashboard({ user, subjects }: StudentDashboardProps) {
                                 No image available
                               </div>
                             </div>
-                          )}
+                          )} */}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
 
                           {/* Favorite button */}
