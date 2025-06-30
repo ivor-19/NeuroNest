@@ -301,7 +301,54 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
     setSearchQuery("")
   }
 
- 
+  const [openEditModule, setOpenEditModule] = useState(false)
+  const [moduleTypes, setModuleTypes] = useState<Module>()
+  // Add this state for the edit module form
+  const [editPdfFile, setEditPdfFile] = useState<File | null>(null);
+
+  // Update the handleEditModule function
+  const handleEditModule = (module: Module) => {
+    setOpenEditModule(true);
+    setModuleTypes(module);
+  };
+
+  // Add this function to handle module updates
+  const handleModuleChanges = async (id: number) => {
+    setEditSubjectLoading(true);
+    
+    const formData = new FormData();
+    formData.append('title', moduleTypes?.title || '');
+    formData.append('subject_id', moduleTypes?.subject_id.toString() || '');
+    formData.append('description', moduleTypes?.description || '');
+    formData.append('status', moduleTypes?.status || '');
+    formData.append('order', moduleTypes?.order.toString() || '');
+    
+    if (editPdfFile) {
+      formData.append('pdf', editPdfFile);
+    }
+
+    console.log(moduleTypes)
+    
+    router.post(route('admin.updateModule', id), formData, {
+      onSuccess: () => {
+        toast.success('Module updated successfully');
+        setOpenEditModule(false);
+        setEditSubjectLoading(false);
+        setEditPdfFile(null);
+        router.post(route("admin.addActivity"), {
+          type: "edit",
+          user: auth.user.name,
+          action: `Updated module`,
+          details: `${moduleTypes?.title}`
+        }, {});
+      },
+      onError: (errors) => {
+        console.error(errors);
+        setEditSubjectLoading(false);
+        toast.error('There was a problem updating the module');
+      }
+    });
+  };
   
 
   return (
@@ -499,9 +546,9 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                                   )}
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  {/* <Button variant="ghost" size="sm">
+                                  <Button variant="ghost" size="sm" onClick={() => handleEditModule(module)}>
                                     <Edit className="h-4 w-4" />
-                                  </Button> */}
+                                  </Button>
                                   <Button variant="ghost" size="sm" onClick={() => {setRemoveModuleOpen(true), setModuleType(module)}}>
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
@@ -953,6 +1000,126 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
             </div>
           </AlertDialogContent>
         </AlertDialog>
+
+        <AlertDialog open={openEditModule} onOpenChange={setOpenEditModule}>
+          <AlertDialogContent className="sm:max-w-[500px]">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <Book className="h-5 w-5" />
+                Edit Module
+              </AlertDialogTitle>
+            </AlertDialogHeader>
+
+            <div className="space-y-4 p-6 border rounded-lg bg-muted/50">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="module-title">Module Title</Label>
+                  <Input
+                    id="moduleTitle"
+                    value={moduleTypes?.title || ""}
+                    onChange={(e) => setModuleTypes({ ...moduleTypes!, title: e.target.value })}
+                    placeholder="Enter module title"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-status">Subject</Label>
+                  <Select
+                    value={moduleTypes?.subject_id.toString()}
+                    onValueChange={(value) => {
+                      setModuleTypes({
+                        ...moduleTypes!,
+                        subject_id: Number(value),
+                      })
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Subject" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {subjects.map((subject) => (
+                        <SelectItem key={subject.id} value={String(subject.id)}>
+                          {subject.code} - {subject.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="module-description">Description</Label>
+                  <Textarea
+                    id="moduleTitle"
+                    value={moduleTypes?.description || ""}
+                    onChange={(e) => setModuleTypes({ ...moduleTypes!, description: e.target.value })}
+                    placeholder="Describe the module content and objectives" 
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="module-order">Module Order</Label>
+                  <Input
+                    id="moduleTitle"
+                    value={moduleTypes?.order || ""}
+                    onChange={(e) => setModuleTypes({ ...moduleTypes!, order: Number(e.target.value) })}
+                    placeholder="1, 2, 3..."
+                    type="number"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="module-status">Status</Label>
+                  <Select
+                    value={moduleTypes?.status}
+                    onValueChange={(value) => {
+                      setModuleTypes({
+                        ...moduleTypes!,
+                        status: value,
+                      })
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="published">Published</SelectItem>
+                      <SelectItem value="draft">Draft</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="module-file">PDF File</Label>
+                  <Input 
+                    type="file" 
+                    accept=".pdf" 
+                    onChange={(e) => setEditPdfFile(e.target.files?.[0] || null)} 
+                  />
+                  {moduleTypes?.pdf && !editPdfFile && (
+                    <div className="mt-2 text-sm text-muted-foreground">
+                      Current file: {moduleTypes.pdf.split('/').pop()}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setOpenEditModule(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => handleModuleChanges(moduleTypes!.id)} 
+                disabled={editSubjectLoading}
+              >
+                {editSubjectLoading ? (
+                  <div className="flex items-center gap-2">
+                    Saving <Loader className="animate-spin h-4 w-4"/>
+                  </div>
+                ) : (
+                  "Save Changes"
+                )}
+              </Button>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
+
         
         <AlertDialog open={deleteSubjectOpen} onOpenChange={setDeleteSubjectOpen}>
           <AlertDialogContent className="max-w-md">

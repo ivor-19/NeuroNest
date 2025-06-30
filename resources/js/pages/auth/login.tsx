@@ -1,7 +1,7 @@
 "use client"
 
 import { Head, useForm } from "@inertiajs/react"
-import { GalleryVerticalEnd, LoaderCircle } from "lucide-react"
+import { GalleryVerticalEnd, GraduationCap, LoaderCircle } from "lucide-react"
 import type { FormEventHandler } from "react"
 
 
@@ -59,20 +59,9 @@ export default function Login({ status, canResetPassword }: LoginProps) {
         <div className="w-full max-w-sm space-y-6">
           {/* Title Section */}
           <div className="space-y-2 text-center flex flex-col items-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 48 48"
-              width="2em"
-              height="2em"
-            
-            >
-              <path fill="#006A62" d="M40 40c-6.9 0-16 4-16 4V22s9-4 18-4z"></path>
-              <path fill="#006A62" d="M8 40c6.9 0 16 4 16 4V22s-9-4-18-4z"></path>
-              <g fill="#FF834A">
-                <circle cx="24" cy="12" r="8"></circle>
-                <path d="M41 32h1c.6 0 1-.4 1-1v-4c0-.6-.4-1-1-1h-1c-1.7 0-3 1.3-3 3s1.3 3 3 3M7 26H6c-.6 0-1 .4-1 1v4c0 .6.4 1 1 1h1c1.7 0 3-1.3 3-3s-1.3-3-3-3"></path>
-              </g>
-            </svg>
+            <div className="w-10 h-10 bg-gradient-to-br from-teal-600 to-teal-700 rounded-xl flex items-center justify-center">
+              <GraduationCap className="w-6 h-6 text-white" />
+            </div>
             <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
             <p className="text-sm text-muted-foreground">Enter your credentials to access your account</p>
           </div>
@@ -147,7 +136,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
             </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full" tabIndex={4} disabled={processing}>
+            <Button type="submit" className="w-full cursor-pointer" tabIndex={4} disabled={processing}>
               {processing && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
               {processing ? "Logging in..." : "Log in"}
             </Button>

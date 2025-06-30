@@ -47,6 +47,39 @@ class ModuleController extends Controller
       return redirect()->back()->with('success', 'Successfully added a module');
   }
 
+  public function updateModule(Request $request, $id)
+  {
+      // Find the existing module
+      $module = Module::findOrFail($id);
+  
+      // Basic validation (same as addModule but make PDF optional)
+      $validated = $request->validate([
+          'subject_id' => 'required|integer|exists:subjects,id',
+          'title' => 'required|string|max:255',
+          'description' => 'required|string|max:255',
+          'status' => 'required|string',
+          'order' => 'required|integer',
+          'pdf' => 'sometimes|file|mimes:pdf|max:10240', // Make PDF optional with 'sometimes'
+      ]);
+  
+      // Handle PDF file update if provided
+      if ($request->hasFile('pdf')) {
+          // Delete the old PDF file if it exists
+          if ($module->pdf) {
+              Storage::disk('public')->delete($module->pdf);
+          }
+          
+          // Store the new PDF file
+          $pdfPath = $request->file('pdf')->store('modules/pdfs', 'public');
+          $validated['pdf'] = $pdfPath;
+      }
+  
+      // Update the module
+      $module->update($validated);
+  
+      return redirect()->back()->with('success', 'Module updated successfully');
+  }
+
   public function deleteModule($id){
       $module = Module::findOrFail($id);  
       $module->delete();

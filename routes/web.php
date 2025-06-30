@@ -90,6 +90,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/updateSubject/{id}', [AdminController::class, 'updateSubject'])->name('admin.updateSubject'); 
         Route::post('/subject-availability/{id}', [AdminController::class, 'subjectAvailability'])->name('admin.subjectAvailability');
        
+        Route::post('/updateModule/{id}', [ModuleController::class, 'updateModule'])->name('admin.updateModule');
+        
         Route::delete('/delete-user/{id}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
         Route::delete('/delete-course/{id}', [AdminController::class, 'deleteCourse'])->name('admin.deleteCourse');
         Route::delete('/remove-subject/{id}', [AdminController::class, 'removeSubjectFromACourse'])->name('admin.removeSubject');

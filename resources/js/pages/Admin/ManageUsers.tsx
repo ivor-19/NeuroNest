@@ -36,6 +36,7 @@ import type { BreadcrumbItem, SharedData } from "@/types"
 import { Head, router, useForm, usePage } from "@inertiajs/react"
 import { EditUserModal } from "@/components/modal/user/edit-user"
 import { DeleteUserModal } from "@/components/modal/user/delete-user"
+import { toast } from "sonner"
 
 // Update the component signature to accept UserProps
 interface UserProps {
@@ -101,7 +102,7 @@ export default function ManageUsers({ users: initialUsers }: UserProps) {
     post(route("admin.addUser"), {
       ...data,
       onSuccess: () => {
-        
+        toast.success(`New user has been added`)
         router.post(route("admin.addActivity"), {
           type: "create",
           user: auth.user.name,
@@ -109,7 +110,7 @@ export default function ManageUsers({ users: initialUsers }: UserProps) {
           details: `${data.name} as a new student`
         }, {})
         reset()
-        // window.location.reload()
+        window.location.reload()
       },
     })
 

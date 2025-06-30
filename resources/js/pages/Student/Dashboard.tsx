@@ -107,7 +107,7 @@ export default function Dashboard({ user, subjects }: StudentDashboardProps) {
                       <p>Keep up the great work!</p>
                     </TooltipContent>
                   </Tooltip>
-                  <Tooltip>
+                  {/* <Tooltip>
                     <TooltipTrigger asChild>
                       <Button variant="outline" size="sm">
                         <Bell className="h-4 w-4 mr-2" />
@@ -122,7 +122,7 @@ export default function Dashboard({ user, subjects }: StudentDashboardProps) {
                     <TooltipContent>
                       <p>You have {upcomingDeadlines} upcoming deadlines</p>
                     </TooltipContent>
-                  </Tooltip>
+                  </Tooltip> */}
                 </div>
               </div>
             </div>
