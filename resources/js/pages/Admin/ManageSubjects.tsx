@@ -1,5 +1,3 @@
-"use client"
-
 import type React from "react"
 
 import type { BreadcrumbItem, SharedData } from "@/types"
@@ -15,9 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, Edit, Trash2, Layers, BookOpen, GraduationCap, Calendar, Search, Filter, FileText, Users, MoreHorizontal, PlusCircle, Upload, X, Book, Loader, AlertTriangle, Unlink, Minus } from 'lucide-react';
+import { Plus, Edit, Trash2, Layers, BookOpen, GraduationCap, Calendar, Search, Filter, FileText, Upload, X, Book, Loader, AlertTriangle, Unlink, Minus } from 'lucide-react';
 import AppLayout from "@/layouts/app-layout"
-import { route } from "ziggy-js"
 import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
 import { toast } from "sonner"
 import { Switch } from "@/components/ui/switch"
