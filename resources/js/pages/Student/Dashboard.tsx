@@ -188,7 +188,7 @@ export default function Dashboard({ user, subjects }: StudentDashboardProps) {
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2">
-                      <BookOpen className="h-5 w-5" /> Academic Subjects
+                      <BookOpen className="h-5 w-5" /> Academic SubjectsSSSSS
                     </CardTitle>
                     <p className="text-sm text-muted-foreground mt-1">
                       Browse and access your enrolled subjects ({filteredSubjects.length} of {studentSubjects.length})
