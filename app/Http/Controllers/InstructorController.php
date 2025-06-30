@@ -6,8 +6,10 @@ use App\Models\Assessment;
 use App\Models\AssessmentAssignment;
 use App\Models\Calendar;
 use App\Models\ClassInstructor;
+use App\Models\Course;
 use App\Models\Module;
 use App\Models\ModuleAccess;
+use App\Models\StudentGrades;
 use App\Models\StudentProfile;
 use App\Models\Subject;
 use Illuminate\Auth\Events\Registered;
@@ -194,10 +196,79 @@ class InstructorController extends Controller
         ]);
     }
 
-    public function grades() {
-       
+    public function grades()
+    {
+        // Get the authenticated instructor
+        $instructor = auth()->user();
+        
+        // Load all ACTIVE subjects taught by this instructor with their assessments
+        $subjects = Subject::with(['classInstructors' => function($query) use ($instructor) {
+                $query->where('instructor_id', $instructor->id);
+            }])
+            ->whereHas('classInstructors', function($query) use ($instructor) {
+                $query->where('instructor_id', $instructor->id);
+            })
+            ->where('isActive', true)  // Only get active subjects
+            ->get()
+            ->map(function($subject) {
+                // Get the class instructor details
+                $classInstructor = $subject->classInstructors->first();
+                
+                // Load assessments for each subject
+                $assessments = Assessment::with(['assignments', 'questions'])
+                    ->where('subject_id', $subject->id)
+                    ->get()
+                    ->map(function($assessment) {
+                        // Load grades for each assessment
+                        $assessment->grades = StudentGrades::with('student')
+                            ->where('assessment_id', $assessment->id)
+                            ->get();
+                        return $assessment;
+                    });
+                
+                // Load course information
+                $course = Course::find($classInstructor->course_id);
+                
+                // Load students enrolled in this subject (same course, year_level, and section)
+                $students = StudentProfile::with('student')
+                    ->where('course_id', $classInstructor->course_id)
+                    ->where('year_level', $classInstructor->year_level)
+                    ->where('section', $classInstructor->section)
+                    ->get()
+                    ->map(function($profile) {
+                        return [
+                            'id' => $profile->student_id,
+                            'name' => $profile->student->name,
+                            'email' => $profile->student->email,
+                            'profile' => $profile->only(['year_level', 'section']),
+                        ];
+                    });
+                
+                return [
+                    'id' => $subject->id,
+                    'code' => $subject->code,
+                    'title' => $subject->title,
+                    'course' => $course,
+                    'assessments' => $assessments,
+                    'year_level' => $classInstructor->year_level,
+                    'section' => $classInstructor->section,
+                    'students' => $students,
+                ];
+            });
+
         return Inertia::render('Instructor/Grades', [
-            
+            'instructor' => [
+                'id' => $instructor->id,
+                'name' => $instructor->name,
+                'email' => $instructor->email,
+            ],
+            'subjects' => $subjects,
+            'assessmentTypes' => [
+                ['value' => 'quiz', 'label' => 'Quiz'],
+                ['value' => 'exam', 'label' => 'Exam'],
+                ['value' => 'project', 'label' => 'Project'],
+                ['value' => 'assignment', 'label' => 'Assignment'],
+            ],
         ]);
     }
 }

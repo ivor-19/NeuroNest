@@ -6,6 +6,7 @@ use App\Models\Assessment;
 use App\Models\AssessmentAssignment;
 use App\Models\ClassInstructor;
 use App\Models\Question;
+use App\Models\StudentGrades;
 use App\Models\StudentProfile;
 use App\Models\StudentResponse;
 use App\Models\User;
@@ -239,6 +240,65 @@ class AssessmentController extends Controller
         ]);
     }
 
+    public function getStudentGrades(Request $request, $assessmentId, $courseId, $yearLevel, $section)
+    {
+        // Get the assessment assignment with basic validation
+        $assignment = AssessmentAssignment::with('course')
+            ->where([
+                'assessment_id' => $assessmentId,
+                'course_id' => $courseId,
+                'year_level' => $yearLevel,
+                'section' => $section
+            ])
+            ->firstOrFail();
+
+        // Get assessment with minimal data
+        $assessment = Assessment::with('subject:id,name')
+            ->select('id', 'title', 'description', 'subject_id')
+            ->findOrFail($assessmentId);
+
+        // Get students - simplified without enrollments
+        $students = User::where('course_id', $courseId)
+            ->where('year_level', $yearLevel)
+            ->where('section', $section)
+            ->select('id', 'name', 'account_id')
+            ->get();
+
+        // Get grades in a single query
+        $grades = StudentGrades::where('assessment_id', $assessmentId)
+            ->whereIn('student_id', $students->pluck('id'))
+            ->select('student_id', 'score', 'updated_at as graded_at')
+            ->get()
+            ->keyBy('student_id');
+
+        // Transform data more efficiently
+        $studentGrades = $students->map(function($student) use ($grades) {
+            $grade = $grades[$student->id] ?? null;
+            
+            return [
+                'id' => $student->id,
+                'name' => $student->name,
+                'account_id' => $student->account_id,
+                'score' => $grade?->score,
+                'graded_at' => $grade?->graded_at,
+                'status' => $grade ? 'Graded' : 'Pending'
+            ];
+        });
+
+        return Inertia::render('Grades/Index', [
+            'meta' => [
+                'course' => $assignment->course->only('code', 'name'),
+                'year_level' => $yearLevel,
+                'section' => $section,
+                'graded_count' => $grades->count(),
+                'total_students' => $students->count()
+            ],
+            'assessment' => $assessment,
+            'assignment' => $assignment->only('opened_at', 'closed_at', 'is_available'),
+            'studentGrades' => $studentGrades
+        ]);
+    }
+
     public function submitAssessment(Request $request)
     {
         // Validate that we receive an array of responses
@@ -260,6 +320,20 @@ class AssessmentController extends Controller
     
         return back()->with([
             'success' => 'Successfully finished assessment',
+        ]);
+    }
+
+    public function storeGrades(Request $request) {
+        $request->validate([
+            'assessment_id' => 'required|integer|exists:assessments,id',
+            'student_id' => 'required|integer|exists:users,id',
+            'score' => 'required|string|max:255',
+          
+           ]);
+    
+        StudentGrades::create($request->all());
+        return back()->with([
+            'success' => 'Successfully totalled',
         ]);
     }
 

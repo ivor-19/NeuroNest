@@ -97,6 +97,7 @@ export function AssessmentManagementTab({
           description: `New assessment for ${newAssignment.course.code} ${newAssignment.year_level} ${newAssignment.section}`,
           action: { label: "Close", onClick: () => console.log("Close") },
         });
+        window.location.reload()
       },
       onError: (errors) => {
         console.error("Assignment failed:", errors);

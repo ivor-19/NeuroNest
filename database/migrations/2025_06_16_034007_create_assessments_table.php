@@ -33,7 +33,12 @@ return new class extends Migration
             $table->dateTime('closed_at')->nullable();      // Deadline
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
-     
+            
+            // Ensure one response per SECTION per assessment
+            $table->unique(
+                ['assessment_id', 'course_id', 'year_level', 'section'],
+                'assessments_unique_combo' // Custom shorter name
+            );
         });
     }
 

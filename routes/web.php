@@ -32,7 +32,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::post('/subject/module-complete', [ModuleController::class, 'moduleCompletion'])->name('student.moduleCompletion');
         Route::post('/assessment/submit-assessment', [AssessmentController::class, 'submitAssessment'])->name('student.submitAssessment');
-    
+        Route::post('/assessment/store-grades', [AssessmentController::class, 'storeGrades'])->name('student.storeGrades');
     });
     
     // Instructor routes

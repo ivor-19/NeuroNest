@@ -146,6 +146,11 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
       }
     })
 
+    // Calculate total score by summing all points_earned
+    const totalScore = answerRecords?.reduce((sum: number, record: any) => {
+      return sum + (record.points_earned || 0);
+    }, 0) || 0;
+
     console.log("Assessment Answer Records:", answerRecords)
     router.post(
       route("student.submitAssessment"),
@@ -156,6 +161,12 @@ export default function Assessment({ assessments, studentProfile }: StudentAsses
         onSuccess: () => {
           toast.success("Assessment Complete.")
           setIsSubmitted(true)
+          console.log(totalScore)
+          router.post(route('student.storeGrades', {
+            assessment_id: selectedAssessment?.assessment.id,
+            student_id: studentProfile.student_id,
+            score: totalScore  // Use the calculated total score here
+          }))
         },
         onError: (errors) => {
           toast.error("Error submitting. Please try again.")
