@@ -18,17 +18,17 @@ import AppLogoIcon from '../built-in-shadcn/app-logo-icon';
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: '/student/dashboard',
+        href: route('student.dashboard'),
         icon: LayoutGrid,
     },
     {
         title: 'Assessment',
-        href: '/student/assessment',
+        href: route('student.assessment'),
         icon: BookOpen,
     },
     {
         title: 'Calendar',
-        href: '/student/calendar',
+        href: route('student.calendar'),
         icon: Calendar,
     },
 ];

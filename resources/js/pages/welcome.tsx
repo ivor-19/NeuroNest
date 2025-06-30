@@ -35,7 +35,7 @@ export default function Welcome() {
               <div className="space-y-8">
                 <div className="space-y-6">
                   <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-[#006A62] leading-tight">
-                    Build Your Skills
+                    Build Your Skillswefwefwef
                     <br />
                     With the{' '}
                     <span className="inline-block bg-[#F88F60] text-white px-4 py-2 rounded-lg">
