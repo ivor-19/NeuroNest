@@ -24,6 +24,7 @@ export default [
             // Add your custom rules here
             '@typescript-eslint/no-unused-vars': 'off', // Disable the no-unused-vars rule
             '@typescript-eslint/no-explicit-any': 'off',
+            "@typescript-eslint/no-unused-expressions": "off",
             
         },
         settings: {
