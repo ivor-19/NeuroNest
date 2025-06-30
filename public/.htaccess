@@ -22,4 +22,9 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+    
 </IfModule>
+
+<FilesMatch ".(jpg|jpeg|png|gif|svg|webp|css|js|woff|woff2|ttf|eot)$">
+    Header set Access-Control-Allow-Origin "*"
+</FilesMatch>
