@@ -21,6 +21,10 @@ export default [
             'react/react-in-jsx-scope': 'off',
             'react/prop-types': 'off',
             'react/no-unescaped-entities': 'off',
+            // Add your custom rules here
+            '@typescript-eslint/no-unused-vars': 'off', // Disable the no-unused-vars rule
+            '@typescript-eslint/no-explicit-any': 'off',
+            
         },
         settings: {
             react: {
