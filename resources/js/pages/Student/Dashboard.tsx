@@ -188,7 +188,7 @@ export default function Dashboard({ user, subjects }: StudentDashboardProps) {
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2">
-                      <BookOpen className="h-5 w-5" /> Academic SubjectsSSSSS
+                      <BookOpen className="h-5 w-5" /> Academic Subjects
                     </CardTitle>
                     <p className="text-sm text-muted-foreground mt-1">
                       Browse and access your enrolled subjects ({filteredSubjects.length} of {studentSubjects.length})
@@ -245,9 +245,9 @@ export default function Dashboard({ user, subjects }: StudentDashboardProps) {
                     >
                       <CardContent className="p-2 flex flex-col gap-4">
                         <div className="w-full h-48 relative">
-                          {/* {subject.image ? (
+                          {subject.image ? (
                             <img
-                              src={`/storage/${subject.image}`}
+                              src={`/storage/app/public/${subject.image}`}
                               alt={`${subject.title} subject title`}
                               className="w-full h-full object-cover rounded-t-lg"
                             />
@@ -258,7 +258,7 @@ export default function Dashboard({ user, subjects }: StudentDashboardProps) {
                                 No image available
                               </div>
                             </div>
-                          )} */}
+                          )}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
 
                           {/* Favorite button */}
