@@ -9,7 +9,7 @@ import { Toaster } from 'sonner';
 const appName = import.meta.env.VITE_APP_NAME || 'NeuroNest';
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
+    title: (title) => `${title}}`,
     resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
     setup({ el, App, props }) {
         const root = createRoot(el);
