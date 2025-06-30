@@ -247,7 +247,7 @@ export default function Dashboard({ user, subjects }: StudentDashboardProps) {
                         <div className="w-full h-48 relative">
                           {subject.image ? (
                             <img
-                              src={`/storage/app/public/${subject.image}`}
+                              src={`/public/storage/${subject.image}`}
                               alt={`${subject.title} subject title`}
                               className="w-full h-full object-cover rounded-t-lg"
                             />
