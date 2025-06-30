@@ -15,17 +15,13 @@ import { Head, router } from "@inertiajs/react"
 import type { InstructorAccessabilityProps, ModuleAccess } from "@/types/utils/instructor-accessability-types"
 import { toast } from "sonner"
 
-export default function Modules({ modules, classInstructor, assessments, assignments }: InstructorAccessabilityProps) {
+export default function Modules({ modules, classInstructor }: InstructorAccessabilityProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [availabilityFilter, setAvailabilityFilter] = useState("all")
   const [viewMode, setViewMode] = useState<"grid" | "list">("list")
   const [moduleAccesses, setModuleAccesses] = useState<ModuleAccess[]>(modules)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
-  useEffect(() => {
-    console.log("Assignments: ", assessments)
-  }, [])
 
   const filteredModules = moduleAccesses.filter((moduleAccess) => {
     const module = moduleAccess.module

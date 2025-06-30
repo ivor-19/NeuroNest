@@ -94,9 +94,6 @@ export default function ManageInstructors({ instructors, courseSubjects }: Instr
     section: "",
   })
 
-  useEffect(() => {
-    console.log(instructors)
-  }, [])
 
   const getInitials = (name: string) => {
     return name
