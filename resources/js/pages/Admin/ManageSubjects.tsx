@@ -69,7 +69,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
     description: "",
     year_level: "",
     semester: "",
-    isActive: "",
+    isActive: "1",
     image: null,
   })
 
@@ -78,9 +78,10 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
     title: "",
     subject_id: "",
     creator_id: auth.user.id,
-    status: "",
+    status: "published",
     description: "",
     order: "",
+    pdf: ""
   })
 
   const allModules = subjects.flatMap((subject) => subject.modules || [])
@@ -89,10 +90,10 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
   const [editImagePreview, setEditImagePreview] = useState<string | null>(null) //edit image preview
   const [editImageFile, setEditImageFile] = useState<File | null>(null) //edit image file
 
-  const handleImageSelect = (e : any) => {  // Handle image selection
-    const file = e.target.files[0];
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {  // Handle image selection
+    const file = e.target.files?.[0];
     if (file) {
-      setSubjectData('image', file); // Set the file in form data
+      setSubjectData('image', file as any); // Set the file in form data
       const reader = new FileReader();
       reader.onload = (e : any) => setImagePreview(e.target.result);
       reader.readAsDataURL(file);
@@ -140,6 +141,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
   };
 
   const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [orderError, setOrderError] = useState(false)
   const handleAddModule = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -161,6 +163,8 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
         moduleReset();
         setShowAddForm(false);
         setPdfFile(null);
+        setOrderError(false)
+        toast.success('Module added successfully');
         console.log("Module added successfully!");
         router.post(route("admin.addActivity"), {
           type: "create",
@@ -171,6 +175,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
       },
       onError: (errors: any) => {
         console.error('Error occurred:', errors);
+        setOrderError(true)
       },
     });
   };
@@ -507,7 +512,16 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                               {moduleProcessing ? "Creating..." : "Create Module"}
                             </Button>
                             <Button variant="outline" onClick={() => setShowAddForm(false)}> Cancel</Button>
+                            {moduleErrors.title || moduleErrors.subject_id || moduleErrors.description || moduleErrors.order || moduleErrors.status || pdfFile && 
+                              <p className="text-sm font-medium text-destructive">Complete all fields</p>
+                            }
+                            {orderError && (
+                              <p className="text-sm font-medium text-destructive">
+                                Order module already exists
+                              </p>
+                            )}
                           </div>
+                        
                         </div>
                         <Separator />
                       </>
@@ -552,7 +566,8 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                                   <Button variant="ghost" size="sm" onClick={() => {setRemoveModuleOpen(true), setModuleType(module)}}>
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
-                                 
+                                
+                            
                                 </div>
                               </div>
                             </div>
@@ -671,11 +686,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                                   </div>
                                 )}
                               </div>
-                              {subjectData.image && (
-                                <p className="text-sm text-muted-foreground">
-                                  Selected: {subjectData.image}
-                                </p>
-                              )}
+                             
                               {subjectErrors.image && (
                                 <p className="text-sm font-medium text-destructive">{subjectErrors.image}</p>
                               )}

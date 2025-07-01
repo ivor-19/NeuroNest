@@ -9,6 +9,8 @@ use App\Models\ModuleCompletion;
 use App\Models\ModuleControl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -17,34 +19,39 @@ class ModuleController extends Controller
   // Admin
   public function addModule(Request $request)
   {
-      $request->validate([
-          'subject_id' => 'required|integer|exists:subjects,id',
-          'creator_id' => 'required|integer|exists:users,id',
-          'title' => 'required|string|max:255',
-          'description' => 'required|string|max:255',
-          'status' => 'required|string',
-          'order' => 'required|integer',
-          'pdf' => 'required|file|mimes:pdf|max:10240', // 10MB max
-      ]);
-  
-      // Handle file upload
-      $pdfPath = null;
-      if ($request->hasFile('pdf')) {
-          $pdfPath = $request->file('pdf')->store('modules/pdfs', 'public');
-      }
-  
-      // Create module with file path
-      Module::create([
-          'subject_id' => $request->subject_id,
-          'creator_id' => $request->creator_id,
-          'title' => $request->title,
-          'description' => $request->description,
-          'status' => $request->status,
-          'order' => $request->order,
-          'pdf' => $pdfPath, // Store the file path
-      ]);
-  
-      return redirect()->back()->with('success', 'Successfully added a module');
+    $validator = Validator::make($request->all(), [
+        'subject_id' => 'required|integer|exists:subjects,id',
+        'creator_id' => 'required|integer|exists:users,id',
+        'title' => 'required|string|max:255',
+        'description' => 'required|string|max:255',
+        'status' => 'required|string',
+        'order' => [
+            'required',
+            'integer',
+            Rule::unique('modules')->where(function ($query) use ($request) {
+                return $query->where('subject_id', $request->subject_id);
+            }),
+        ],
+        'pdf' => 'required|file|mimes:pdf|max:10240',
+    ]);
+
+    if ($validator->fails()) {
+        return back()->withErrors($validator)->withInput();
+    }
+
+    $pdfPath = $request->file('pdf')->store('modules/pdfs', 'public');
+
+    Module::create([
+        'subject_id' => $request->subject_id,
+        'creator_id' => $request->creator_id,
+        'title' => $request->title,
+        'description' => $request->description,
+        'status' => $request->status,
+        'order' => $request->order,
+        'pdf' => $pdfPath,
+    ]);
+
+    return redirect()->back()->with('success', 'Module added successfully!');
   }
 
   public function updateModule(Request $request, $id)

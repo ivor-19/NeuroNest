@@ -97,7 +97,7 @@ class AdminController extends Controller
         
         $user = User::findOrFail($id);
         $user->update($validated);
-        return redirect()->back()->with('success',`User updated successfully`);
+        return redirect()->back()->with('success','User updated successfully');
         
     }
 
@@ -150,7 +150,7 @@ class AdminController extends Controller
            ]);
     
         StudentProfile::create($request->all());
-        return redirect()->back()->with('success',`Successfully assigned a student to a section`);
+        return redirect()->back()->with('success','Successfully assigned a student to a section');
     }
 
 
@@ -218,7 +218,7 @@ class AdminController extends Controller
            ]);
     
         Course::create($request->all());
-        return redirect()->back()->with('success',`Successfully added a course`);
+        return redirect()->back()->with('success','Successfully added a course');
     }
 
     public function deleteCourse($id)
@@ -226,7 +226,7 @@ class AdminController extends Controller
         $course = Course::findOrFail($id);
         $course->delete();
 
-        return redirect()->back()->with('success',`Deleted a course`);
+        return redirect()->back()->with('success','Deleted a course');
     }
 
     public function updateCourse(Request $request, $id)
@@ -240,7 +240,7 @@ class AdminController extends Controller
         
         $course = Course::findOrFail($id);
         $course->update($validated);
-        return redirect()->back()->with('success',`Course updated successfully`);
+        return redirect()->back()->with('success','Course updated successfully');
         
     }
 
@@ -256,7 +256,7 @@ class AdminController extends Controller
         // Only attach new subjects (don't detach any for now)
         $course->subjects()->syncWithoutDetaching($request->toAdd);
     
-        return redirect()->back()->with('success',`Successfully assign a subject to a course`);
+        return redirect()->back()->with('success','Successfully assign a subject to a course');
     }
 
     public function removeSubjectFromACourse($id)
@@ -264,7 +264,7 @@ class AdminController extends Controller
         $subject = CourseSubject::findOrFail($id);
         $subject->delete();
 
-        return redirect()->back()->with('success',`Remove a subject from a course`);
+        return redirect()->back()->with('success','Remove a subject from a course');
     }
 
 

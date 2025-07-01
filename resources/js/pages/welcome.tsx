@@ -1,5 +1,6 @@
 
 import AboutUs from "@/components/landingpage/aboutus"
+import BotpressChat from "@/components/landingpage/chatsup"
 import ContactUs from "@/components/landingpage/contactus"
 import Courses from "@/components/landingpage/courses"
 import Footer from "@/components/landingpage/footer"
@@ -143,6 +144,7 @@ export default function Welcome() {
       <AboutUs />
       <ContactUs />
       {/* <CallToAction /> */}
+      <BotpressChat />
       <Footer onNavigate={handleNavigation} />
     </div>
   )
