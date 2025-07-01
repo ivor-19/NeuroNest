@@ -208,7 +208,7 @@ export default function Dashboard({ user, subjects }: StudentDashboardProps) {
                     />
                   </div>
                   <Select value={semesterFilter} onValueChange={setSemesterFilter}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectTrigger className="w-full sm:w-[180px] cursor-pointer">
                       <SelectValue placeholder="Filter by Semester" />
                     </SelectTrigger>
                     <SelectContent>

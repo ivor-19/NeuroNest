@@ -255,7 +255,7 @@ export default function Dashboard({ sections = [] }: InstructorProps) {
                             <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="secondary" size="sm" className="h-8 w-8 p-0">
+                                  <Button variant="secondary" size="sm" className="h-8 w-8 p-0 cursor-pointer">
                                     <MoreHorizontal className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
@@ -350,7 +350,7 @@ export default function Dashboard({ sections = [] }: InstructorProps) {
                           <div className="flex space-x-2">
                             <Button
                               size="sm"
-                              className="flex-1 rounded-xl"
+                              className="flex-1 rounded-xl cursor-pointer"
                               onClick={() =>
                                 router.visit(
                                   route("instructor.modules", {

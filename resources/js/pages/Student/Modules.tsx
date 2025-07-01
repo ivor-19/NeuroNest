@@ -21,6 +21,7 @@ import HeaderLayout from "@/layouts/header-layout"
 import { Head, router, usePage } from "@inertiajs/react"
 import { SharedData } from "@/types"
 import { toast } from "sonner"
+import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
 
 interface Module {
   id: number
@@ -106,7 +107,7 @@ export default function Component({ subject, modules }: Props) {
           <Button
             variant="ghost"
             onClick={() => router.visit(route("student.dashboard"))}
-            className="mb-8 hover:bg-accent"
+            className="mb-8 hover:bg-accent cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
@@ -119,11 +120,21 @@ export default function Component({ subject, modules }: Props) {
                 {/* Course Image */}
                 <div className="flex-shrink-0">
                   <div className="relative overflow-hidden rounded-xl border border-border bg-muted">
-                    <img
-                      src={`/public/storage/${subject.image}`}
-                      alt={`${subject.title} subject title`}
-                      className="w-full lg:w-80 h-48 object-cover"
-                    />
+                    {subject.image ? (
+                      <img
+                        src={`/public/storage/${subject.image}`}
+                        alt={`${subject.title} subject title`}
+                        className="w-full lg:w-80 h-48 object-cover"
+                      />
+                    ):(
+                      <div className="relative h-full rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                        <PlaceholderPattern className="w-full h-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+                        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                          No image available
+                        </div>
+                      </div>
+                    )} 
+                   
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                   </div>
                 </div>
@@ -325,21 +336,21 @@ export default function Component({ subject, modules }: Props) {
                                   <Button
                                     size="default"
                                     variant={module.isDone ? "outline" : "default"}
-                                    className="min-w-[100px]"
+                                    className="min-w-[100px] cursor-pointer"
                                     onClick={() => handleDownloadPdf(module.id)}
                                   >
                                     <Download className="h-4 w-4" />
                                   </Button>
                                 )}
                                 {isDisabled && (
-                                  <Button size="default" variant="ghost" disabled className="min-w-[100px]">
+                                  <Button size="default" variant="ghost" disabled className="min-w-[100px] ">
                                     Unavailable
                                   </Button>
                                 )}
                                 {!module.isDone && !isDisabled && (
                                   <Button 
                                     variant="ghost" 
-                                    className="text-xs text-muted-foreground"
+                                    className="text-xs text-muted-foreground cursor-pointer"
                                     onClick={() => handleModuleDone(module.id)}
                                   >
                                     mark as complete

@@ -274,7 +274,7 @@ export default function Grades({ instructor, subjects, assessmentTypes }: Grades
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Course/Year/Section</label>
                   <Select value={courseYearSectionFilter} onValueChange={setCourseYearSectionFilter}>
-                    <SelectTrigger>
+                    <SelectTrigger className="cursor-pointer">
                       <SelectValue placeholder="All courses/years/sections" />
                     </SelectTrigger>
                     <SelectContent>
@@ -292,7 +292,7 @@ export default function Grades({ instructor, subjects, assessmentTypes }: Grades
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Subject</label>
                   <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-                    <SelectTrigger>
+                    <SelectTrigger className="cursor-pointer">
                       <SelectValue placeholder="Select subject" />
                     </SelectTrigger>
                     <SelectContent>
@@ -309,7 +309,7 @@ export default function Grades({ instructor, subjects, assessmentTypes }: Grades
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Assessment Type</label>
                   <Select value={assessmentTypeFilter} onValueChange={setAssessmentTypeFilter}>
-                    <SelectTrigger>
+                    <SelectTrigger className="cursor-pointer">
                       <SelectValue placeholder="All types" />
                     </SelectTrigger>
                     <SelectContent>
@@ -358,6 +358,7 @@ export default function Grades({ instructor, subjects, assessmentTypes }: Grades
                 <Button
                   variant="outline"
                   size="sm"
+                  className="cursor-pointer"
                   onClick={() => {
                     setCourseYearSectionFilter("all")
                     setAssessmentTypeFilter("all")
@@ -440,10 +441,10 @@ export default function Grades({ instructor, subjects, assessmentTypes }: Grades
                         </span>
                       )}
                     </h3>
-                    <Button variant="outline" size="sm">
+                    {/* <Button variant="outline" size="sm">
                       <Download className="h-4 w-4 mr-2" />
                       Export Grades
-                    </Button>
+                    </Button> */}
                   </div>
 
                   {getFilteredStudents(currentSubject).length === 0 ? (

@@ -433,7 +433,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                       </div>
                       <div className="flex items-center gap-2">
                         <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-                          <SelectTrigger className="min-w-48">
+                          <SelectTrigger className="min-w-48 cursor-pointer">
                             <Filter className="h-4 w-4 mr-2" />
                             <SelectValue placeholder="Filter by subject" />
                           </SelectTrigger>
@@ -446,7 +446,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                             ))}
                           </SelectContent>
                         </Select>
-                        <Button onClick={() => setShowAddForm(!showAddForm)}>
+                        <Button onClick={() => setShowAddForm(!showAddForm)} className="cursor-pointer">
                           <Plus className="h-4 w-4 mr-2" />Add Module
                         </Button>
                       </div>
@@ -508,10 +508,10 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <Button onClick={handleAddModule} disabled={moduleProcessing}>
+                            <Button onClick={handleAddModule} disabled={moduleProcessing} className="cursor-pointer">
                               {moduleProcessing ? "Creating..." : "Create Module"}
                             </Button>
-                            <Button variant="outline" onClick={() => setShowAddForm(false)}> Cancel</Button>
+                            <Button variant="outline" onClick={() => setShowAddForm(false)} className="cursor-pointer"> Cancel</Button>
                             {moduleErrors.title || moduleErrors.subject_id || moduleErrors.description || moduleErrors.order || moduleErrors.status || pdfFile && 
                               <p className="text-sm font-medium text-destructive">Complete all fields</p>
                             }
@@ -560,10 +560,10 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                                   )}
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <Button variant="ghost" size="sm" onClick={() => handleEditModule(module)}>
+                                  <Button variant="ghost" size="sm" className="cursor-pointer" onClick={() => handleEditModule(module)}>
                                     <Edit className="h-4 w-4" />
                                   </Button>
-                                  <Button variant="ghost" size="sm" onClick={() => {setRemoveModuleOpen(true), setModuleType(module)}}>
+                                  <Button variant="ghost" size="sm" className="cursor-pointer" onClick={() => {setRemoveModuleOpen(true), setModuleType(module)}}>
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
                                 
@@ -581,7 +581,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                             {searchQuery ? "Try adjusting your search terms" : "Create your first learning module to get started"}
                           </p>
                           {!searchQuery && (
-                            <Button onClick={() => setShowAddForm(true)}>
+                            <Button onClick={() => setShowAddForm(true)} className="cursor-pointer">
                               <Plus className="h-4 w-4 mr-2" />  Add Module
                             </Button>
                           )}
@@ -603,7 +603,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                         </CardTitle>
                         <p className="text-sm text-muted-foreground mt-1">Organize your curriculum and course structure</p>
                       </div>
-                      <Button onClick={() => setShowAddForm(!showAddForm)}>
+                      <Button onClick={() => setShowAddForm(!showAddForm)} className="cursor-pointer">
                         <Plus className="h-4 w-4 mr-2" /> Add Subject
                       </Button>
                     </div>
@@ -664,7 +664,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                                   type="button"
                                   variant="outline"
                                   onClick={() => fileInputRef.current?.click()}
-                                  className="flex items-center gap-2"
+                                  className="flex items-center gap-2 cursor-pointer"
                                 >
                                   <Upload className="h-4 w-4" />
                                   Choose Image
@@ -742,10 +742,10 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                             </div>
                           </div>
                           <div className="flex gap-2 items-center">
-                            <Button onClick={handleAddSubject} disabled={subjectProcessing}>
+                            <Button onClick={handleAddSubject} disabled={subjectProcessing} className="cursor-pointer">
                               {subjectProcessing ? "Creating..." : "Create Subject"}
                             </Button>
-                            <Button variant="outline" onClick={() => setShowAddForm(false)}>
+                            <Button variant="outline" onClick={() => setShowAddForm(false)} className="cursor-pointer">
                               Cancel
                             </Button>
                             {subjectErrors.code && (
@@ -807,10 +807,10 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                                     className="data-[state=checked]:bg-emerald-600 dark:data-[state=checked]:bg-emerald-500 cursor-pointer"
                                   />
                                  
-                                  <Button variant="ghost" size="sm" onClick={() => handleEditSubject(subject)}>
+                                  <Button variant="ghost" size="sm" className="cursor-pointer" onClick={() => handleEditSubject(subject)}>
                                     <Edit className="h-4 w-4" />
                                   </Button>
-                                  <Button variant="ghost" size="sm" onClick={() => {setDeleteSubjectOpen(true), setSubjectType(subject)}}>
+                                  <Button variant="ghost" size="sm" className="cursor-pointer" onClick={() => {setDeleteSubjectOpen(true), setSubjectType(subject)}}>
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
                                 </div>
@@ -849,7 +849,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                           {searchQuery ? "Try adjusting your search terms" : "Create your first subject to start building your curriculum"}
                         </p>
                         {!searchQuery && (
-                          <Button onClick={() => setShowAddForm(true)}>
+                          <Button onClick={() => setShowAddForm(true)} className="cursor-pointer">
                             <Plus className="h-4 w-4 mr-2" /> Add Subject
                           </Button>
                         )}
@@ -917,7 +917,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                   type="button"
                   variant="outline"
                   onClick={() => editFileInputRef.current?.click()}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 cursor-pointer"
                 >
                   <Upload className="h-4 w-4" />
                   Change Image
@@ -932,7 +932,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                     <button
                       type="button"
                       onClick={removeEditImage}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                      className="cursor-pointer absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -996,10 +996,10 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setOpenEditModal(false)}>
+              <Button variant="outline" onClick={() => setOpenEditModal(false)} className="cursor-pointer">
                 Cancel
               </Button>
-              <Button onClick={() => handleSubjectChanges(editSubject!.id)} disabled={editSubjectLoading}>
+              <Button onClick={() => handleSubjectChanges(editSubject!.id)} disabled={editSubjectLoading} className="cursor-pointer">
                 {editSubjectLoading ? (
                   <div className="flex items-center gap-2">
                     Saving <Loader className="animate-spin h-4 w-4"/>
@@ -1112,12 +1112,13 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
             </div>
 
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setOpenEditModule(false)}>
+              <Button variant="outline" onClick={() => setOpenEditModule(false)} className="cursor-pointer">
                 Cancel
               </Button>
               <Button 
                 onClick={() => handleModuleChanges(moduleTypes!.id)} 
                 disabled={editSubjectLoading}
+                className="cursor-pointer"
               >
                 {editSubjectLoading ? (
                   <div className="flex items-center gap-2">

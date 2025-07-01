@@ -170,7 +170,7 @@ export default function Sections({ sections = [] }: InstructorProps) {
                     variant={viewMode === "grid" ? "default" : "ghost"}
                     size="sm"
                     onClick={() => setViewMode("grid")}
-                    className="rounded-r-none"
+                    className="rounded-r-none cursor-pointer"
                   >
                     <Grid3X3 className="h-4 w-4" />
                   </Button>
@@ -178,7 +178,7 @@ export default function Sections({ sections = [] }: InstructorProps) {
                     variant={viewMode === "list" ? "default" : "ghost"}
                     size="sm"
                     onClick={() => setViewMode("list")}
-                    className="rounded-l-none"
+                    className="rounded-l-none cursor-pointer"
                   >
                     <List className="h-4 w-4" />
                   </Button>
@@ -246,7 +246,7 @@ export default function Sections({ sections = [] }: InstructorProps) {
                     Filter & Sort Sections
                   </CardTitle>
                   {hasActiveFilters && (
-                    <Button variant="outline" size="sm" onClick={clearFilters}>
+                    <Button variant="outline" size="sm" onClick={clearFilters} className="cursor-pointer">
                       Clear Filters
                     </Button>
                   )}
@@ -269,7 +269,7 @@ export default function Sections({ sections = [] }: InstructorProps) {
 
                   {/* Subject Filter */}
                   <Select value={subjectFilter} onValueChange={setSubjectFilter}>
-                    <SelectTrigger>
+                    <SelectTrigger className="cursor-pointer">
                       <SelectValue placeholder="Subject" />
                     </SelectTrigger>
                     <SelectContent>
@@ -284,7 +284,7 @@ export default function Sections({ sections = [] }: InstructorProps) {
 
                   {/* Semester Filter */}
                   <Select value={semesterFilter} onValueChange={setSemesterFilter}>
-                    <SelectTrigger>
+                    <SelectTrigger className="cursor-pointer">
                       <SelectValue placeholder="Semester" />
                     </SelectTrigger>
                     <SelectContent>
@@ -299,7 +299,7 @@ export default function Sections({ sections = [] }: InstructorProps) {
 
                   {/* Year Filter */}
                   <Select value={yearFilter} onValueChange={setYearFilter}>
-                    <SelectTrigger>
+                    <SelectTrigger className="cursor-pointer">
                       <SelectValue placeholder="Year Level" />
                     </SelectTrigger>
                     <SelectContent>
@@ -314,7 +314,7 @@ export default function Sections({ sections = [] }: InstructorProps) {
 
                   {/* Status Filter */}
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger>
+                    <SelectTrigger className="cursor-pointer">
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -329,7 +329,7 @@ export default function Sections({ sections = [] }: InstructorProps) {
                 <div className="flex items-center gap-4 mt-4 pt-4 border-t">
                   <span className="text-sm font-medium">Sort by:</span>
                   <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
-                    <SelectTrigger className="w-[150px]">
+                    <SelectTrigger className="w-[150px] cursor-pointer">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -342,6 +342,7 @@ export default function Sections({ sections = [] }: InstructorProps) {
                   <Button
                     variant="outline"
                     size="sm"
+                    className="cursor-pointer"
                     onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
                   >
                     <ArrowUpDown className="h-4 w-4 mr-2" />
@@ -406,7 +407,7 @@ export default function Sections({ sections = [] }: InstructorProps) {
                             <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="secondary" size="sm" className="h-8 w-8 p-0">
+                                  <Button variant="secondary" size="sm" className="h-8 w-8 p-0 cursor-pointer">
                                     <MoreHorizontal className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
@@ -501,7 +502,7 @@ export default function Sections({ sections = [] }: InstructorProps) {
                           <div className="flex space-x-2">
                             <Button
                               size="sm"
-                              className="flex-1 rounded-xl"
+                              className="flex-1 rounded-xl cursor-pointer"
                               onClick={() =>
                                 router.visit(
                                   route("instructor.modules", {
@@ -578,6 +579,7 @@ export default function Sections({ sections = [] }: InstructorProps) {
                           <div className="flex items-center gap-2">
                             <Button
                               size="sm"
+                              className="cursor-pointer"
                               onClick={() =>
                                 router.visit(
                                   route("instructor.modules", {
@@ -614,7 +616,7 @@ export default function Sections({ sections = [] }: InstructorProps) {
                     : "You are not currently assigned to any sections"}
                 </h3>
                 {hasActiveFilters && (
-                  <Button variant="outline" onClick={clearFilters} className="mt-2 bg-transparent">
+                  <Button variant="outline" onClick={clearFilters} className="mt-2 bg-transparent cursor-pointer">
                     Clear all filters
                   </Button>
                 )}
