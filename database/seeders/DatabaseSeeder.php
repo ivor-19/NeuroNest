@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
         Course::truncate();
         User::where('email', '!=', 'admin@example.com')->delete(); // Keep admin if exists
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        
         // Create Users
         User::create([
             'name' => 'Admin User',
@@ -56,44 +57,55 @@ class DatabaseSeeder extends Seeder
             'role' => 'student'
         ]);
 
-        // Create 3 Courses
+        // Create 4 Engineering Courses
         $courses = [
             Course::create([
-                'code' => 'CS',
-                'name' => 'Computer Science',
-                'description' => 'Computer Science Program',
+                'code' => 'BSCE',
+                'name' => 'Civil Engineering',
+                'description' => 'Bachelor of Science in Civil Engineering',
                 'isActive' => true
             ]),
             Course::create([
-                'code' => 'IT',
-                'name' => 'Information Technology',
-                'description' => 'Information Technology Program',
+                'code' => 'BSME',
+                'name' => 'Mechanical Engineering',
+                'description' => 'Bachelor of Science in Mechanical Engineering',
                 'isActive' => true
             ]),
             Course::create([
-                'code' => 'MATH',
-                'name' => 'Mathematics',
-                'description' => 'Mathematics Program',
+                'code' => 'BSCPE',
+                'name' => 'Computer Engineering',
+                'description' => 'Bachelor of Science in Computer Engineering',
+                'isActive' => true
+            ]),
+            Course::create([
+                'code' => 'BSEE',
+                'name' => 'Electrical Engineering',
+                'description' => 'Bachelor of Science in Electrical Engineering',
                 'isActive' => true
             ])
         ];
 
-        // Create 3 Subjects per Course (9 subjects total)
+        // Create 3 Subjects per Course (12 subjects total)
         $subjectsData = [
-            // CS Subjects
-            ['code' => 'CS101', 'title' => 'Introduction to Programming', 'description' => 'Basic programming concepts', 'year_level' => '1', 'semester' => '1st'],
-            ['code' => 'CS102', 'title' => 'Data Structures', 'description' => 'Data structures and algorithms', 'year_level' => '1', 'semester' => '2nd'],
-            ['code' => 'CS201', 'title' => 'Database Systems', 'description' => 'Database design and management', 'year_level' => '2', 'semester' => '1st'],
+            // Civil Engineering Subjects
+            ['code' => 'CE101', 'title' => 'Statics of Rigid Bodies', 'description' => 'Principles of static equilibrium', 'year_level' => '1', 'semester' => '1st'],
+            ['code' => 'CE102', 'title' => 'Mechanics of Deformable Bodies', 'description' => 'Stress and strain analysis', 'year_level' => '1', 'semester' => '2nd'],
+            ['code' => 'CE201', 'title' => 'Structural Theory', 'description' => 'Analysis of structural systems', 'year_level' => '2', 'semester' => '1st'],
             
-            // IT Subjects
-            ['code' => 'IT101', 'title' => 'Network Fundamentals', 'description' => 'Basic networking concepts', 'year_level' => '1', 'semester' => '1st'],
-            ['code' => 'IT102', 'title' => 'System Administration', 'description' => 'Server and system management', 'year_level' => '1', 'semester' => '2nd'],
-            ['code' => 'IT201', 'title' => 'Cybersecurity', 'description' => 'Information security principles', 'year_level' => '2', 'semester' => '1st'],
+            // Mechanical Engineering Subjects
+            ['code' => 'ME101', 'title' => 'Thermodynamics', 'description' => 'Principles of heat and energy', 'year_level' => '1', 'semester' => '1st'],
+            ['code' => 'ME102', 'title' => 'Fluid Mechanics', 'description' => 'Behavior of fluids at rest and in motion', 'year_level' => '1', 'semester' => '2nd'],
+            ['code' => 'ME201', 'title' => 'Machine Design', 'description' => 'Design of mechanical components', 'year_level' => '2', 'semester' => '1st'],
             
-            // Math Subjects
-            ['code' => 'MATH101', 'title' => 'Calculus I', 'description' => 'Differential calculus', 'year_level' => '1', 'semester' => '1st'],
-            ['code' => 'MATH102', 'title' => 'Calculus II', 'description' => 'Integral calculus', 'year_level' => '1', 'semester' => '2nd'],
-            ['code' => 'MATH201', 'title' => 'Linear Algebra', 'description' => 'Vectors and matrices', 'year_level' => '2', 'semester' => '1st']
+            // Computer Engineering Subjects
+            ['code' => 'CPE101', 'title' => 'Logic Circuits and Design', 'description' => 'Digital logic fundamentals', 'year_level' => '1', 'semester' => '1st'],
+            ['code' => 'CPE102', 'title' => 'Computer Organization', 'description' => 'Computer architecture basics', 'year_level' => '1', 'semester' => '2nd'],
+            ['code' => 'CPE201', 'title' => 'Microprocessor Systems', 'description' => 'Microprocessor architecture and programming', 'year_level' => '2', 'semester' => '1st'],
+            
+            // Electrical Engineering Subjects
+            ['code' => 'EE101', 'title' => 'Circuit Theory', 'description' => 'Analysis of electrical circuits', 'year_level' => '1', 'semester' => '1st'],
+            ['code' => 'EE102', 'title' => 'Electromagnetic Fields', 'description' => 'Electric and magnetic fields theory', 'year_level' => '1', 'semester' => '2nd'],
+            ['code' => 'EE201', 'title' => 'Power Systems', 'description' => 'Generation, transmission and distribution of electrical power', 'year_level' => '2', 'semester' => '1st']
         ];
 
         $subjects = [];
@@ -103,7 +115,7 @@ class DatabaseSeeder extends Seeder
 
         // Link subjects to courses (3 subjects per course)
         for ($i = 0; $i < 3; $i++) {
-            // CS subjects (0,1,2)
+            // BSCE subjects (0,1,2)
             DB::table('course_subjects')->insert([
                 'course_id' => $courses[0]->id,
                 'subject_id' => $subjects[$i]->id,
@@ -111,7 +123,7 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now()
             ]);
             
-            // IT subjects (3,4,5)
+            // BSME subjects (3,4,5)
             DB::table('course_subjects')->insert([
                 'course_id' => $courses[1]->id,
                 'subject_id' => $subjects[$i + 3]->id,
@@ -119,19 +131,27 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now()
             ]);
             
-            // Math subjects (6,7,8)
+            // BSCPE subjects (6,7,8)
             DB::table('course_subjects')->insert([
                 'course_id' => $courses[2]->id,
                 'subject_id' => $subjects[$i + 6]->id,
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
+            
+            // BSEE subjects (9,10,11)
+            DB::table('course_subjects')->insert([
+                'course_id' => $courses[3]->id,
+                'subject_id' => $subjects[$i + 9]->id,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
         }
 
-        // Create Student Profile
+        // Create Student Profile (enrolled in Computer Engineering)
         StudentProfile::create([
             'student_id' => $student->id,
-            'course_id' => $courses[0]->id, // CS course
+            'course_id' => $courses[2]->id, // BSCPE course
             'year_level' => 1,
             'section' => 'A',
             'academic_year' => 2024
@@ -140,7 +160,7 @@ class DatabaseSeeder extends Seeder
         // Create Class Instructors for each subject
         $classInstructors = [];
         foreach ($subjects as $index => $subject) {
-            $courseIndex = intval($index / 3); // 0,1,2 for each group of 3 subjects
+            $courseIndex = intval($index / 3); // 0,1,2,3 for each group of 3 subjects
             $classInstructors[] = ClassInstructor::create([
                 'instructor_id' => $instructor->id,
                 'course_id' => $courses[$courseIndex]->id,
@@ -150,7 +170,7 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // Create 3 Modules per Subject (27 modules total)
+        // Create 3 Modules per Subject (36 modules total)
         $moduleCount = 1;
         foreach ($subjects as $subjectIndex => $subject) {
             for ($i = 1; $i <= 3; $i++) {
@@ -163,7 +183,8 @@ class DatabaseSeeder extends Seeder
                     'order' => $i,
                     'materials' => json_encode([
                         ['type' => 'video', 'title' => 'Video Lecture ' . $i],
-                        ['type' => 'document', 'title' => 'Reading Material ' . $i]
+                        ['type' => 'document', 'title' => 'Reading Material ' . $i],
+                        ['type' => 'quiz', 'title' => 'Assessment ' . $i]
                     ]),
                     'pdf' => 'module_' . $moduleCount . '.pdf'
                 ]);
