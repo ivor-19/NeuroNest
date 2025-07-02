@@ -186,15 +186,31 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
     return subject ? subject.modules || [] : []
   }
 
-  const filteredModules = getModulesBySubject(selectedSubject).filter((module) =>
-    module.title.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  const [moduleStatusFilter, setModuleStatusFilter] = useState<"all" | "published" | "draft">("all");
+  const [moduleSemesterFilter, setModuleSemesterFilter] = useState<string>("all");
+  const filteredModules = getModulesBySubject(selectedSubject).filter((module) => {
+    const matchesSearch = module.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = moduleStatusFilter === "all" || module.status === moduleStatusFilter;
+    
+    // Find the subject this module belongs to
+    const subject = subjects.find(s => s.id === module.subject_id);
+    const matchesSemester = moduleSemesterFilter === "all" || 
+                           (subject && subject.semester === moduleSemesterFilter);
+    
+    return matchesSearch && matchesStatus && matchesSemester;
+  });
 
+  const [activeFilter, setActiveFilter] = useState<"all" | "active" | "inactive">("all");
+  const [semesterFilter, setSemesterFilter] = useState<string>("all");
   const filteredSubjects = subjects.filter(
     (subject) =>
-      subject.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      subject.code.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+      (subject.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       subject.code.toLowerCase().includes(searchQuery.toLowerCase())) &&
+      (activeFilter === "all" || 
+       (activeFilter === "active" && subject.isActive) || 
+       (activeFilter === "inactive" && !subject.isActive)) &&
+      (semesterFilter === "all" || subject.semester === semesterFilter)
+  );
 
   // Stats calculations
   const totalModules = allModules.length
@@ -354,7 +370,8 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
       }
     });
   };
-  
+
+
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
@@ -408,7 +425,7 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
           <CardContent className="space-y-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search subjects and modules..." className="pl-10" value={searchQuery}  onChange={(e) => setSearchQuery(e.target.value)} />
+              <Input placeholder="Search subjects..." className="pl-10" value={searchQuery}  onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-2">
               <TabsList className="grid w-full grid-cols-2 ">
@@ -431,7 +448,42 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                         </CardTitle>
                         <p className="text-sm text-muted-foreground mt-1">Manage and organize your course modules</p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2">                                    
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor="module-status-filter" className="whitespace-nowrap">Status:</Label>
+                          <Select 
+                            value={moduleStatusFilter} 
+                            onValueChange={(value: "all" | "published" | "draft") => setModuleStatusFilter(value)}
+                          >
+                            <SelectTrigger className="w-[120px]">
+                              <SelectValue placeholder="Filter by status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All</SelectItem>
+                              <SelectItem value="published">Published</SelectItem>
+                              <SelectItem value="draft">Draft</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor="module-semester-filter" className="whitespace-nowrap">Semester:</Label>
+                          <Select 
+                            value={moduleSemesterFilter} 
+                            onValueChange={(value) => setModuleSemesterFilter(value)}
+                          >
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue placeholder="Filter by semester" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All</SelectItem>
+                              <SelectItem value="1st">1st Semester</SelectItem>
+                              <SelectItem value="2nd">2nd Semester</SelectItem>
+                              <SelectItem value="Summer">Summer</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <Label htmlFor="subject" className="whitespace-nowrap">Subject:</Label>
                         <Select value={selectedSubject} onValueChange={setSelectedSubject}>
                           <SelectTrigger className="min-w-48 cursor-pointer">
                             <Filter className="h-4 w-4 mr-2" />
@@ -603,9 +655,40 @@ export default function ManageSubjects({ subjects }: SubjectProps) {
                         </CardTitle>
                         <p className="text-sm text-muted-foreground mt-1">Organize your curriculum and course structure</p>
                       </div>
-                      <Button onClick={() => setShowAddForm(!showAddForm)} className="cursor-pointer">
-                        <Plus className="h-4 w-4 mr-2" /> Add Subject
-                      </Button>
+                      <div className="flex items-center gap-2">             
+                          <div className="flex items-center gap-2">
+                            <Label htmlFor="active-filter" className="whitespace-nowrap">Status:</Label>
+                            <Select value={activeFilter} onValueChange={(value: "all" | "active" | "inactive") => setActiveFilter(value)}>
+                              <SelectTrigger className="w-[120px]">
+                                <SelectValue placeholder="Filter by status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">All</SelectItem>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="inactive">Inactive</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <Label htmlFor="semester-filter" className="whitespace-nowrap">Semester:</Label>
+                            <Select value={semesterFilter} onValueChange={(value) => setSemesterFilter(value)}>
+                              <SelectTrigger className="w-[140px]">
+                                <SelectValue placeholder="Filter by semester" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">All</SelectItem>
+                                <SelectItem value="1st">1st Semester</SelectItem>
+                                <SelectItem value="2nd">2nd Semester</SelectItem>
+                                <SelectItem value="Summer">Summer</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                     
+                        <Button onClick={() => setShowAddForm(!showAddForm)} className="cursor-pointer">
+                          <Plus className="h-4 w-4 mr-2" /> Add Subject
+                        </Button>
+                      </div>
                     </div>
                   </CardHeader>
 

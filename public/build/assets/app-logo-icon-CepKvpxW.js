@@ -1,1 +1,0 @@
-import{j as t}from"./app-BO0vCXdd.js";import{G as e}from"./graduation-cap-BoIJkwZ1.js";function a(r){return t.jsx("div",{className:"w-8 h-8 bg-gradient-to-br from-teal-600 to-teal-700 rounded-xl flex items-center justify-center",children:t.jsx(e,{className:"w-5 h-5 text-white"})})}export{a as A};

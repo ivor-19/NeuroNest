@@ -284,7 +284,7 @@ export default function ManageStudents({ users, students, courses }: ManageStude
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Status</Label>
                       <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="h-8">
+                        <SelectTrigger className="h-8 cursor-pointer">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -298,7 +298,7 @@ export default function ManageStudents({ users, students, courses }: ManageStude
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Course</Label>
                       <Select value={courseFilter} onValueChange={setCourseFilter}>
-                        <SelectTrigger className="h-8">
+                        <SelectTrigger className="h-8 cursor-pointer">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -315,7 +315,7 @@ export default function ManageStudents({ users, students, courses }: ManageStude
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Year</Label>
                       <Select value={yearFilter} onValueChange={setYearFilter}>
-                        <SelectTrigger className="h-8">
+                        <SelectTrigger className="h-8 cursor-pointer">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -331,7 +331,7 @@ export default function ManageStudents({ users, students, courses }: ManageStude
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Section</Label>
                       <Select value={sectionFilter} onValueChange={setSectionFilter}>
-                        <SelectTrigger className="h-8">
+                        <SelectTrigger className="h-8 cursor-pointer">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -364,7 +364,7 @@ export default function ManageStudents({ users, students, courses }: ManageStude
                           setYearFilter("all");
                           setSectionFilter("all");
                         }}
-                        className="h-8 w-full text-xs bg-transparent"
+                        className="h-8 w-full text-xs bg-transparent cursor-pointer"
                       >
                         Clear Filters
                       </Button>
@@ -496,30 +496,34 @@ export default function ManageStudents({ users, students, courses }: ManageStude
                             <TableCell>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm">
+                                  <Button variant="ghost" size="sm" className="cursor-pointer">
                                     <MoreHorizontal className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                  <DropdownMenuItem
-                                    onClick={() => {
-                                      if (student.user_id) {
-                                        setActiveTab("assignments");
-                                        setData("student_id", student.user_id.toString());
-                                      } else {
-                                        toast.error("This student doesn't have a valid profile ID");
-                                        console.log(student.user_id)
-                                      }
-                                    }}
-                                  >
-                                    <UserCheck className="h-4 w-4 mr-2" />
-                                    Assign Section
-                                  </DropdownMenuItem>
+                                  {!student.section && 
+                                  
+                                    <DropdownMenuItem
+                                      className="cursor-pointer"
+                                      onClick={() => {
+                                        if (student.user_id) {
+                                          setActiveTab("assignments");
+                                          setData("student_id", student.user_id.toString());
+                                        } else {
+                                          toast.error("This student doesn't have a valid profile ID");
+                                          console.log(student.user_id)
+                                        }
+                                      }}
+                                    >
+                                      <UserCheck className="h-4 w-4 mr-2" />
+                                      Assign Section
+                                    </DropdownMenuItem>
+                                  }
                                   {student.section && 
                                     <>
                                       <DropdownMenuSeparator />
-                                      <DropdownMenuItem className="text-destructive" onClick={() => handleRemoveFromSection(student.profile_id)}>
+                                      <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => handleRemoveFromSection(student.profile_id)}>
                                         <Trash2 className="h-4 w-4 mr-2" />
                                         Remove from section
                                       </DropdownMenuItem>
@@ -580,7 +584,7 @@ export default function ManageStudents({ users, students, courses }: ManageStude
                     <div className="space-y-2">
                       <Label htmlFor="student" className="text-sm font-medium">Select Student</Label>
                       <Select value={data.student_id} onValueChange={(value) => setData("student_id", value)}>
-                        <SelectTrigger className="h-11">
+                        <SelectTrigger className="h-11 cursor-pointer">
                           <SelectValue placeholder="Choose a student to assign" />
                         </SelectTrigger>
                         <SelectContent>
@@ -604,7 +608,7 @@ export default function ManageStudents({ users, students, courses }: ManageStude
                     <div className="space-y-2">
                       <Label htmlFor="course" className="text-sm font-medium">Course Program</Label>
                       <Select value={data.course_id} onValueChange={(value) => setData("course_id", value)}>
-                        <SelectTrigger className="h-11">
+                        <SelectTrigger className="h-11 cursor-pointer">
                           <SelectValue placeholder="Select course program" />
                         </SelectTrigger>
                         <SelectContent>
@@ -629,7 +633,7 @@ export default function ManageStudents({ users, students, courses }: ManageStude
                       <div className="space-y-2">
                         <Label htmlFor="yearLevel" className="text-sm font-medium">Year Level</Label>
                         <Select value={data.year_level} onValueChange={(value) => setData("year_level", value)}>
-                          <SelectTrigger className="h-11">
+                          <SelectTrigger className="h-11 cursor-pointer">
                             <SelectValue placeholder="Year" />
                           </SelectTrigger>
                           <SelectContent>
@@ -647,7 +651,7 @@ export default function ManageStudents({ users, students, courses }: ManageStude
                       <div className="space-y-2">
                         <Label htmlFor="section" className="text-sm font-medium">Section</Label>
                         <Select value={data.section} onValueChange={(value) => setData("section", value)}>
-                          <SelectTrigger className="h-11">
+                          <SelectTrigger className="h-11 cursor-pointer">
                             <SelectValue placeholder="Section" />
                           </SelectTrigger>
                           <SelectContent>
@@ -665,7 +669,7 @@ export default function ManageStudents({ users, students, courses }: ManageStude
                       <div className="space-y-2">
                         <Label htmlFor="academicYear" className="text-sm font-medium">Academic Year</Label>
                         <Select value={data.academic_year} onValueChange={(value) => setData("academic_year", value)}>
-                          <SelectTrigger className="h-11">
+                          <SelectTrigger className="h-11 cursor-pointer">
                             <SelectValue placeholder="Year" />
                           </SelectTrigger>
                           <SelectContent>
